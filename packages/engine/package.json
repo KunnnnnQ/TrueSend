@@ -1,0 +1,32 @@
+{
+  "name": "@truesend/engine",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Address fingerprints, poisoning heuristics and explainable risk scoring. Shared by the web app, the browser extension and the risk API.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@noble/hashes": "^2.0.1",
+    "@scure/bip39": "^2.0.0"
+  },
+  "devDependencies": {
+    "fast-check": "^4.3.0",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  }
+}
