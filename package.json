@@ -1,0 +1,17 @@
+{
+  "name": "truesend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Revocable on-chain cooldowns and human-verifiable address fingerprints that defeat address-poisoning attacks.",
+  "license": "MIT",
+  "packageManager": "pnpm@10.18.2",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "pnpm -r lint"
+  }
+}

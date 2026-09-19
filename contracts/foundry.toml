@@ -1,0 +1,45 @@
+[profile.default]
+src = "src"
+out = "out"
+test = "test"
+script = "script"
+libs = ["lib"]
+
+solc = "0.8.30"
+# EIP-7702 (set-code transactions) requires Prague or later.
+evm_version = "prague"
+optimizer = true
+optimizer_runs = 200
+bytecode_hash = "none"
+ffi = false
+
+[profile.default.fuzz]
+runs = 512
+max_test_rejects = 200000
+
+[profile.default.invariant]
+runs = 128
+depth = 48
+fail_on_revert = false
+call_override = false
+
+[profile.ci.fuzz]
+runs = 2048
+
+[profile.ci.invariant]
+runs = 384
+depth = 64
+
+[fmt]
+line_length = 110
+tab_width = 4
+bracket_spacing = false
+int_types = "long"
+multiline_func_header = "params_first"
+number_underscore = "thousands"
+
+[rpc_endpoints]
+sepolia = "${SEPOLIA_RPC_URL}"
+
+[etherscan]
+sepolia = {key = "${ETHERSCAN_API_KEY}", chain = 11155111}
