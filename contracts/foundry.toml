@@ -12,6 +12,17 @@ optimizer = true
 optimizer_runs = 200
 bytecode_hash = "none"
 ffi = false
+# The deploy script writes an address book the web app and indexer read directly, so no
+# address is ever transcribed by hand. Scoped to that one directory.
+fs_permissions = [{access = "read-write", path = "./deployments"}]
+
+[lint]
+severity = ["high", "medium", "low"]
+# A cooldown IS a timestamp comparison, so this lint fires on essentially every line of the
+# policy. Proposer timestamp drift is bounded at a few seconds; the shortest cooldown the
+# contracts accept is measured in minutes and the intended values in hours. Suppressed here
+# rather than with a dozen identical inline comments. Every other lint stays on.
+exclude_lints = ["block-timestamp"]
 
 [profile.default.fuzz]
 runs = 512
@@ -35,7 +46,7 @@ line_length = 110
 tab_width = 4
 bracket_spacing = false
 int_types = "long"
-multiline_func_header = "params_first"
+multiline_func_header = "params_first_multi"
 number_underscore = "thousands"
 
 [rpc_endpoints]
