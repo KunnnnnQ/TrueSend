@@ -2,7 +2,14 @@ import fc from "fast-check";
 import {describe, expect, it} from "vitest";
 
 import {normalizeAddress} from "../src/address.js";
-import {THRESHOLDS, assessAddress, assessMany, levelFor, nearestLookalike} from "../src/risk.js";
+import {
+  THRESHOLDS,
+  WEIGHTS,
+  assessAddress,
+  assessMany,
+  levelFor,
+  nearestLookalike,
+} from "../src/risk.js";
 import type {AddressSighting} from "../src/types.js";
 
 const HOUR = 3600;
@@ -23,6 +30,7 @@ function sighting(
     incomingCount: 0,
     zeroValueIncoming: 0,
     dustIncoming: 0,
+    spoofedOutgoingCount: 0,
     firstSeenAt: NOW - 30 * 24 * HOUR,
     lastSeenAt: NOW,
     ...over,
@@ -192,5 +200,57 @@ describe("invariants of the score itself", () => {
         expect(result.score).toBe(Math.min(100, summed));
       }),
     );
+  });
+});
+
+/**
+ * The gap that real data exposed.
+ *
+ * In the May 2024 WBTC case the victim's history contained no address resembling the attacker's,
+ * so every similarity rule scored it zero and the engine called a 1155 WBTC loss "safe". What it
+ * did contain was a `Transfer` log naming the victim as the sender of a 0.05 "ETH" payment they
+ * had never signed. See `analysis/src/evaluate-engine.mjs`.
+ */
+describe("fabricated outgoing records", () => {
+  const planted = sighting({
+    address: BOB,
+    spoofedOutgoingCount: 1,
+    firstSeenAt: NOW - 4400,
+    lastSeenAt: NOW - 4400,
+  });
+
+  it("reaches danger with no lookalike anywhere in the history", () => {
+    const result = assessAddress({to: BOB, history: [planted], now: NOW});
+
+    expect(result.level).toBe("danger");
+    expect(result.findings[0]?.code).toBe("spoofed-outgoing-transfer");
+  });
+
+  it("outranks every similarity rule, because it is a fact rather than an inference", () => {
+    const result = assessAddress({to: BOB, history: [planted], now: NOW});
+    const spoof = result.findings.find((f) => f.code === "spoofed-outgoing-transfer");
+
+    expect(spoof?.weight).toBeGreaterThan(WEIGHTS.lookalikeMax);
+    expect(spoof?.message).toContain("never signed");
+  });
+
+  it("does not let a fabricated record count as a payment the user made", () => {
+    const result = assessAddress({to: BOB, history: [planted], now: NOW});
+
+    expect(result.findings.map((f) => f.code)).toContain("never-paid-before");
+    expect(planted.outgoingCount).toBe(0);
+  });
+
+  /**
+   * The failure mode this guards against: an indexer that believes logs records the fabrication
+   * as a genuine payment, and the address the victim is about to be robbed by looks like a payee
+   * they already trust.
+   */
+  it("says nothing when the fabrication has been miscounted as a genuine payment", () => {
+    const misread = sighting({address: BOB, outgoingCount: 1, lastOutgoingAt: NOW - 4400});
+    const result = assessAddress({to: BOB, history: [misread], now: NOW});
+
+    expect(result.level).toBe("safe");
+    expect(result.score).toBe(0);
   });
 });

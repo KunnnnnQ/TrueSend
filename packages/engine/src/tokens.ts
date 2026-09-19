@@ -13,7 +13,8 @@ export type TokenSymbolIssue =
   | "invisible-characters"
   | "mixed-scripts"
   | "confusable-with-known-symbol"
-  | "padded-whitespace";
+  | "padded-whitespace"
+  | "impersonates-native-asset";
 
 export interface TokenSymbolFinding {
   issue: TokenSymbolIssue;
@@ -30,6 +31,21 @@ const INVISIBLE_PATTERN = "[\\u00AD\\u200B-\\u200F\\u202A-\\u202E\\u2060-\\u2064
 const INVISIBLE_ALL = new RegExp(INVISIBLE_PATTERN, "gu");
 /** For `test`. Separate because a `g`-flagged regex carries `lastIndex` between calls. */
 const INVISIBLE = new RegExp(INVISIBLE_PATTERN, "u");
+
+/**
+ * Native assets that no honest ERC-20 calls itself.
+ *
+ * A token contract is by definition not the chain's native currency, so the wrapped versions are
+ * named WETH, WBNB, WMATIC. A contract whose ticker is bare `ETH` is claiming to be something it
+ * cannot be.
+ *
+ * This is not hypothetical: the bait in the May 2024 WBTC case was a contract with symbol "ETH",
+ * name "Ether" and 6 decimals, used to fabricate a record of a 0.05 "ETH" payment. Its symbol is
+ * spelled with ordinary Latin letters, so the homoglyph and mixed-script rules below see nothing
+ * wrong with it — this rule is the one that catches it. Verified in
+ * `analysis/data/case-wbtc-2024-05-03.json`.
+ */
+const NATIVE_ASSET_SYMBOLS = new Set(["eth", "ether", "btc", "bnb", "matic", "avax", "sol", "pol"]);
 
 const CYRILLIC = /[Ѐ-ӿ]/u;
 const GREEK = /[Ͱ-Ͽ]/u;
@@ -117,6 +133,17 @@ export function inspectTokenSymbol(
         `This token's symbol mixes ${scripts.join(" and ")} letters. Legitimate tickers do not ` +
         `switch alphabets mid-word; impersonations do it to borrow a familiar shape.`,
       evidence: {scripts},
+    });
+  }
+
+  if (NATIVE_ASSET_SYMBOLS.has(confusableSkeleton(symbol).toLowerCase())) {
+    findings.push({
+      issue: "impersonates-native-asset",
+      message:
+        `This is a token contract calling itself "${symbol.trim()}", which is a native currency ` +
+        `and cannot be a token. Genuine wrapped versions are named with a leading W, like WETH. ` +
+        `A row in your history reading "${symbol.trim()}" from this contract is not what it looks like.`,
+      evidence: {symbol},
     });
   }
 

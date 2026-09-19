@@ -1,0 +1,39 @@
+{
+  "name": "WBTC address poisoning, 2024-05-03",
+  "verifiedAt": "2026-09-19T23:37:40.076Z",
+  "verifiedAgainst": "https://rpc.mevblocker.io",
+  "note": "Every field below was fetched from an archive node by src/verify-wbtc-case.mjs and asserted. The mechanism is not the one most write-ups describe: the victim did not make a test transfer. A third party fabricated the record of one.",
+  "victim": "0x1e227979f0b5bc691a70deaed2e0f39a6f538fd5",
+  "attacker": "0xd9a1c3788d81257612e2581a6ea0ada244853a91",
+  "loss": {
+    "block": 19789009,
+    "tx": "0x3374abc5a9c766ba709651399b6e6162de97ca986abc23f423a9d893c8f5f570",
+    "token": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
+    "amountRaw": "115528802767",
+    "amount": 1155.28802767,
+    "symbol": "WBTC",
+    "signedBy": "0x1e227979f0b5bc691a70deaed2e0f39a6f538fd5",
+    "signedByVictim": true
+  },
+  "bait": {
+    "block": 19788642,
+    "blocksBeforeLoss": 367,
+    "tx": "0x9147d74ef5749b7f27eb2e2528e5a611060b3f609b435f7f50ac87f49e5b957c",
+    "token": "0x739352337c902c3874b95f14e81ebbcf1b7b262e",
+    "symbol": "ETH",
+    "name": "Ether",
+    "decimals": 6,
+    "amountRaw": "50000",
+    "rendersAs": "0.05 ETH",
+    "signedBy": "0x517dc8e50b8bf03a1d69c84d27bf96dc5a911db2",
+    "signedByVictim": false,
+    "calledContract": "0xab3393c9cbe75f886aae03c8ada87c83ca4d206e"
+  },
+  "imitated": {
+    "address": "0xd9a1b0b1e1ae382dbdc898ea68012ffcb2853a91",
+    "source": "public reporting",
+    "verifiedOnChain": false,
+    "sharedPrefix": 4,
+    "sharedSuffix": 6
+  }
+}

@@ -79,3 +79,30 @@ describe("isPlainSymbol", () => {
     expect(isPlainSymbol("WBTC")).toBe(true);
   });
 });
+
+describe("native-asset impersonation", () => {
+  /**
+   * The bait token in the May 2024 WBTC case: symbol "ETH", name "Ether", 6 decimals, spelled
+   * with ordinary Latin letters. The homoglyph and mixed-script rules see nothing wrong with it,
+   * which is exactly why this rule exists.
+   */
+  it("catches a token contract calling itself ETH", () => {
+    const findings = inspectTokenSymbol("ETH", ["USDT", "USDC"]);
+    const issues = findings.map((f) => f.issue);
+
+    expect(issues).toEqual(["impersonates-native-asset"]);
+    expect(findings[0]?.message).toContain("cannot be a token");
+  });
+
+  it("leaves the genuine wrapped versions alone", () => {
+    expect(inspectTokenSymbol("WETH", ["WETH"])).toEqual([]);
+    expect(inspectTokenSymbol("WBTC", ["WBTC"])).toEqual([]);
+  });
+
+  it("catches the trick even when it is also spelled with homoglyphs", () => {
+    const issues = inspectTokenSymbol("ЕTH").map((f) => f.issue);
+
+    expect(issues).toContain("impersonates-native-asset");
+    expect(issues).toContain("mixed-scripts");
+  });
+});

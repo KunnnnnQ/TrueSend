@@ -119,6 +119,14 @@ paid it, how many zero-value and dust transfers it sent them, when it first appe
 is small enough to hand to a browser extension that has to decide in the time it takes someone to
 paste an address.
 
+**It must resolve who signed each transaction.** A `Transfer` log naming an address as the sender
+is not evidence that address sent anything — anyone can call a contract that emits one, and in
+practice almost everyone does: 99.88% of zero-value USDT transfers in a sampled window were signed
+by somebody other than the address they name. Counting those as payments does not merely lose a
+signal, it inverts one, because a fabricated outgoing record makes an attacker look like a payee
+the user already trusts. Resolving `tx.from` is therefore a requirement of this layer rather than
+an optimisation, and `analysis/` measures what it costs to get it wrong.
+
 The alerting path is what turns a cooldown from a delay into a defence. A queued transfer is only
 useful if someone learns about it while it is still queued, and the person may not be at their
 computer — so a queued transfer notifies the owner and the guardian with a one-click cancel link.

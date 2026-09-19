@@ -10,6 +10,8 @@ think it covers.
 Address poisoning works on the gap between the address a user *checks* and the address they
 *use*.
 
+There are two variants, and the second is the dangerous one.
+
 1. The victim pays someone — often a deliberate small "test transfer" first, because that is the
    advice everyone gives.
 2. A bot watching the chain sees the payment and grinds out an address whose leading and trailing
@@ -22,6 +24,25 @@ Address poisoning works on the gap between the address a user *checks* and the a
 
 The cruelty of it is that step 1 is the safety advice. Doing the recommended thing is what creates
 the opening.
+
+**The second variant does not wait for step 1 — it fabricates it.** Anyone can call a contract
+that emits a `Transfer` log naming someone else as the sender. No approval, no signature, no
+cooperation from the victim. Their history then shows an outgoing payment to the attacker's
+address that they never made, and a wallet built by believing logs renders it as a payment they
+did make.
+
+That is what happened in the May 2024 case that cost 1155 WBTC. The victim did not make a test
+transfer; a third party fabricated the record of one on a token contract whose symbol is `ETH`,
+73 minutes before the victim sent the real funds. Every step of that is re-derived from chain and
+asserted by `analysis/src/verify-wbtc-case.mjs`.
+
+It is also not rare. In one 1200-block window of mainnet USDT, 7,592 of 7,601 zero-value
+transfers — 99.88% — were signed by somebody other than the address they name as the sender, and
+5,121 distinct addresses had a fabricated payment planted in their history. See
+`analysis/README.md`.
+
+A test transfer never verified that an address is *correct*. It only ever verified that an
+address is *reachable*.
 
 ## What TrueSend actually changes
 
@@ -52,6 +73,8 @@ quietly when they are.
 | Guardian turns hostile and holds the account hostage | Guardian cannot move funds and cannot veto its own replacement | `test_guardianCannotBlockItsOwnReplacement`, `test_guardianCannotMoveFunds` |
 | A future delegate corrupting this one's storage | ERC-7201 namespacing, asserted against slot writes | `test_writesStayInsideTheNamespace` |
 | Fake `USDT` used to plant the address | Homoglyph, mixed-script and invisible-character checks | `tokens.test.ts` |
+| A fabricated outgoing payment planted in the history | `spoofed-outgoing-transfer`, the highest-weighted rule and the only one that is a fact rather than an inference | `risk.test.ts`, `analysis/src/evaluate-engine.mjs` |
+| A token contract impersonating the native currency | `impersonates-native-asset` | `tokens.test.ts` |
 | A recipient contract reentering during settlement | Transient-storage reentrancy guard | `test_reentrantRecipientCannotReplayATransfer` |
 
 The strongest single statement is the invariant: across arbitrary orderings of sends, cancels,
@@ -98,6 +121,15 @@ A 7702 account can sign a new authorization pointing anywhere, including to a co
 policy. TrueSend cannot prevent that and does not try. Mitigation belongs at the wallet layer,
 which is why "an authorization translator that explains what a delegation grants" is listed as
 future work rather than claimed as solved.
+
+### The fabrication rule depends on the indexer
+
+`spoofed-outgoing-transfer` fires on a fact — a transfer log naming the user as sender in a
+transaction the user did not sign — but only an indexer that resolves `tx.from` can supply that
+fact. An indexer that believes logs reports the fabrication as a genuine payment, and the engine
+then has nothing to go on: replayed against the WBTC case, it scores `safe` with no findings at
+all. `AddressSighting.spoofedOutgoingCount` is a required field precisely so that this cannot be
+skipped by accident, but a wrong value silently disarms the strongest rule in the set.
 
 ### Heuristics are evadable
 

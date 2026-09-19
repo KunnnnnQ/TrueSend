@@ -8,6 +8,12 @@ importers:
 
   .: {}
 
+  analysis:
+    dependencies:
+      '@truesend/engine':
+        specifier: workspace:*
+        version: link:../packages/engine
+
   packages/engine:
     dependencies:
       '@noble/hashes':

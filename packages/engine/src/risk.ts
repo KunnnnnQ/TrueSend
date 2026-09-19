@@ -16,10 +16,15 @@ export const MIN_AFFIX_MATCH = 4;
 /**
  * How soon after a payment an address has to appear for the timing to be suspicious.
  *
- * This is the signature of the attack this project is named for: the victim makes a small test
- * transfer, a bot watching the mempool sees it, and a lookalike address is planted in their
- * history within minutes. A day is generous — real cases cluster inside an hour — but a wide
- * window costs only a caution, while a narrow one would miss a slow attacker.
+ * A bot watches for a payment and plants a lookalike address right behind it. The window is set
+ * from measurement rather than intuition: across 4,076 planted addresses sampled from 1200 blocks
+ * of mainnet USDT (`analysis/data/scan-latest.json`), the bait followed the payment it imitated
+ * by a median of 26 blocks — about five minutes — with a 90th percentile of 146 blocks and a
+ * longest observed gap of 1,125 blocks, under four hours.
+ *
+ * A day therefore covers everything observed with a wide margin. Erring wide is cheap here: this
+ * rule contributes a caution-sized weight and never fires on its own, so a generous window costs
+ * little, while a tight one would hand a slower attacker a way to score nothing.
  */
 export const RECENT_PAYMENT_WINDOW_SECONDS = 24 * 60 * 60;
 
@@ -31,6 +36,18 @@ export const RECENT_PAYMENT_WINDOW_SECONDS = 24 * 60 * 60;
  * re-tune them against real cases without touching the detection logic.
  */
 export const WEIGHTS = {
+  /**
+   * Enough on its own to reach `danger`, and the only weight here that is not a judgement call.
+   *
+   * Every other rule in this table is an inference about intent. This one is a fact: a transfer
+   * log naming the user as sender, in a transaction the user did not sign, is a record of a
+   * payment that did not happen. There is no benign reason for one to exist in a history.
+   *
+   * It is weighted above the lookalike rule because it does not need a lookalike to work. The
+   * May 2024 WBTC case had no comparable address anywhere in the victim's history, so every
+   * similarity rule scored it zero — see `analysis/src/evaluate-engine.mjs`.
+   */
+  spoofedOutgoing: 65,
   lookalikeBase: 40,
   /** Added per hex character matched beyond the floor, across both ends, up to `lookalikeMax`. */
   lookalikePerExtraChar: 2,
@@ -76,6 +93,20 @@ export function assessAddress(input: RiskInput): RiskAssessment {
   const payees = history.filter(
     (entry) => entry.outgoingCount > 0 && normalizeAddress(entry.address) !== to,
   );
+
+  // Checked first because it stands alone: it needs no similar address, no timing and no
+  // community report, which is precisely the situation the rules below cannot handle.
+  if (self && self.spoofedOutgoingCount > 0) {
+    findings.push({
+      code: "spoofed-outgoing-transfer",
+      weight: WEIGHTS.spoofedOutgoing,
+      message:
+        `Your history shows ${plural(self.spoofedOutgoingCount, "payment")} from you to this ` +
+        `address that you never signed. Someone else published ${self.spoofedOutgoingCount === 1 ? "that record" : "those records"} ` +
+        `so the address would look like one you had already paid.`,
+      evidence: {spoofedOutgoingCount: self.spoofedOutgoingCount, genuineOutgoing: self.outgoingCount},
+    });
+  }
 
   const nearest = nearestLookalike(to, payees);
 

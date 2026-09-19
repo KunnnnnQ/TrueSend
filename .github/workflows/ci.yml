@@ -68,3 +68,9 @@ jobs:
 
       - name: Build
         run: pnpm -r build
+
+      # Replays the detector over the committed mainnet sample and fails if the headline
+      # detection rates regress. Reads data/, never the network, so CI needs no RPC.
+      - name: Mainnet replay
+        run: node src/evaluate-engine.mjs --check
+        working-directory: analysis

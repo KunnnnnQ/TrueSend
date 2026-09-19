@@ -12,7 +12,13 @@ export interface AddressSighting {
   address: Address;
   /** Name from the user's contacts, if they have one for this address. */
   label?: string;
-  /** Transfers the user initiated to this address. Zero means they have never paid it. */
+  /**
+   * Transfers the user **signed**. Zero means they have never actually paid this address.
+   *
+   * A `Transfer` log naming an address as the sender does not mean that address sent anything.
+   * Anyone can call a contract that emits one. Only the transaction signer is authoritative, so
+   * an indexer must check `tx.from` before counting anything here.
+   */
   outgoingCount: number;
   /** Unix seconds of the most recent payment the user made to it, if any. */
   lastOutgoingAt?: number;
@@ -26,6 +32,20 @@ export interface AddressSighting {
   zeroValueIncoming: number;
   /** Inbound transfers below the dust threshold — the same trick with a token that needs it. */
   dustIncoming: number;
+  /**
+   * Transfer logs that name the user as the sender in a transaction the user did not sign.
+   *
+   * These are fabrications, and they are the single strongest signal in this set — not a
+   * heuristic but a checkable fact. A wallet history built by believing logs shows them as
+   * payments the user made, which is exactly why they work: the victim of the May 2024 WBTC
+   * case sent 1155 WBTC to an address whose only credential was a fabricated record of a
+   * 0.05 "ETH" payment they had never made. See `analysis/`.
+   *
+   * Required rather than optional on purpose. An indexer that does not resolve transaction
+   * signers has to write `0` here deliberately, and take responsibility for it, instead of
+   * getting the dangerous default for free.
+   */
+  spoofedOutgoingCount: number;
   /** Unix seconds this address first appeared anywhere in the user's history. */
   firstSeenAt: number;
   lastSeenAt: number;
@@ -42,6 +62,7 @@ export interface PoisonReport {
 }
 
 export type FindingCode =
+  | "spoofed-outgoing-transfer"
   | "lookalike-of-known-payee"
   | "appeared-right-after-payment"
   | "zero-value-inbound"

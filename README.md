@@ -1,12 +1,23 @@
 # TrueSend
 
-**Everyone is told to send a small test transfer first. That test is what the attacker is waiting
-for.**
+**Everyone is told to send a small test transfer first. Attackers do not wait for yours — they
+fabricate one.**
 
-Address poisoning turns the standard safety advice into the attack surface. You pay someone, a bot
-sees it, grinds out an address matching the leading and trailing characters your wallet shows, and
-sends you a zero-value transfer so it lands in your history. Next time you copy the recipient from
-that history and the money is gone.
+Anyone can call a contract that emits a `Transfer` log naming *you* as the sender. No approval, no
+signature, nothing you can refuse. Your history then shows a payment to an address you have never
+paid, and every wallet renders it as a payment you made.
+
+That is how 1155 WBTC was lost in May 2024. The victim's "cautious test transfer" 73 minutes
+before the real one was signed by somebody else, on a token contract whose symbol is `ETH`. Every
+step of that is re-derived from chain and asserted in [`analysis/`](analysis/README.md) — not
+taken from the write-ups, which mostly describe it wrongly.
+
+It is not rare. In one four-hour window of mainnet USDT, **99.88% of zero-value transfers were
+signed by somebody other than the address they name as sender**, and 5,121 distinct addresses had
+a fabricated payment planted in their history.
+
+A test transfer never verified that an address is *correct*. It only ever verified that it is
+*reachable*.
 
 TrueSend replaces the test transfer with two things that actually work:
 
@@ -75,16 +86,22 @@ never what the contract *allows*.
 and both fingerprints. A bare number asks for trust; a reason lets the user catch what the rules
 missed.
 
+**One rule is a fact, not a heuristic.** A transfer log naming you as the sender, in a transaction
+you did not sign, is a record of a payment that did not happen. It is the highest-weighted rule,
+it needs no lookalike to compare against, and it is the only reason the WBTC case is caught at
+all — the victim's history contained nothing resembling the attacker's address, so every
+similarity rule scored it zero. Measured: `safe` (0) before, `danger` (71) after.
+
 ## Status
 
 | Component | State |
 | --- | --- |
 | `contracts/` — policy, 7702 delegate, vault, factory | Built. 53 tests: unit, fuzz, invariant. 92.8% lines, 64.6% branches |
-| `packages/engine/` — fingerprints, heuristics, scoring | Built. 41 tests including property tests |
+| `packages/engine/` — fingerprints, heuristics, scoring | Built. 48 tests including property tests |
 | `apps/web/` — Scan, Send, Pending, Contacts | Not started |
 | `apps/indexer/` — event indexing and risk API | Not started |
 | `apps/extension/` — clipboard guard | Not started |
-| `analysis/` — replay against real mainnet cases | Not started |
+| `analysis/` — replay against real mainnet cases | Built. Verifies the 2024 WBTC case from chain, measures live poisoning volume, replays the shipped detector |
 
 Not audited. Branch coverage is the weakest number here and the first place a reviewer should
 look.
