@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contracts:
+    name: contracts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: stable
+
+      - name: Formatting
+        run: forge fmt --check
+        working-directory: contracts
+
+      # `forge build` runs the linter too; `--deny warnings` makes an unreviewed warning fail the
+      # build rather than scroll past. Every suppression in the tree carries a written reason.
+      - name: Build and lint
+        run: forge build --deny warnings
+        working-directory: contracts
+
+      # The `ci` profile raises fuzz runs and invariant depth well above the local defaults, so
+      # the campaign that guards the core property gets a real workout on every push.
+      - name: Tests
+        run: forge test -vvv
+        working-directory: contracts
+        env:
+          FOUNDRY_PROFILE: ci
+
+      - name: Coverage
+        run: forge coverage --no-match-coverage "test|script" --report summary
+        working-directory: contracts
+
+  engine:
+    name: engine
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Enable pnpm
+        run: corepack enable
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm -r typecheck
+
+      - name: Tests
+        run: pnpm -r test
+
+      - name: Build
+        run: pnpm -r build
