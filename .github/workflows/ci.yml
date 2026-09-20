@@ -22,6 +22,20 @@ jobs:
         with:
           version: stable
 
+      # Slither needs a solc. The toolchain above already downloaded the 0.8.28 the project pins,
+      # and crytic-compile finds it — so there is no solc-select step here on purpose: a second
+      # source of truth for the compiler version is how the analysed bytecode stops matching the
+      # deployed bytecode.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Pinned. The reentrancy conclusion in docs/static-analysis.md is a statement about what
+      # this analyser does and does not detect, and an unpinned version would make it a statement
+      # about whatever was current the last time CI ran.
+      - name: Install Slither
+        run: pip install slither-analyzer==0.11.6
+
       - name: Formatting
         run: forge fmt --check
         working-directory: contracts
@@ -30,6 +44,19 @@ jobs:
       # build rather than scroll past. Every suppression in the tree carries a written reason.
       - name: Build and lint
         run: forge build --deny warnings
+        working-directory: contracts
+
+      # Slither asks forge for the project config, so it has to run from inside `contracts/` with
+      # foundry on PATH. The filter list lives in slither.config.json at the repo root; the config
+      # is passed by path rather than picked up implicitly so the two stay visibly connected.
+      #
+      # `--fail-pedantic` fails on any result, informational included, which is what makes this a
+      # gate rather than a log: a detector that starts firing has to be triaged in writing in
+      # docs/static-analysis.md or explicitly excluded, and neither happens by accident.
+      - name: Static analysis
+        run: |
+          slither . --compile-force-framework foundry \
+            --config-file ../slither.config.json --fail-pedantic
         working-directory: contracts
 
       # The `ci` profile raises fuzz runs and invariant depth well above the local defaults, so

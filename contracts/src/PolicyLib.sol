@@ -87,6 +87,13 @@ library PolicyLib {
     }
 
     /// @notice How much of `token`'s daily allowance has already been used today.
+    /// @dev Slither flags the `==` as a dangerous strict equality. It is not one here: `s.day` is
+    ///      written in exactly one place, always as `today()` at that moment, so it can only ever
+    ///      equal the current day or be older. Equality therefore means "same day", inequality
+    ///      means "the stored total is from a previous day and no longer counts", and there is no
+    ///      interval between two days for a value to fall into. Nothing reads `s.amount` without
+    ///      passing through this comparison first.
+    // slither-disable-next-line incorrect-equality
     function spentToday(Policy storage p, address token) internal view returns (uint256) {
         Spend storage s = p.spend[token];
         return s.day == today() ? s.amount : 0;
@@ -116,6 +123,12 @@ library PolicyLib {
     /// @notice Consume `amount` of today's allowance, or report that it does not fit.
     /// @dev Returns false instead of reverting: an over-limit transfer is not an error, it just
     ///      falls through to the cooldown queue.
+    ///
+    ///      Same strict equality as `spentToday`, and the same rebuttal: `s.day` holds a day
+    ///      number that can only be the current one or an earlier one, so `==` cannot miss a
+    ///      match it should have taken. Failing this comparison is not a near-miss either — the
+    ///      branch it guards resets `used` to zero and starts a fresh day's total.
+    // slither-disable-next-line incorrect-equality
     function tryConsumeAllowance(Policy storage p, address token, uint256 amount) internal returns (bool) {
         uint256 cap = p.limits[token].amount;
         if (cap == 0) return true;
