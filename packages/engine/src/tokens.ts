@@ -31,6 +31,30 @@ import {normalizeAddress, type Address} from "./address.js";
  *
  * The narrower rules that follow still run, because they say *which* token is being imitated,
  * which is worth telling a user. They are no longer what the detection rests on.
+ *
+ * ## Relationship to UTS #39
+ *
+ * The first rule was arrived at here by being wrong three times, and then turned out to be a
+ * standard. "All characters in the string are in the ASCII range" is the **ASCII-Only restriction
+ * level** of Unicode Technical Standard #39, *Unicode Security Mechanisms* (v17.0.0, 2025-09-04),
+ * and the mixed-script rule below is roughly the negation of its **Single Script** level. Using
+ * the standard's vocabulary is not decoration: it means a reader can check this against a
+ * maintained specification rather than against one author's judgement.
+ *
+ * Two deliberate departures, because a security rule that silently diverges from the standard it
+ * claims to implement is worse than one that never claimed to:
+ *
+ *   - UTS #39 defines `skeleton()` as NFD, then removal of `Default_Ignorable` characters, then
+ *     substitution from `confusables.txt`, then NFD again. This uses **NFKC** in place of
+ *     NFD-plus-`confusables.txt`, because that file carries roughly six thousand mappings and
+ *     shipping it in a browser extension is not worth it. NFKC covers the compatibility cases —
+ *     fullwidth, sub- and superscript — that the confusables data would otherwise handle. What
+ *     NFKC deliberately does *not* do is fold across scripts, and that gap is exactly what the
+ *     ASCII-Only rule covers instead.
+ *   - `Default_Ignorable_Code_Point` is used as the standard specifies, rather than the
+ *     hand-written list of zero-width characters this file used to carry. The property is
+ *     strictly better: it already contained `U+17B4`, the Khmer mark one of the real fakes above
+ *     used as filler, which the hand-written list did not.
  */
 
 export type TokenSymbolIssue =
@@ -66,22 +90,116 @@ export interface CanonicalToken {
   address: Address;
 }
 
+/**
+ * The subset of UTS #39's restriction levels that a ticker symbol can meaningfully fall into.
+ *
+ * The standard defines six. The three in between — Highly Restrictive, Moderately Restrictive and
+ * Minimally Restrictive — exist to let real identifiers in human languages through, which is a
+ * problem a four-letter ticker does not have. Collapsing them would be wrong for a username or a
+ * domain and is right here, and saying so is the point of naming the standard at all.
+ */
+export type RestrictionLevel = "ascii-only" | "single-script" | "unrestricted";
+
+/**
+ * Where a symbol sits on UTS #39's scale.
+ *
+ * Exposed because it turns a verdict into something checkable. "This is not ASCII-Only" is a
+ * statement about a published standard that a reader can verify; "this looks suspicious to me" is
+ * not.
+ */
+export function restrictionLevel(symbol: string): RestrictionLevel {
+  if (!hasNonAscii(symbol)) return "ascii-only";
+
+  return scriptsIn(symbol).length <= 1 ? "single-script" : "unrestricted";
+}
+
+/**
+ * Which alphabets a symbol draws on, as far as this module can tell.
+ *
+ * This used to ask three yes/no questions — Latin? Cyrillic? Greek? — and count the yeses, which
+ * reported the Yi radical in a real fake as single-script because the only script it could see in
+ * `U+A4A4 5 D T` was the `DT`. Enumerating scripts is the homoglyph table's mistake at one
+ * remove: the list is always missing the one the attacker reached for.
+ *
+ * JavaScript will answer "is this character Latin?" but not "what script is this character?", so
+ * an exact answer means carrying Unicode's script table. This does not, and does not need to. A
+ * character that is neither Latin, Cyrillic, Greek nor script-neutral is *by that fact* from some
+ * other script, whatever its name — so the unnamed ones get counted without being identified.
+ * Knowing a second alphabet is present is the question; naming it only improves the sentence.
+ *
+ * Two kinds of character are skipped. Script-neutral ones because UAX #31 says so: digits and
+ * punctuation carry `Script=Common` and belong to every script, so counting the `5` above as
+ * Latin would make a one-letter swap read as single-script. Invisible ones because they have
+ * their own finding, and "mixes two alphabets" is a strange thing to say about a mark that does
+ * not render — the Khmer filler in another real fake is `Script=Khmer`, and saying so out loud
+ * would be true and useless.
+ *
+ * The limit, so the level is not read as more than it is: characters from two *different* unnamed
+ * scripts share one bucket and read as single-script. That costs no detection, since the
+ * ASCII-Only rule has already fired on anything that reaches here — it understates the level
+ * only, and `tokens.test.ts` pins the case rather than leaving it to be rediscovered.
+ */
+function scriptsIn(symbol: string): string[] {
+  const named: string[] = [];
+  let sawUnnamed = false;
+
+  for (const char of symbol) {
+    if (SCRIPT_NEUTRAL.test(char) || INVISIBLE.test(char)) continue;
+
+    const script = NAMED_SCRIPTS.find(([, pattern]) => pattern.test(char))?.[0];
+    if (script === undefined) sawUnnamed = true;
+    else if (!named.includes(script)) named.push(script);
+  }
+
+  return sawUnnamed ? [...named, UNNAMED_SCRIPT] : named;
+}
+
 /** Printable ASCII. Anything outside it has no business in a ticker. */
 const NON_ASCII = /[^\x20-\x7E]/gu;
 
 /**
- * Characters that take up no visual space: zero-width spaces and joiners, bidi overrides, the
- * BOM, the soft hyphen, and any combining mark used as filler — `U+17B4` in the sample above is
- * a Khmer combining vowel doing exactly that.
+ * Characters that take up no visual space.
+ *
+ * `Default_Ignorable_Code_Point` is the set UTS #39's `skeleton()` removes, and it covers every
+ * zero-width space, joiner, bidi control, BOM and soft hyphen this used to list by hand — plus
+ * `U+17B4`, the Khmer mark one of the real fakes above used as filler, which the hand-written
+ * list missed. Reaching for the property rather than an enumeration is the same lesson as the
+ * ASCII rule, one level down.
+ *
+ * Nonspacing marks are removed as well, which the standard does not do. A ticker has no business
+ * carrying combining accents, and stacking them is another way to pad a symbol into a shape.
  */
-const INVISIBLE_PATTERN = "[\\u00AD\\u200B-\\u200F\\u202A-\\u202E\\u2060-\\u2064\\uFEFF\\p{Mn}\\p{Cf}]";
+const INVISIBLE_PATTERN = "[\\p{Default_Ignorable_Code_Point}\\p{Mn}]";
 const INVISIBLE_ALL = new RegExp(INVISIBLE_PATTERN, "gu");
 /** Separate from the `g` version because a `g`-flagged regex carries `lastIndex` between calls. */
 const INVISIBLE = new RegExp(INVISIBLE_PATTERN, "u");
 
-const CYRILLIC = /[Ѐ-ӿ]/u;
-const GREEK = /[Ͱ-Ͽ]/u;
-const LATIN = /[A-Za-z]/u;
+/**
+ * The scripts worth naming in a message, which is a different question from the scripts worth
+ * counting. These three carry the bulk of UTS #39's Latin confusables, and a reader who is told
+ * "Cyrillic" can go and look at the character. Everything else is counted but not named; see
+ * `scriptsIn`.
+ *
+ * `Script=Latin` rather than `[A-Za-z]` so that an accented letter reads as Latin instead of
+ * landing in the unnamed bucket and inventing a second alphabet.
+ */
+const NAMED_SCRIPTS: readonly (readonly [string, RegExp])[] = [
+  ["Latin", /\p{Script=Latin}/u],
+  ["Cyrillic", /\p{Script=Cyrillic}/u],
+  ["Greek", /\p{Script=Greek}/u],
+];
+
+/** Stands in for a script this module can tell apart but not identify. */
+const UNNAMED_SCRIPT = "another alphabet";
+
+/** So a named script and the unnamed bucket read as a sentence rather than as a `join`. */
+const ENGLISH_LIST = new Intl.ListFormat("en", {style: "long", type: "conjunction"});
+
+/**
+ * Characters that belong to every script and so distinguish none: digits, punctuation, spacing,
+ * and the combining marks that inherit their script from what they sit on.
+ */
+const SCRIPT_NEUTRAL = /[\p{Script=Common}\p{Script=Inherited}]/u;
 
 /**
  * Native assets that no honest ERC-20 calls itself.
@@ -150,13 +268,21 @@ export function inspectToken(
         `This token's symbol is not spelled with ordinary characters — ` +
         `${exotic.length} of them ${exotic.length === 1 ? "is" : "are"} from another alphabet or ` +
         `invisible. It renders as something familiar and is not it.`,
-      evidence: {symbol, codePoints: exotic.map(describe)},
+      evidence: {
+        symbol,
+        codePoints: exotic.map(describe),
+        // Named so the claim can be checked against a published standard rather than trusted.
+        restrictionLevel: restrictionLevel(symbol),
+        standard: "UTS #39 ASCII-Only",
+      },
     });
   }
 
   if (token.address && canonical.length > 0) {
     const skeleton = confusableSkeleton(symbol).toLowerCase();
-    const impersonated = canonical.find((entry) => entry.symbol.toLowerCase() === skeleton);
+    const impersonated = canonical.find(
+      (entry) => confusableSkeleton(entry.symbol).toLowerCase() === skeleton,
+    );
 
     if (impersonated && normalizeAddress(token.address) !== normalizeAddress(impersonated.address)) {
       findings.push({
@@ -201,25 +327,25 @@ export function inspectToken(
     });
   }
 
-  const scripts = [
-    LATIN.test(symbol) ? "Latin" : null,
-    CYRILLIC.test(symbol) ? "Cyrillic" : null,
-    GREEK.test(symbol) ? "Greek" : null,
-  ].filter((script): script is string => script !== null);
-
+  const scripts = scriptsIn(symbol);
   if (scripts.length > 1) {
     findings.push({
       issue: "mixed-scripts",
       message:
-        `This token's symbol mixes ${scripts.join(" and ")} letters. Legitimate tickers do not ` +
+        `This token's symbol mixes ${ENGLISH_LIST.format(scripts)}. Legitimate tickers do not ` +
         `switch alphabets mid-word; impersonations do it to borrow a familiar shape.`,
-      evidence: {scripts},
+      evidence: {scripts, restrictionLevel: restrictionLevel(symbol), standard: "UTS #39 Single Script"},
     });
   }
 
   const skeleton = confusableSkeleton(symbol);
   if (skeleton !== symbol) {
-    const match = knownSymbols.find((known) => known.toLowerCase() === skeleton.toLowerCase());
+    // UTS #39 defines two strings as confusable when their *skeletons* are equal, so both sides
+    // are folded. Comparing a folded symbol against a raw one happens to work for ASCII tickers
+    // and is not what the standard says.
+    const match = knownSymbols.find(
+      (known) => confusableSkeleton(known).toLowerCase() === skeleton.toLowerCase(),
+    );
     if (match) {
       findings.push({
         issue: "confusable-with-known-symbol",

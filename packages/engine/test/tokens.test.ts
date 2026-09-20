@@ -6,6 +6,7 @@ import {
   inspectToken,
   inspectTokenSymbol,
   isPlainSymbol,
+  restrictionLevel,
   type CanonicalToken,
 } from "../src/tokens.js";
 import type {Address} from "../src/address.js";
@@ -189,5 +190,108 @@ describe("isPlainSymbol", () => {
   it("accepts ordinary tickers", () => {
     expect(isPlainSymbol("USDT")).toBe(true);
     expect(isPlainSymbol("WBTC")).toBe(true);
+  });
+});
+
+/**
+ * The rules here were arrived at by being wrong three times and then turned out to be a published
+ * standard. These check the alignment is real rather than a claim in a comment.
+ *
+ * UTS #39, Unicode Security Mechanisms, v17.0.0 (2025-09-04).
+ */
+describe("alignment with UTS #39", () => {
+  it("reports the restriction level a reader can check against the standard", () => {
+    expect(restrictionLevel("USDT")).toBe("ascii-only");
+    expect(restrictionLevel("\u{A4A4}5DT")).toBe("unrestricted");
+    expect(restrictionLevel("\u0414\u0422")).toBe("single-script");
+  });
+
+  it("names the level and the standard in the finding, not just a verdict", () => {
+    const finding = inspectTokenSymbol("\u{A4A4}5DT").find((f) => f.issue === "non-ascii-symbol");
+
+    expect(finding?.evidence["restrictionLevel"]).toBe("unrestricted");
+    expect(finding?.evidence["standard"]).toBe("UTS #39 ASCII-Only");
+  });
+
+  /**
+   * `Default_Ignorable_Code_Point` is the set the standard's `skeleton()` removes. Reaching for
+   * the property instead of enumerating characters is the same lesson as the ASCII rule: the
+   * hand-written list this replaced did not contain U+17B4, and a real fake used it.
+   */
+  it("drops every default-ignorable character, including the one the old list missed", () => {
+    for (const invisible of ["\u{17B4}", "\u{200B}", "\u{FEFF}", "\u{00AD}", "\u{202E}", "\u{2060}"]) {
+      expect(confusableSkeleton(`USD${invisible}T`), invisible).toBe("USDT");
+    }
+  });
+
+  /**
+   * The standard defines X and Y as confusable when `skeleton(X) == skeleton(Y)` — both sides
+   * folded. Folding only the candidate happens to work for ASCII tickers and is not what the
+   * standard says, so a canonical entry that itself needs folding would have been missed.
+   */
+  it("folds both sides when comparing, as the standard defines it", () => {
+    const canonical = [
+      {symbol: "USD\u200BT", address: "0xdac17f958d2ee523a2206206994597c13d831ec7" as Address},
+    ];
+    const findings = inspectToken(
+      {symbol: "USD\u0422", address: "0x0000000000000000000000000000000000000099"},
+      {canonical},
+    );
+
+    expect(findings.map((f) => f.issue)).toContain("known-symbol-wrong-contract");
+  });
+
+  it("still folds the compatibility forms NFKC covers and the standard gets from confusables.txt", () => {
+    expect(confusableSkeleton("\uFF35\uFF33\uFF24\uFF34")).toBe("USDT");
+  });
+});
+
+/**
+ * The level is computed without a script table, so it has an edge. These pin both sides of it:
+ * what the shortcut buys, and the one case where it understates.
+ */
+describe("counting alphabets without a table of them", () => {
+  /**
+   * The failure that prompted the rewrite. Asking "Latin? Cyrillic? Greek?" and counting the
+   * yeses saw only the `DT` here and called a Yi radical spliced into a ticker single-script.
+   */
+  it("counts a script it cannot name, which is how the Yi fake is caught", () => {
+    expect(restrictionLevel("\u{A4A4}5DT")).toBe("unrestricted");
+
+    const mixed = inspectTokenSymbol("\u{A4A4}5DT").find((f) => f.issue === "mixed-scripts");
+    expect(mixed?.evidence["scripts"]).toEqual(["Latin", "another alphabet"]);
+    expect(mixed?.message).toContain("mixes Latin and another alphabet.");
+  });
+
+  it("treats digits as belonging to no alphabet, so a one-letter swap cannot hide behind one", () => {
+    // Cyrillic \u0414\u0422 and an ASCII digit. If the digit counted as Latin this would read as a mix.
+    expect(restrictionLevel("\u0414\u04225")).toBe("single-script");
+  });
+
+  it("does not invent a second alphabet out of an accented Latin letter", () => {
+    expect(restrictionLevel("CAF\u00C9")).toBe("single-script");
+    expect(inspectTokenSymbol("CAF\u00C9").map((f) => f.issue)).not.toContain("mixed-scripts");
+  });
+
+  it("says nothing about alphabets on account of a character nobody can see", () => {
+    // `U+17B4` is Script=Khmer, so a naive count calls this a mix. It is padding, and the
+    // `invisible-characters` finding is the one that should speak.
+    const issues = inspectTokenSymbol("US\u{17B4}DT").map((f) => f.issue);
+
+    expect(issues).toContain("invisible-characters");
+    expect(issues).not.toContain("mixed-scripts");
+  });
+
+  /**
+   * The documented limit, pinned rather than left to be rediscovered: two scripts this module
+   * cannot name share one bucket, so the level understates. The standard would say unrestricted.
+   * Nothing is missed by it \u2014 the ASCII-Only rule fires on the same symbol, which is the rule
+   * that does the work.
+   */
+  it("understates the level when two unnamed alphabets meet, and flags the symbol regardless", () => {
+    const yiAndLisu = "\u{A4A4}\u{A4F4}";
+
+    expect(restrictionLevel(yiAndLisu)).toBe("single-script");
+    expect(inspectTokenSymbol(yiAndLisu).map((f) => f.issue)).toContain("non-ascii-symbol");
   });
 });
