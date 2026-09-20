@@ -42,6 +42,10 @@ jobs:
 
       # `forge build` runs the linter too; `--deny warnings` makes an unreviewed warning fail the
       # build rather than scroll past. Every suppression in the tree carries a written reason.
+      #
+      # This also has to run *before* the Slither step below, which is not obvious: `forge build`
+      # is what makes solc 0.8.28 present on the runner. Slither would otherwise go looking for a
+      # compiler the project never fetched.
       - name: Build and lint
         run: forge build --deny warnings
         working-directory: contracts
