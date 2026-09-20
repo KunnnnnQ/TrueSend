@@ -197,7 +197,7 @@ describe("isPlainSymbol", () => {
  * The rules here were arrived at by being wrong three times and then turned out to be a published
  * standard. These check the alignment is real rather than a claim in a comment.
  *
- * UTS #39, Unicode Security Mechanisms, v17.0.0 (2025-09-04).
+ * UTS #39, Unicode Security Mechanisms, revision 34 (2026-08-27).
  */
 describe("alignment with UTS #39", () => {
   it("reports the restriction level a reader can check against the standard", () => {

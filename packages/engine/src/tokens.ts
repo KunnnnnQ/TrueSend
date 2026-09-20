@@ -36,7 +36,7 @@ import {normalizeAddress, type Address} from "./address.js";
  *
  * The first rule was arrived at here by being wrong three times, and then turned out to be a
  * standard. "All characters in the string are in the ASCII range" is the **ASCII-Only restriction
- * level** of Unicode Technical Standard #39, *Unicode Security Mechanisms* (v17.0.0, 2025-09-04),
+ * level** of Unicode Technical Standard #39, *Unicode Security Mechanisms* (revision 34, 2026-08-27),
  * and the mixed-script rule below is roughly the negation of its **Single Script** level. Using
  * the standard's vocabulary is not decoration: it means a reader can check this against a
  * maintained specification rather than against one author's judgement.

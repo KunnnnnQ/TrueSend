@@ -97,6 +97,14 @@ entry. Not a fringe technique — the default state of the ledger.
 *planter* rather than on each disposable lookalike would cover most of the attack surface with a
 handful of entries.
 
+> Found here first, and then found to be known. Guan and Li (ACM CCS 2024) report that *"98% of
+> phishing addresses are controlled by four entities, which collected nearly 92% of the total
+> profits"* over Nov 2022 – Feb 2024. Their figure counts clustered *entities* across fifteen
+> months; this one counts *addresses* in a four-hour window, so the numbers are not comparable and
+> are not being compared. The shape is the same, and a peer-reviewed measurement over fifteen
+> months is better evidence for the registry design than four hours of mine. See
+> [`docs/prior-work.md`](../docs/prior-work.md).
+
 ## Detection rates
 
 Scored over the 750 committed rows, with the fixed engine:
