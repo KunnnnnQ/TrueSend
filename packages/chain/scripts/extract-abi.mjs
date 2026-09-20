@@ -21,6 +21,7 @@ const WANTED = [
   ["SafeVault.sol", "SafeVault.json", "safeVaultAbi"],
   ["GuardedAccount.sol", "GuardedAccount.json", "guardedAccountAbi"],
   ["SafeVaultFactory.sol", "SafeVaultFactory.json", "safeVaultFactoryAbi"],
+  ["PoisonRegistry.sol", "PoisonRegistry.json", "poisonRegistryAbi"],
 ];
 
 await mkdir(target, {recursive: true});

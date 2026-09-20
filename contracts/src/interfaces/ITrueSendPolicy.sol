@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.30;
+pragma solidity 0.8.28;
 
 /// @title ITrueSendPolicy
 /// @notice Events and errors shared by every TrueSend policy holder.

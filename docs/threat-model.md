@@ -76,6 +76,8 @@ quietly when they are.
 | A fabricated outgoing payment planted in the history | `spoofed-outgoing-transfer`, the highest-weighted rule and the only one that is a fact rather than an inference | `risk.test.ts`, `analysis/src/evaluate-engine.mjs` |
 | A token contract impersonating the native currency | `impersonates-native-asset` | `tokens.test.ts` |
 | A recipient contract reentering during settlement | Transient-storage reentrancy guard | `test_reentrantRecipientCannotReplayATransfer` |
+| A false report in the community registry | The resolver proves a lookalike claim on chain and rejects it outright when it fails | `test_lookalikeReportIsRejectedWhenTheAddressesDoNotCollide` |
+| The registry being used to grief a legitimate address | Reports alone are capped one point below `danger`, however many reporters | `never reaches danger on reports alone` |
 
 The strongest single statement is the invariant: across arbitrary orderings of sends, cancels,
 trust changes, cooldown changes and waiting, **every wei that left the vault either went to a
@@ -130,6 +132,18 @@ fact. An indexer that believes logs reports the fabrication as a genuine payment
 then has nothing to go on: replayed against the WBTC case, it scores `safe` with no findings at
 all. `AddressSighting.spoofedOutgoingCount` is a required field precisely so that this cannot be
 skipped by accident, but a wrong value silently disarms the strongest rule in the set.
+
+### The registry cannot be trusted, only weighted
+
+Attesting is permissionless, and sybils are cheap. A `Planter` report cannot be proved on chain at
+all — no resolver can re-execute a past transaction to check that an address emitted a fabricated
+log. So the registry publishes counts and verification status and decides nothing, and the scoring
+holds any number of reports below the danger threshold unless something else corroborates them.
+
+That is a real limit on how useful the registry can be, not a formality. Lifting it needs identity
+or cost behind a report — a slashable stake, or reporters who are themselves attested — and
+neither exists here. `docs/registry.md` says which half of the registry needs no trust and which
+half needs all of it.
 
 ### Heuristics are evadable
 

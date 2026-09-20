@@ -82,6 +82,13 @@ hold the account hostage.
 recipient is held regardless of what the engine thinks. The score changes what the user is *told*,
 never what the contract *allows*.
 
+**The registry reports the planter, not the lookalike.** Measured: 5,665 disposable lookalike
+addresses in four hours, planted by 18 addresses, one of them responsible for 86%. A registry of
+lookalikes needs thousands of entries a day; a registry of planters needs a handful. And because
+attesting is permissionless, no number of reports can reach "do not send" on its own — a registry
+that could condemn an address by itself would be a griefing tool aimed at the people this protects.
+[`docs/registry.md`](docs/registry.md).
+
 **One signal needs nothing remembered.** When someone reads their own transaction list, the
 planted address and the one it imitates are both on the screen. The extension outlines them where
 they sit, in the list, next to each other — no history, no network, no guess about intent. Asking
@@ -107,8 +114,8 @@ similarity rule scored it zero. Measured: `safe` (0) before, `danger` (71) after
 
 | Component | State |
 | --- | --- |
-| `contracts/` — policy, 7702 delegate, vault, factory | Built. 53 tests: unit, fuzz, invariant. 92.8% lines, 64.6% branches |
-| `packages/engine/` — fingerprints, heuristics, scoring | Built. 80 tests including property tests |
+| `contracts/` — policy, 7702 delegate, vault, factory, community registry | Built. 70 tests: unit, fuzz, invariant |
+| `packages/engine/` — fingerprints, heuristics, scoring | Built. 88 tests including property tests |
 | `packages/chain/` — history with signer resolution, policy reads | Built. Shared by the app and the indexer |
 | `apps/web/` — Scan, Send, Pending | Built. Scan reads mainnet directly and resolves signers; Send and Pending drive a deployed policy |
 | `apps/indexer/` — hold watcher, alerts, risk API | Built. 17 tests on alert idempotency and resume |
@@ -164,7 +171,7 @@ apps/extension/     Copy and paste guard. Outlines addresses on a page that rend
 apps/indexer/       Watches for holds, tells the owner and the guardian, serves risk queries
 packages/chain/     Reading history and policy state. One implementation of "check the signer"
 analysis/           Replaying the detectors against real cases
-docs/               architecture.md, threat-model.md
+docs/               architecture.md, threat-model.md, registry.md
 ```
 
 ## License

@@ -33,6 +33,19 @@ export {
   type TransferQueuedEvent,
 } from "./policy.js";
 
-export {guardedAccountAbi, safeVaultAbi, safeVaultFactoryAbi} from "./abi/index.js";
+export {
+  EAS_DEPLOYMENTS,
+  REPORT_ROLE,
+  isLookalikeOnChain,
+  readReport,
+  readReports,
+} from "./registry.js";
+
+export {
+  guardedAccountAbi,
+  poisonRegistryAbi,
+  safeVaultAbi,
+  safeVaultFactoryAbi,
+} from "./abi/index.js";
 /** Both modes inherit one `GuardedBase`, so every policy call has the same signature on each. */
 export {safeVaultAbi as policyAbi} from "./abi/index.js";

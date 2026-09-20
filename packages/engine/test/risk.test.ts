@@ -3,6 +3,7 @@ import {describe, expect, it} from "vitest";
 
 import {normalizeAddress} from "../src/address.js";
 import {
+  COMMUNITY_CAP,
   THRESHOLDS,
   WEIGHTS,
   assessAddress,
@@ -10,7 +11,7 @@ import {
   levelFor,
   nearestLookalike,
 } from "../src/risk.js";
-import type {AddressSighting} from "../src/types.js";
+import type {AddressSighting, PoisonReport} from "../src/types.js";
 
 const HOUR = 3600;
 const NOW = 1_770_000_000;
@@ -252,5 +253,110 @@ describe("fabricated outgoing records", () => {
 
     expect(result.level).toBe("safe");
     expect(result.score).toBe(0);
+  });
+});
+
+/**
+ * The registry is permissionless, which it has to be. That also makes it a weapon pointed at the
+ * people this project protects, unless the scoring refuses to let it be one.
+ */
+describe("community reports", () => {
+  const report = (over: Partial<PoisonReport> = {}): PoisonReport => ({
+    suspect: normalizeAddress(BOB),
+    role: "planter",
+    verified: false,
+    reporters: 1,
+    ...over,
+  });
+
+  it("raises a caution on a single unchecked report, not an alarm", () => {
+    const result = assessAddress({to: BOB, reports: [report()], now: NOW});
+
+    expect(result.level).toBe("caution");
+    expect(result.findings.map((f) => f.code)).toContain("community-reported");
+  });
+
+  it("weighs a report the registry proved above one it could not", () => {
+    const unchecked = assessAddress({to: BOB, reports: [report()], now: NOW}).score;
+    const proven = assessAddress({
+      to: BOB,
+      reports: [report({role: "lookalike", verified: true, imitating: normalizeAddress(ALICE)})],
+      now: NOW,
+    }).score;
+
+    expect(proven).toBeGreaterThan(unchecked);
+  });
+
+  it("says how many people said it, and whether anything checked", () => {
+    const finding = assessAddress({
+      to: BOB,
+      reports: [report({reporters: 4})],
+      now: NOW,
+    }).findings.find((f) => f.code === "community-reported");
+
+    expect(finding?.message).toContain("4 people");
+    expect(finding?.message).toContain("lead rather than a verdict");
+    expect(finding?.evidence["verified"]).toBe(false);
+  });
+
+  /**
+   * The line that matters. A hundred "independent" reporters costs a hundred fresh addresses, so
+   * no count can be allowed to condemn an address by itself — only to raise a caution, and to tip
+   * something already suspicious over.
+   */
+  it("never reaches danger on reports alone, however many there are", () => {
+    for (const reporters of [1, 2, 5, 20, 1_000, 1_000_000]) {
+      for (const verified of [false, true]) {
+        const result = assessAddress({
+          to: BOB,
+          reports: [report({reporters, verified})],
+          now: NOW,
+        });
+
+        expect(result.level, `${reporters} reporters, verified=${verified}`).not.toBe("danger");
+        expect(result.score).toBeLessThan(THRESHOLDS.danger);
+      }
+    }
+  });
+
+  it("caps the contribution one point below the danger threshold", () => {
+    const finding = assessAddress({
+      to: BOB,
+      reports: [report({reporters: 10_000, verified: true})],
+      now: NOW,
+    }).findings.find((f) => f.code === "community-reported");
+
+    expect(finding?.weight).toBe(COMMUNITY_CAP);
+    expect(COMMUNITY_CAP).toBe(THRESHOLDS.danger - 1);
+  });
+
+  /** It still has to be able to push a real case over the line. */
+  it("tips an address that is already suspicious into danger", () => {
+    const fabricated = sighting({address: BOB, spoofedOutgoingCount: 0, dustIncoming: 2});
+    const withoutReports = assessAddress({to: BOB, history: [fabricated], now: NOW});
+    const withReports = assessAddress({
+      to: BOB,
+      history: [fabricated],
+      reports: [report({reporters: 6, verified: true, role: "lookalike"})],
+      now: NOW,
+    });
+
+    expect(withoutReports.level).toBe("caution");
+    expect(withReports.level).toBe("danger");
+  });
+
+  it("ignores a report about a different address", () => {
+    const result = assessAddress({
+      to: BOB,
+      reports: [report({suspect: normalizeAddress(ALICE)})],
+      now: NOW,
+    });
+
+    expect(result.findings.map((f) => f.code)).not.toContain("community-reported");
+  });
+
+  it("ignores a report nobody actually made", () => {
+    const result = assessAddress({to: BOB, reports: [report({reporters: 0})], now: NOW});
+    expect(result.findings.map((f) => f.code)).not.toContain("community-reported");
   });
 });

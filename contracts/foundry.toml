@@ -5,8 +5,11 @@ test = "test"
 script = "script"
 libs = ["lib"]
 
-solc = "0.8.30"
-# EIP-7702 (set-code transactions) requires Prague or later.
+# Pinned to 0.8.28 because the EAS contracts pin exactly that, and a test that drives the real
+# EAS has to compile in one unit with it. Pinning the whole project rather than letting versions
+# drift per file means the bytecode the tests exercise is the bytecode that gets deployed.
+solc = "0.8.28"
+# EIP-7702 (set-code transactions) requires Prague or later, which 0.8.28 supports.
 evm_version = "prague"
 optimizer = true
 optimizer_runs = 200

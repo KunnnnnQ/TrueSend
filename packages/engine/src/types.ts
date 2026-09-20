@@ -51,11 +51,37 @@ export interface AddressSighting {
   lastSeenAt: number;
 }
 
-/** An address someone has publicly attested is impersonating another one. */
+/**
+ * What the community registry says about an address.
+ *
+ * Folded from the on-chain attestations rather than passed through one at a time: what matters is
+ * how many *distinct* reporters said something and whether the registry could prove it, not how
+ * many attestations exist. One address can make as many as it likes.
+ */
 export interface PoisonReport {
   suspect: Address;
-  /** The address the suspect appears to be imitating, when the reporter named one. */
+  /**
+   * What the reporters say it is.
+   *
+   * `planter` signs the transactions that fabricate records in other people's histories, and is
+   * the high-leverage subject: 18 of them accounted for every fabrication in a sampled window,
+   * against 5,665 disposable lookalike addresses. `lookalike` is the report a victim can make
+   * about their own case without knowing who planted anything.
+   */
+  role: "planter" | "lookalike";
+  /** The address it imitates. Only ever present on a `lookalike` report. */
   imitating?: Address;
+  /**
+   * Whether the registry's resolver proved the claim on chain.
+   *
+   * Only a `lookalike` report can be: two addresses either share the characters a wallet shows or
+   * they do not, and `PoisonRegistry` rejects the attestation outright when they do not. A
+   * `planter` claim would need a past transaction re-executed, which no contract can do, so those
+   * arrive unproven and are weighted as such.
+   */
+  verified: boolean;
+  /** Distinct addresses that reported it. Weighted, never trusted — sybils are free. */
+  reporters: number;
   /** Attestation uid, so the UI can link out to the evidence rather than ask for trust. */
   uid?: string;
   reportedAt?: number;

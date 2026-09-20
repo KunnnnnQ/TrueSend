@@ -1,6 +1,13 @@
 import {normalizeAddress, toChecksumAddress, type Address} from "./address.js";
 import {fingerprint, sharedPrefixLength, sharedSuffixLength} from "./fingerprint.js";
-import type {AddressSighting, Finding, RiskAssessment, RiskInput, RiskLevel} from "./types.js";
+import type {
+  AddressSighting,
+  Finding,
+  FindingCode,
+  RiskAssessment,
+  RiskInput,
+  RiskLevel,
+} from "./types.js";
 
 /**
  * How many leading and trailing hex characters have to match before two addresses count as
@@ -55,7 +62,20 @@ export const WEIGHTS = {
   appearedRightAfterPayment: 25,
   zeroValueInbound: 25,
   dustInbound: 12,
-  communityReported: 45,
+  /**
+   * A report the registry proved: the two addresses really do share the characters a wallet
+   * shows. Weighted below the engine's own lookalike rule because that one fires against an
+   * address the *user* has actually paid, while this is a stranger's claim about an address the
+   * user may never have seen.
+   */
+  communityVerified: 25,
+  /**
+   * A report nothing could check. Set so that a single one, on an address with no other history,
+   * lands exactly on `caution` — visible rather than silent, and nowhere near a verdict.
+   */
+  communityUnverified: 14,
+  /** Added per reporter beyond the first, up to `COMMUNITY_CAP`. */
+  communityPerExtraReporter: 4,
   neverPaidBefore: 6,
   noHistoryAtAll: 4,
 } as const;
@@ -69,6 +89,22 @@ export const WEIGHTS = {
  * nobody.
  */
 export const THRESHOLDS = {danger: 45, caution: 18} as const;
+
+/**
+ * The most a community report can ever contribute, deliberately one point below `danger`.
+ *
+ * Attesting is permissionless, which it has to be for the registry to be worth having — and which
+ * means anybody can report anybody, and a hundred "independent" reporters costs a hundred fresh
+ * addresses. So no number of reports, from any number of reporters, can produce a "do not send"
+ * verdict on its own. They raise a caution, and they can tip something already suspicious over
+ * the line. A registry that could condemn an address by itself would be a griefing tool pointed
+ * at exactly the people this project is meant to protect.
+ *
+ * What would lift this cap is identity or cost behind a report — a stake that can be slashed, or
+ * attestations from reporters who are themselves attested. Neither exists yet, so neither is
+ * assumed. `test_communityReportsAloneNeverReachDanger` holds the line.
+ */
+export const COMMUNITY_CAP = THRESHOLDS.danger - 1;
 
 export function levelFor(score: number): RiskLevel {
   if (score >= THRESHOLDS.danger) return "danger";
@@ -182,15 +218,36 @@ export function assessAddress(input: RiskInput): RiskAssessment {
   }
 
   const report = (input.reports ?? []).find((r) => normalizeAddress(r.suspect) === to);
-  if (report) {
+  if (report && report.reporters > 0) {
+    const base = report.verified ? WEIGHTS.communityVerified : WEIGHTS.communityUnverified;
+    const weight = Math.min(
+      COMMUNITY_CAP,
+      base + (report.reporters - 1) * WEIGHTS.communityPerExtraReporter,
+    );
+
+    const who = plural(report.reporters, "person", "people");
+    const message = report.verified
+      ? `${who} reported this address for imitating ` +
+        `${report.imitating ? toChecksumAddress(report.imitating) : "another one"}, and the ` +
+        `registry checked it: the two really do share the characters a wallet shows.`
+      : report.role === "planter"
+        ? `${who} reported this address for planting fabricated payment records in other ` +
+          `people's histories. Nothing on chain can prove that, so treat it as a lead rather ` +
+          `than a verdict.`
+        : `${who} reported this address for impersonation. The claim has not been checked.`;
+
     findings.push({
       code: "community-reported",
-      weight: WEIGHTS.communityReported,
-      message: report.imitating
-        ? `Someone has publicly attested that this address is impersonating ` +
-          `${toChecksumAddress(report.imitating)}.`
-        : `Someone has publicly attested that this address is used for impersonation.`,
-      evidence: {uid: report.uid, imitating: report.imitating, reportedAt: report.reportedAt},
+      weight,
+      message,
+      evidence: {
+        role: report.role,
+        verified: report.verified,
+        reporters: report.reporters,
+        uid: report.uid,
+        imitating: report.imitating,
+        reportedAt: report.reportedAt,
+      },
     });
   }
 
@@ -213,10 +270,7 @@ export function assessAddress(input: RiskInput): RiskAssessment {
   }
 
   findings.sort((a, b) => b.weight - a.weight);
-  const score = Math.min(
-    100,
-    findings.reduce((sum, f) => sum + f.weight, 0),
-  );
+  const score = scoreOf(findings);
 
   const assessment: RiskAssessment = {
     address: toChecksumAddress(to),
@@ -242,6 +296,39 @@ export function assessAddress(input: RiskInput): RiskAssessment {
   void now;
 
   return assessment;
+}
+
+/**
+ * Findings that describe the absence of information rather than the presence of a problem.
+ *
+ * Every address a user has not paid before carries one, so they are the floor, not a signal.
+ */
+const BASELINE_CODES = new Set<FindingCode>(["no-history-at-all", "never-paid-before"]);
+
+/**
+ * Sum the findings, holding the community cap over the *combination* rather than one finding.
+ *
+ * Capping the report's own weight is not enough: a brand-new address also carries
+ * `no-history-at-all`, and report-plus-baseline would clear the danger threshold between them.
+ * Since "never seen before" is the default state of every address a user has not paid, that would
+ * mean a handful of attestations could condemn any address at all — which is the griefing this
+ * cap exists to prevent.
+ *
+ * So when nothing but reports and baseline findings are present, the total is held below danger.
+ * Any genuine signal alongside them — a lookalike, a fabricated record, an empty transfer — lifts
+ * the cap, because then the reports are corroborating something rather than standing alone.
+ */
+function scoreOf(findings: readonly Finding[]): number {
+  const total = Math.min(
+    100,
+    findings.reduce((sum, finding) => sum + finding.weight, 0),
+  );
+
+  const onlyReportsAndBaseline = findings.every(
+    (finding) => finding.code === "community-reported" || BASELINE_CODES.has(finding.code),
+  );
+
+  return onlyReportsAndBaseline ? Math.min(total, COMMUNITY_CAP) : total;
 }
 
 interface Lookalike {
@@ -295,8 +382,8 @@ function describeGap(seconds: number): string {
   return `${Math.round(seconds / 3600)} hours`;
 }
 
-function plural(n: number, noun: string): string {
-  return n === 1 ? `1 ${noun}` : `${n} ${noun}s`;
+function plural(n: number, noun: string, plural?: string): string {
+  return n === 1 ? `1 ${noun}` : `${n} ${plural ?? `${noun}s`}`;
 }
 
 export type {Address};

@@ -40,6 +40,7 @@ export {
 } from "./history.js";
 
 export {
+  COMMUNITY_CAP,
   MIN_AFFIX_MATCH,
   RECENT_PAYMENT_WINDOW_SECONDS,
   THRESHOLDS,

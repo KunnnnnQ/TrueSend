@@ -2,3 +2,4 @@
 export {safeVaultAbi} from "./safeVaultAbi.js";
 export {guardedAccountAbi} from "./guardedAccountAbi.js";
 export {safeVaultFactoryAbi} from "./safeVaultFactoryAbi.js";
+export {poisonRegistryAbi} from "./poisonRegistryAbi.js";

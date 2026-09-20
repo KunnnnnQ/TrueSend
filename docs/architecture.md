@@ -37,6 +37,8 @@ decision.
 ├──────────────────────────────────────────────────────────────────────┤
 │ GuardedAccount (EIP-7702)      SafeVault (custodial)                 │
 │              └── GuardedBase ── PolicyLib ──┘                        │
+│ PoisonRegistry — an EAS resolver. Proves what it can, counts the     │
+│                  rest, and decides nothing.                          │
 └──────────────────────────────────────────────────────────────────────┘
 ```
 

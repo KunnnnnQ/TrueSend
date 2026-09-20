@@ -15,10 +15,14 @@ coverage/
 # ---- foundry ----
 contracts/out/
 contracts/cache/
+# Left behind when forge is run from the repo root rather than from contracts/.
+/cache/
+/out/
 contracts/broadcast/
 # Local chain addresses are deterministic and meaningless off this machine; a real deployment's
 # address book is committed so the app can read it.
 contracts/deployments/31337.json
+contracts/deployments/registry-31337.json
 contracts/.gas-snapshot.tmp
 
 # ---- env & secrets ----
