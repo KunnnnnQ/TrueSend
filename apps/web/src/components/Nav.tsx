@@ -12,6 +12,7 @@ const TABS = [
   {href: "/", label: "Scan"},
   {href: "/send", label: "Send"},
   {href: "/pending", label: "Pending"},
+  {href: "/report", label: "Report"},
 ];
 
 export function Nav() {

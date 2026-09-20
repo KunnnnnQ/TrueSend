@@ -1,6 +1,11 @@
 "use client";
 
-import {compareFingerprints, type RiskAssessment, type RiskLevel} from "@truesend/engine";
+import {
+  compareFingerprints,
+  type PoisonReport,
+  type RiskAssessment,
+  type RiskLevel,
+} from "@truesend/engine";
 
 import {AddressCard} from "./Fingerprint";
 
@@ -53,6 +58,63 @@ export function Findings({assessment}: {assessment: RiskAssessment}) {
         </li>
       ))}
     </ul>
+  );
+}
+
+/**
+ * A report, shown as a report.
+ *
+ * Two rules from `docs/registry.md` decide the wording. Attesting is permissionless, so this can
+ * never read as a verdict — it says who said it and whether anything checked it. And a planter
+ * report is unprovable by construction, so it never gets a badge that could be mistaken for proof.
+ *
+ * Lives here rather than on one screen because Scan and Send have to say the same thing about the
+ * same attestation; a second copy of this paragraph is a second place for the wording to drift,
+ * and the whole point of the sentence is that it is precise about what was and was not checked.
+ */
+export function ReportLine({report}: {report: PoisonReport}) {
+  const who = report.reporters === 1 ? "1 reporter" : `${report.reporters} reporters`;
+
+  return (
+    <div
+      className={`rounded-md border px-3 py-2.5 text-sm leading-relaxed ${
+        report.verified ? "border-caution/25 bg-caution/8" : "border-line bg-ink"
+      }`}
+    >
+      <span className={report.verified ? "text-caution" : "text-muted"}>
+        {who} reported this address{" "}
+        {report.role === "planter"
+          ? "for signing transactions that plant fabricated payment records."
+          : "for imitating another address."}
+      </span>
+      <span className="mt-1 block text-xs text-faint">
+        {report.verified
+          ? "The registry checked the lookalike claim on chain and it held: the two addresses really do share the characters a wallet shows."
+          : "Nothing on chain can verify this. The resolver records who said it and counts distinct reporters; it does not pretend to have proved anything."}{" "}
+        Any number of reports, from any number of reporters, is capped below the level that stops a
+        payment.
+      </span>
+    </div>
+  );
+}
+
+export function ReportChip({report}: {report: PoisonReport}) {
+  return (
+    <span
+      className={`shrink-0 rounded-full border px-2.5 py-1 text-xs font-medium ${
+        report.verified
+          ? "border-caution/30 bg-caution/12 text-caution"
+          : "border-line bg-ink text-muted"
+      }`}
+      title={
+        report.verified
+          ? "Reported, and the lookalike claim was proved on chain"
+          : "Reported, and nothing on chain could check it"
+      }
+    >
+      reported
+      <span className="tabular ml-1.5 opacity-60">{report.reporters}</span>
+    </span>
   );
 }
 

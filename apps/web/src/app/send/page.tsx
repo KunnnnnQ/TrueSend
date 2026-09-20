@@ -6,9 +6,10 @@ import {useAccount, useReadContract, useWaitForTransactionReceipt, useWriteContr
 
 import {assessAddress, checkAddressFormat} from "@truesend/engine";
 
-import {Findings, LookalikeComparison, RiskChip} from "@/components/Risk";
+import {Findings, LookalikeComparison, ReportLine, RiskChip} from "@/components/Risk";
 import {PolicyBar} from "@/components/PolicyBar";
 import {NATIVE, humaniseDuration, policyAbi, usePolicy, usePolicyTarget} from "@/lib/policy";
+import {registryFor, useReports} from "@/lib/registry";
 import {useLastScan} from "@/lib/scanStore";
 
 export default function SendPage() {
@@ -63,12 +64,33 @@ export default function SendPage() {
    * from the screen that found it to the screen that spends.
    */
   const lastScan = useLastScan();
+
+  /**
+   * Community reports for this one recipient.
+   *
+   * Handed to `assessAddress` rather than shown beside its verdict, because a report *is* one of
+   * the engine's findings — it has a weight, a sentence and a place in the ordering, and the
+   * scoring's cap on reports is applied across the combination rather than to this finding alone.
+   * Re-implementing that here to display it separately would be a second implementation of the
+   * rule that keeps a permissionless registry from condemning an address by itself.
+   *
+   * `registryFor` is undefined on every public chain today, so in practice this contributes
+   * nothing and the screen behaves exactly as it did before the registry existed.
+   */
+  const registry = registryFor(chainId);
+  const {reports} = useReports(registry, recipient ? [recipient] : [], chainId);
+  const report = reports[0];
+
   const assessment = useMemo(
     () =>
       recipient
-        ? assessAddress({to: recipient, ...(lastScan ? {history: lastScan.history} : {})})
+        ? assessAddress({
+            to: recipient,
+            ...(lastScan ? {history: lastScan.history} : {}),
+            ...(reports.length > 0 ? {reports} : {}),
+          })
         : undefined,
-    [recipient, lastScan],
+    [recipient, lastScan, reports],
   );
 
   const {writeContract, data: txHash, isPending, error: writeError} = useWriteContract();
@@ -240,6 +262,7 @@ export default function SendPage() {
                 </p>
               )}
               <Findings assessment={assessment} />
+              {report ? <ReportLine report={report} /> : null}
               <LookalikeComparison assessment={assessment} />
             </div>
           ) : (

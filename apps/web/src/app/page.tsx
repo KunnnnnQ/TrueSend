@@ -6,11 +6,12 @@ import {mainnet} from "wagmi/chains";
 import {useAccount, usePublicClient} from "wagmi";
 
 import {createChainClient, scanHistory, type ScanProgress, type ScanResult} from "@truesend/chain";
-import {assessAddress, type RiskAssessment} from "@truesend/engine";
+import {assessAddress, type PoisonReport, type RiskAssessment} from "@truesend/engine";
 
 import {AddressCard} from "@/components/Fingerprint";
-import {Findings, LookalikeComparison, RiskChip} from "@/components/Risk";
+import {Findings, LookalikeComparison, ReportChip, ReportLine, RiskChip} from "@/components/Risk";
 import {HISTORY_RPC, KNOWN_TOKENS} from "@/lib/chains";
+import {registryFor, useReports} from "@/lib/registry";
 import {saveScan} from "@/lib/scanStore";
 
 /**
@@ -115,6 +116,29 @@ export default function ScanPage() {
       .sort((a, b) => b.score - a.score);
   }, [result]);
 
+  /**
+   * What the community registry says about these counterparties, when one is configured.
+   *
+   * Kept beside the engine's verdict rather than folded into it, deliberately. The score is the
+   * engine's own opinion of the user's history; a report is somebody else's claim. Running them
+   * through the same number and printing one figure would hide which of the two moved it — and
+   * `docs/registry.md` is explicit that reports alone are capped below `danger` for exactly the
+   * reason that they cannot be trusted, only weighted.
+   *
+   * `registryFor` returns undefined on every public chain today, and the hook then does nothing at
+   * all rather than failing: reports are corroboration, never the reason a warning fires.
+   */
+  const counterparties = useMemo(
+    () => assessments.map((a) => a.address),
+    [assessments],
+  );
+  const {reports} = useReports(registryFor(scanChain), counterparties, scanChain);
+  const reportsByAddress = useMemo(() => {
+    const map = new Map<string, PoisonReport>();
+    for (const report of reports) map.set(report.suspect, report);
+    return map;
+  }, [reports]);
+
   const dangerous = assessments.filter((a) => a.level === "danger").length;
   const fabricated = result?.history.filter((e) => e.spoofedOutgoingCount > 0).length ?? 0;
 
@@ -215,6 +239,11 @@ export default function ScanPage() {
                 <span className="tabular">{dangerous}</span> to avoid
               </span>
             ) : null}
+            {reports.length > 0 ? (
+              <span className="text-caution">
+                <span className="tabular">{reports.length}</span> reported to the community registry
+              </span>
+            ) : null}
           </div>
 
           <ul className="space-y-2">
@@ -222,6 +251,9 @@ export default function ScanPage() {
               <Row
                 key={assessment.address}
                 assessment={assessment}
+                {...(reportsByAddress.get(assessment.address.toLowerCase())
+                  ? {report: reportsByAddress.get(assessment.address.toLowerCase())!}
+                  : {})}
                 open={expanded === assessment.address}
                 onToggle={() =>
                   setExpanded((current) =>
@@ -239,10 +271,12 @@ export default function ScanPage() {
 
 function Row({
   assessment,
+  report,
   open,
   onToggle,
 }: {
   assessment: RiskAssessment;
+  report?: PoisonReport;
   open: boolean;
   onToggle: () => void;
 }) {
@@ -263,6 +297,7 @@ function Row({
       >
         <AddressCard address={assessment.address} />
         <div className="ml-auto flex items-center gap-3">
+          {report ? <ReportChip report={report} /> : null}
           <RiskChip level={assessment.level} score={assessment.score} />
           <span aria-hidden className="text-faint">
             {open ? "−" : "+"}
@@ -274,6 +309,7 @@ function Row({
         <div className="space-y-4 border-t border-line px-4 py-4">
           <Findings assessment={assessment} />
           <LookalikeComparison assessment={assessment} />
+          {report ? <ReportLine report={report} /> : null}
         </div>
       ) : null}
     </li>
