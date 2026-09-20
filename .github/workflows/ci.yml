@@ -40,8 +40,10 @@ jobs:
         env:
           FOUNDRY_PROFILE: ci
 
-      - name: Coverage
-        run: forge coverage --no-match-coverage "test|script" --report summary
+      # Floors live in tools/coverage-gate.mjs, set at what the suite achieves rather than at a
+      # round number: the point is to stop a regression, not to hit a target.
+      - name: Coverage floor
+        run: forge coverage --no-match-coverage "test|script" --report summary | node ../tools/coverage-gate.mjs
         working-directory: contracts
 
       # The ABIs are generated from this build and committed, so the app and the indexer stay

@@ -61,10 +61,14 @@ export {
 
 export {
   confusableSkeleton,
+  hasNonAscii,
+  inspectToken,
   inspectTokenSymbol,
   isPlainSymbol,
+  type CanonicalToken,
   type TokenSymbolFinding,
   type TokenSymbolIssue,
+  type TokenToInspect,
 } from "./tokens.js";
 
 export type {

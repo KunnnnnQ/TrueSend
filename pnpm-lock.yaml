@@ -10,6 +10,9 @@ importers:
 
   analysis:
     dependencies:
+      '@truesend/chain':
+        specifier: workspace:*
+        version: link:../packages/chain
       '@truesend/engine':
         specifier: workspace:*
         version: link:../packages/engine

@@ -7,6 +7,7 @@ asserts its claims or fails.
 node src/verify-wbtc-case.mjs    # re-derive the May 2024 WBTC loss from chain
 node src/scan-poisoning.mjs      # measure what is happening right now
 node src/evaluate-engine.mjs     # run the shipped detector over both
+node src/false-positives.mjs     # find out whether it cries wolf
 ```
 
 `evaluate-engine.mjs` imports `@truesend/engine` from its built `dist`, exactly as the web app
@@ -109,12 +110,40 @@ Scored over the 750 committed rows, with the fixed engine:
 The control row matters as much as the first. A tool that flags real payees gets switched off,
 and then it protects nobody.
 
+### 3. The detector had a hole big enough to drive three fake USDTs through
+
+`false-positives.mjs` samples real wallets at random, which turns up whatever they happen to hold.
+Three of the contracts it found were fake USDTs, and the token detector — built around a table of
+Cyrillic and Greek lookalike characters — waved through all three:
+
+| renders as | actually is | what the old rules saw |
+| --- | --- | --- |
+| `USDT` | `U+A4A4` (a Yi radical) + `5DT` | nothing wrong |
+| `USDT` | `U+A4F4` (a Lisu letter) + `S` + `U+17B4` ×2 + `DT` | nothing wrong |
+| `USDT` | plain ASCII `USDT`, at a contract that is not USDT | nothing wrong |
+
+Unicode has about 140,000 characters and an attacker picks from all of them, so a table of the
+ones seen so far is an arms race that loses by default. The rules were replaced with two that
+cover whole classes instead:
+
+- **a real ticker is plain ASCII**, which catches every exotic-script impostor regardless of which
+  script comes next and cannot be evaded by finding a new homoglyph;
+- **a real token's symbol belongs to its own contract**, which catches the third one, whose symbol
+  is spelled perfectly and whose only lie is where it lives.
+
+The narrower homoglyph rules still run, because they name *which* token is being imitated. They
+are no longer what the detection rests on. All three contracts are now regression tests, with
+their real addresses, in `packages/engine/test/tokens.test.ts`.
+
 ## What these numbers are not
 
-- **Not a false-positive rate.** The control set is the genuine payments the planted addresses
-  were imitating — addresses already known to be real. It shows the detector does not fire on an
-  obvious safe case. It does not sample ordinary user behaviour broadly, so it cannot tell you how
-  often a normal person would see a warning.
+- **A false-positive rate now exists** — see above — but it is measured on *active* wallets,
+  sampled from addresses that made a payment in the last few minutes. Active addresses are
+  targeted more than dormant ones, so the warning rate here is an upper bound on what a typical
+  holder would see, not a typical figure.
+- **The control set is not a false-positive rate either.** Those addresses were already known to
+  be real payees, so of course they came back clean. It shows the detector does not fire on an
+  obvious safe case and nothing more.
 - **Not a recall figure.** The 4,234 pairs are the ones where victim, bait and imitated address
   all land inside one 1200-block window on one token. Poisoning where the real payment happened
   earlier, on another token, or in native ETH is invisible to this scan. The true volume is

@@ -228,6 +228,15 @@ contract PoisonRegistryTest is Test {
         _report(reporter, POISONED, PoisonRegistry.Role.Lookalike, address(0), bytes32(0));
     }
 
+    /// @notice An address does not imitate itself, and a report saying it does would add a
+    ///         "verified" mark to a claim with no content.
+    function test_anAddressCannotBeReportedForImitatingItself() public {
+        vm.expectRevert();
+        _report(reporter, POISONED, PoisonRegistry.Role.Lookalike, POISONED, bytes32(0));
+
+        assertEq(registry.tally(POISONED).reports, 0);
+    }
+
     /// @notice Reporting yourself is either a mistake or an attempt to inflate a count.
     function test_reportingYourselfIsRefused() public {
         vm.expectRevert();

@@ -10,9 +10,11 @@
     "scan": "node src/scan-poisoning.mjs",
     "evaluate": "node src/evaluate-engine.mjs",
     "test": "node src/evaluate-engine.mjs --check",
-    "typecheck": "node --check src/rpc.mjs && node --check src/verify-wbtc-case.mjs"
+    "typecheck": "node --check src/rpc.mjs && node --check src/verify-wbtc-case.mjs",
+    "false-positives": "node src/false-positives.mjs"
   },
   "dependencies": {
+    "@truesend/chain": "workspace:*",
     "@truesend/engine": "workspace:*"
   }
 }

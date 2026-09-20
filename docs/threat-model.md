@@ -155,9 +155,10 @@ the engine thinks of it. The score changes what the user is *told*, never what t
 
 ### Not audited
 
-Tested, linted, fuzzed and invariant-checked, but not reviewed by a third party. Branch coverage
-is around 65%, which is the weakest number in the repo and the honest place to point a reviewer
-first.
+Tested, linted, fuzzed and invariant-checked, but not reviewed by a third party. Branch coverage is
+100% and line coverage 95%, which says every guard clause has been shown to refuse something at
+least once — not that the guards are the right ones. Those are different claims and only the first
+is measured here.
 
 ## Assumptions
 

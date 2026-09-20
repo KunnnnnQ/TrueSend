@@ -114,16 +114,22 @@ similarity rule scored it zero. Measured: `safe` (0) before, `danger` (71) after
 
 | Component | State |
 | --- | --- |
-| `contracts/` — policy, 7702 delegate, vault, factory, community registry | Built. 70 tests: unit, fuzz, invariant |
-| `packages/engine/` — fingerprints, heuristics, scoring | Built. 88 tests including property tests |
+| `contracts/` — policy, 7702 delegate, vault, factory, community registry | Built. 94 tests: unit, fuzz, invariant. 100% branch coverage |
+| `packages/engine/` — fingerprints, heuristics, scoring | Built. 98 tests including property tests |
 | `packages/chain/` — history with signer resolution, policy reads | Built. Shared by the app and the indexer |
 | `apps/web/` — Scan, Send, Pending | Built. Scan reads mainnet directly and resolves signers; Send and Pending drive a deployed policy |
 | `apps/indexer/` — hold watcher, alerts, risk API | Built. 17 tests on alert idempotency and resume |
 | `apps/extension/` — copy and paste guard, in-page collision scan | Built. 23 tests |
 | `analysis/` — replay against real mainnet cases | Built. Verifies the 2024 WBTC case from chain, measures live poisoning volume, replays the shipped detector |
 
-Not audited. Branch coverage is the weakest number here and the first place a reviewer should
-look.
+Not audited.
+
+Branch coverage was 64.6% and called out here as the weakest number in the repo. A coverage report
+then named the eighteen untaken branches and **every one of them was an error path** — a policy
+that had never been shown to refuse an uninitialised account, a queue that had never been shown to
+refuse a second cancellation, a cooldown that had never been shown to refuse zero. In a contract
+whose whole job is refusing things, those are the branches that matter most. They are covered now,
+in `contracts/test/PolicyGuards.t.sol`, and branch coverage is 100%.
 
 ## Running it
 
