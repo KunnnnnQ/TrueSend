@@ -97,8 +97,8 @@ similarity rule scored it zero. Measured: `safe` (0) before, `danger` (71) after
 | Component | State |
 | --- | --- |
 | `contracts/` — policy, 7702 delegate, vault, factory | Built. 53 tests: unit, fuzz, invariant. 92.8% lines, 64.6% branches |
-| `packages/engine/` — fingerprints, heuristics, scoring | Built. 48 tests including property tests |
-| `apps/web/` — Scan, Send, Pending, Contacts | Not started |
+| `packages/engine/` — fingerprints, heuristics, scoring | Built. 59 tests including property tests |
+| `apps/web/` — Scan, Send, Pending | Built. Scan reads mainnet directly and resolves signers; Send and Pending drive a deployed policy |
 | `apps/indexer/` — event indexing and risk API | Not started |
 | `apps/extension/` — clipboard guard | Not started |
 | `analysis/` — replay against real mainnet cases | Built. Verifies the 2024 WBTC case from chain, measures live poisoning volume, replays the shipped detector |
@@ -119,6 +119,17 @@ cd contracts && forge test
 corepack pnpm install && corepack pnpm -r test
 ```
 
+The app runs against real mainnet history with nothing deployed — Scan needs only an RPC. There
+is a preset that loads the verified 2024 WBTC case, so the screen has something real to show
+against a wallet that has never been targeted.
+
+```bash
+corepack pnpm --filter @truesend/web dev
+```
+
+Send and Pending need a policy to act on. Nothing is deployed on a public network yet;
+`contracts/deployments/README.md` has the two commands that give you one on a local chain.
+
 Deploying uses a keystore rather than a raw key, and writes an address book the app reads
 directly so no address is ever transcribed by hand:
 
@@ -135,7 +146,8 @@ cd contracts && forge script script/Deploy.s.sol --account truesend-deployer --r
 ```
 contracts/          Foundry. PolicyLib + GuardedBase, then GuardedAccount (7702) and SafeVault
 packages/engine/    Pure TypeScript. Runs identically in the app, the extension and the API
-apps/web/           Next.js
+apps/web/           Next.js. Scan reads history and checks signers; Send quotes before you sign;
+                    Pending counts down against chain time and cancels
 apps/extension/     Clipboard guard
 apps/indexer/       Event indexing + risk API
 analysis/           Replaying the detectors against real cases

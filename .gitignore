@@ -16,6 +16,9 @@ coverage/
 contracts/out/
 contracts/cache/
 contracts/broadcast/
+# Local chain addresses are deterministic and meaningless off this machine; a real deployment's
+# address book is committed so the app can read it.
+contracts/deployments/31337.json
 contracts/.gas-snapshot.tmp
 
 # ---- env & secrets ----

@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+/*
+ * Two ideas carry the whole visual language.
+ *
+ * Verdicts get colour and nothing else does, so a red row means one thing and cannot be confused
+ * with decoration. And addresses are always rendered in the same three-part shape — glyph, short
+ * hex, fingerprint phrase — so the eye learns one comparison and reuses it on every screen.
+ */
+@theme {
+  --color-ink: #05070c;
+  --color-surface: #0b0f18;
+  --color-raised: #121826;
+  --color-line: #1e2636;
+  --color-line-strong: #2b3549;
+
+  --color-text: #e8ecf4;
+  --color-muted: #8b97ad;
+  --color-faint: #5b6679;
+
+  --color-safe: #35c88a;
+  --color-caution: #e8a838;
+  --color-danger: #f2555a;
+  --color-accent: #6ea8fe;
+
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Menlo, monospace;
+}
+
+html,
+body {
+  background: var(--color-ink);
+  color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+/* Addresses, phrases and amounts are all compared character by character. */
+.tabular {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

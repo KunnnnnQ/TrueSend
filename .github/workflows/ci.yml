@@ -44,6 +44,14 @@ jobs:
         run: forge coverage --no-match-coverage "test|script" --report summary
         working-directory: contracts
 
+      # The web app's ABIs are generated from this build and committed, so the app stays
+      # buildable without Foundry installed. Regenerating here catches the case where a contract
+      # signature changed and the checked-in copy was left behind.
+      - name: ABIs are current
+        run: |
+          node apps/web/scripts/extract-abi.mjs
+          git diff --exit-code -- apps/web/src/abi
+
   engine:
     name: engine
     runs-on: ubuntu-latest
@@ -68,6 +76,8 @@ jobs:
 
       - name: Build
         run: pnpm -r build
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
 
       # Replays the detector over the committed mainnet sample and fails if the headline
       # detection rates regress. Reads data/, never the network, so CI needs no RPC.

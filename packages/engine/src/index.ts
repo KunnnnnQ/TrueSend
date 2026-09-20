@@ -32,6 +32,12 @@ export {
 } from "./fingerprint.js";
 
 export {
+  counterparties,
+  foldHistory,
+  type TransferRecord,
+} from "./history.js";
+
+export {
   MIN_AFFIX_MATCH,
   RECENT_PAYMENT_WINDOW_SECONDS,
   THRESHOLDS,
