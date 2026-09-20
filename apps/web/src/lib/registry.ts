@@ -314,16 +314,18 @@ export function useReport(registry: Address | undefined, subject: Address | unde
 }
 
 /**
- * The same read for a whole list of addresses, in one round trip.
+ * The same read for a whole list of addresses, in one hook.
  *
  * Scan has a counterparty list already; asking for them one at a time would be a request per row
- * for numbers the scoring only ever uses as a tiebreaker next to the real signal. `multicall`
- * batches them, and an address that has never been reported costs one entry in the same call.
+ * for numbers the scoring only ever uses beside the real signal. `useReadContracts` batches where
+ * the chain has Multicall3 and fans out where it does not — so this is one *hook* rather than one
+ * round trip, and the difference is not worth claiming either way. Each entry reports its own
+ * success, and a failed one is skipped rather than failing the batch.
  *
  * Failing soft is the point of the `enabled` guard: with no registry configured — which is every
- * public network today — this must return an empty map rather than an error, because a screen that
- * cannot read a registry it knows is absent should behave exactly as it did before the registry
- * existed. Reports are corroboration, never the reason a warning fires.
+ * public network today — this must return an empty list rather than an error, because a screen
+ * that cannot read a registry it knows is absent should behave exactly as it did before the
+ * registry existed. Reports are corroboration, never the reason a warning fires.
  */
 export function useReports(
   registry: Address | undefined,
