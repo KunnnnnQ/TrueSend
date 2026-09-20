@@ -1,10 +1,10 @@
 "use client";
 
 import {useMemo, useState} from "react";
-import {isAddress, parseUnits, type Address} from "viem";
+import {parseUnits, type Address} from "viem";
 import {useAccount, useReadContract, useWaitForTransactionReceipt, useWriteContract} from "wagmi";
 
-import {assessAddress} from "@truesend/engine";
+import {assessAddress, checkAddressFormat} from "@truesend/engine";
 
 import {Findings, LookalikeComparison, RiskChip} from "@/components/Risk";
 import {PolicyBar} from "@/components/PolicyBar";
@@ -21,7 +21,8 @@ export default function SendPage() {
   const [decimals, setDecimals] = useState("18");
   const [amount, setAmount] = useState("");
 
-  const recipientValid = isAddress(to.trim());
+  const format = to.trim() ? checkAddressFormat(to.trim()) : undefined;
+  const recipientValid = format === "valid";
   const recipient = recipientValid ? (to.trim() as Address) : undefined;
 
   const parsedAmount = useMemo(() => {
@@ -113,8 +114,17 @@ export default function SendPage() {
                 to.trim() && !recipientValid ? "border-danger" : "border-line"
               }`}
             />
-            {to.trim() && !recipientValid ? (
-              <span className="mt-1.5 block text-xs text-danger">Not a valid address.</span>
+            {format === "not-an-address" ? (
+              <span className="mt-1.5 block text-xs text-danger">
+                Not a 20-byte hex address.
+              </span>
+            ) : null}
+            {format === "bad-checksum" ? (
+              <span className="mt-1.5 block text-xs leading-relaxed text-danger">
+                This is the right shape, but its checksum does not match. The address has been
+                altered or mistyped somewhere between the sender and here — ask the recipient for
+                it again rather than fixing the capitalisation.
+              </span>
             ) : null}
           </label>
 

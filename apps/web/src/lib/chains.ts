@@ -1,6 +1,8 @@
 import {anvil, mainnet, sepolia} from "wagmi/chains";
 import {isAddress, type Address} from "viem";
 
+import type {KnownToken} from "@truesend/chain";
+
 /** The singletons a chain needs before Send and Pending can do anything. */
 export interface Deployment {
   chainId: number;
@@ -57,14 +59,6 @@ export const HISTORY_RPC: Partial<Record<number, string>> = {
   [sepolia.id]: process.env.NEXT_PUBLIC_SEPOLIA_RPC ?? "https://ethereum-sepolia-rpc.publicnode.com",
   [anvil.id]: "http://127.0.0.1:8545",
 };
-
-export interface KnownToken {
-  address: Address;
-  symbol: string;
-  decimals: number;
-  /** Inbound transfers strictly below this many whole units count as dust. */
-  dustBelow: number;
-}
 
 /**
  * Tokens we can put a dust threshold on.

@@ -24,21 +24,27 @@ decision.
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
 │ Web app (Next.js)          Browser extension (clipboard guard)       │
-│   Scan · Send · Pending · Contacts · Report · Upgrade                │
+│   Scan · Send · Pending                                              │
 ├──────────────────────────────────────────────────────────────────────┤
-│ Risk API + alerts          ← queued transfer? tell the owner and     │
-│                              the guardian, with a cancel link        │
+│ Indexer      hold watcher → alerts to owner and guardian,            │
+│              with a one-click cancel link · risk API                 │
 ├──────────────────────────────────────────────────────────────────────┤
-│ Indexer     ERC-20 Transfer (incl. zero-value) · policy events       │
-│             · community attestations                                 │
+│ @truesend/chain    transfer history WITH SIGNER RESOLUTION ·         │
+│                    policy reads. Fetches, never decides.             │
 ├──────────────────────────────────────────────────────────────────────┤
-│ @truesend/engine    fingerprints · heuristics · explainable scoring  │
-│                     pure functions, identical in all three consumers │
+│ @truesend/engine   fingerprints · heuristics · explainable scoring.  │
+│                    Pure. Decides, never fetches.                     │
 ├──────────────────────────────────────────────────────────────────────┤
 │ GuardedAccount (EIP-7702)      SafeVault (custodial)                 │
 │              └── GuardedBase ── PolicyLib ──┘                        │
 └──────────────────────────────────────────────────────────────────────┘
 ```
+
+The split between the two packages is load-bearing. The engine is pure, so the same verdict and
+the same wording reach the app, the extension and the API. `@truesend/chain` holds everything that
+needs a node — above all the signer resolution described below, which exists in exactly one place
+because two implementations of "check who signed it" is one implementation that eventually
+forgets to.
 
 ## Contracts
 
@@ -129,7 +135,19 @@ an optimisation, and `analysis/` measures what it costs to get it wrong.
 
 The alerting path is what turns a cooldown from a delay into a defence. A queued transfer is only
 useful if someone learns about it while it is still queued, and the person may not be at their
-computer — so a queued transfer notifies the owner and the guardian with a one-click cancel link.
+computer — so a queued transfer notifies the owner and the guardian with a one-click cancel link
+that lands on that transfer.
+
+The watcher polls rather than subscribing. A dropped websocket reconnects at the head and silently
+skips whatever happened while it was away; a cursor on disk resumes exactly where it stopped, and
+for a component whose job is to not miss one event, resumability beats latency. Alerts are keyed
+on `(chain, policy, transfer, channel)`, so a delivered one is never repeated and a failed one is
+retried — missing an alert is the failure that matters, a duplicate is merely annoying.
+
+Per-user history is built on demand rather than indexed globally. Logs are filtered by the user's
+address on the node, so it is a few requests; a global index of every ERC-20 transfer is real
+infrastructure and claiming one would be architecture theatre. `apps/indexer/README.md` is explicit
+about what is and is not there.
 
 ## Address book
 

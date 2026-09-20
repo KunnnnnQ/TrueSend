@@ -10,7 +10,7 @@ import {
   sharedPrefixLength,
   sharedSuffixLength,
 } from "../src/fingerprint.js";
-import {normalizeAddress, toChecksumAddress} from "../src/address.js";
+import {checkAddressFormat, normalizeAddress, toChecksumAddress} from "../src/address.js";
 
 /** A 20-byte address, as a `0x`-prefixed lower-case hex string. */
 const anyAddress = fc
@@ -203,3 +203,40 @@ function hueOf(hex: string): number {
   else hue = (r - g) / delta + 4;
   return (hue * 60 + 360) % 360;
 }
+
+describe("checkAddressFormat", () => {
+  it("accepts an all-lowercase address, which carries no checksum to check", () => {
+    expect(checkAddressFormat("0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed")).toBe("valid");
+  });
+
+  it("accepts an all-uppercase address for the same reason", () => {
+    expect(checkAddressFormat("0x5AAEB6053F3E94C9B9A09F33669435E7EF1BEAED")).toBe("valid");
+  });
+
+  it("accepts a correctly checksummed address", () => {
+    expect(checkAddressFormat("0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed")).toBe("valid");
+  });
+
+  /**
+   * The case worth separating. A mixed-case address whose capitalisation does not match its own
+   * hash has been altered somewhere, which is a finding rather than a typo.
+   */
+  it("reports a mixed-case address with the wrong capitalisation as altered", () => {
+    expect(checkAddressFormat("0x5AAeb6053F3E94C9b9A09f33669435E7Ef1BeAed")).toBe("bad-checksum");
+  });
+
+  it("reports anything that is not 40 hex characters as not an address", () => {
+    expect(checkAddressFormat("0x1234")).toBe("not-an-address");
+    expect(checkAddressFormat("nope")).toBe("not-an-address");
+    expect(checkAddressFormat("")).toBe("not-an-address");
+  });
+
+  it("agrees with itself over random addresses", () => {
+    fc.assert(
+      fc.property(anyAddress, (address) => {
+        expect(checkAddressFormat(address)).toBe("valid");
+        expect(checkAddressFormat(toChecksumAddress(address))).toBe("valid");
+      }),
+    );
+  });
+});

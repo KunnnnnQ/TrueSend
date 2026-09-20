@@ -1,0 +1,31 @@
+{
+  "name": "@truesend/chain",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Reading TrueSend state from a chain: transfer history with signer resolution, and policy queues. Shared by the web app and the indexer.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "abi": "node scripts/extract-abi.mjs"
+  },
+  "dependencies": {
+    "@truesend/engine": "workspace:*",
+    "viem": "^2.37.6"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  }
+}

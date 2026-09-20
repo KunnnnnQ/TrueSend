@@ -5,11 +5,12 @@ import {isAddress, type Address} from "viem";
 import {mainnet} from "wagmi/chains";
 import {useAccount, usePublicClient} from "wagmi";
 
+import {createChainClient, scanHistory, type ScanProgress, type ScanResult} from "@truesend/chain";
 import {assessAddress, type RiskAssessment} from "@truesend/engine";
 
 import {AddressCard} from "@/components/Fingerprint";
 import {Findings, LookalikeComparison, RiskChip} from "@/components/Risk";
-import {scanHistory, type ScanProgress, type ScanResult} from "@/lib/history";
+import {HISTORY_RPC, KNOWN_TOKENS} from "@/lib/chains";
 import {saveScan} from "@/lib/scanStore";
 
 /**
@@ -49,7 +50,15 @@ export default function ScanPage() {
       setExpanded(null);
       setProgress({fraction: 0, message: "Starting"});
       try {
-        const scanned = await scanHistory(scanChain, owner, {fromBlock, toBlock}, setProgress);
+        const endpoint = HISTORY_RPC[scanChain];
+        if (!endpoint) throw new Error(`No history endpoint is configured for chain ${scanChain}.`);
+
+        const scanned = await scanHistory(
+          createChainClient(endpoint),
+          owner,
+          {fromBlock, toBlock},
+          {knownTokens: KNOWN_TOKENS[scanChain] ?? [], onProgress: setProgress},
+        );
         setResult(scanned);
         // Hand it to Send, which otherwise starts from nothing on the one screen that spends.
         saveScan({

@@ -5,16 +5,8 @@ import {isAddress, zeroAddress, type Address} from "viem";
 import {useAccount, useReadContract, useReadContracts} from "wagmi";
 import {mainnet} from "wagmi/chains";
 
-import {safeVaultAbi} from "@/abi";
-
-/**
- * `SafeVault`'s ABI covers both modes.
- *
- * `GuardedAccount` and `SafeVault` inherit the same `GuardedBase`, so every policy function the UI
- * calls has an identical signature on both. The only difference is where the address points: at a
- * vault contract, or at an EOA that has delegated to `GuardedAccount` under EIP-7702.
- */
-export const policyAbi = safeVaultAbi;
+export {policyAbi} from "@truesend/chain";
+import {policyAbi} from "@truesend/chain";
 
 const STORAGE_KEY = "truesend.policy-address";
 const CHAIN_KEY = "truesend.policy-chain";

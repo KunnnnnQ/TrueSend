@@ -1,6 +1,7 @@
 "use client";
 
-import {useEffect, useState} from "react";
+import {Suspense, useEffect, useState} from "react";
+import {useSearchParams} from "next/navigation";
 import {formatUnits, zeroAddress} from "viem";
 import {useBlock, useWaitForTransactionReceipt, useWriteContract} from "wagmi";
 
@@ -19,8 +20,53 @@ import {
   type PendingTransfer,
 } from "@/lib/policy";
 
+/**
+ * The alert's cancel link lands here.
+ *
+ * `useSearchParams` makes this page dynamic, which Next requires a boundary for; the fallback is
+ * the same page without the deep link rather than a spinner, because the queue is worth showing
+ * even while the parameters are still being read.
+ */
 export default function PendingPage() {
+  return (
+    <Suspense fallback={<Heading />}>
+      <PendingScreen />
+    </Suspense>
+  );
+}
+
+/**
+ * The static shell.
+ *
+ * Reading search params makes a component dynamic, so the fallback must not read them — an
+ * earlier version used the same component for both and the page failed to prerender at all.
+ */
+function Heading() {
+  return (
+    <section>
+      <h1 className="text-2xl font-semibold tracking-tight">Pending</h1>
+      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
+        Transfers waiting out their hold. Cancelling stays available right up until one is
+        executed — the hold is the earliest a transfer <em>may</em> settle, not a window after
+        which it becomes unstoppable.
+      </p>
+    </section>
+  );
+}
+
+function PendingScreen() {
   const {address: policyAddress, chainId, setAddress, setChainId} = usePolicyTarget();
+
+  // A one-click cancel link carries the account, the chain and the transfer. Applying all three
+  // means the person who just got the alert lands on the button, not on a form to fill in.
+  const params = useSearchParams();
+  const linkedTransferId = params.get("id");
+  useEffect(() => {
+    const policy = params.get("policy");
+    const chain = params.get("chain");
+    if (policy) setAddress(policy);
+    if (chain) setChainId(Number(chain));
+  }, [params, setAddress, setChainId]);
   const {policy, isLoading} = usePolicy(policyAddress, chainId);
   const {queued, refetch} = usePendingTransfers(policyAddress, policy?.nextTransferId, chainId);
 
@@ -38,14 +84,7 @@ export default function PendingPage() {
 
   return (
     <div className="space-y-8">
-      <section>
-        <h1 className="text-2xl font-semibold tracking-tight">Pending</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
-          Transfers waiting out their hold. Cancelling stays available right up until one is
-          executed — the hold is the earliest a transfer <em>may</em> settle, not a window after
-          which it becomes unstoppable.
-        </p>
-      </section>
+      <Heading />
 
       <PolicyBar
         address={policyAddress}
@@ -72,6 +111,7 @@ export default function PendingPage() {
                 transfer={transfer}
                 now={now}
                 history={lastScan?.history}
+                highlighted={transfer.id.toString() === linkedTransferId}
                 busy={isPending}
                 onCancel={() =>
                   writeContract({
@@ -133,6 +173,7 @@ function QueuedRow({
   transfer,
   now,
   history,
+  highlighted,
   busy,
   onCancel,
   onExecute,
@@ -140,6 +181,7 @@ function QueuedRow({
   transfer: PendingTransfer;
   now: number;
   history: AddressSighting[] | undefined;
+  highlighted: boolean;
   busy: boolean;
   onCancel: () => void;
   onExecute: () => void;
@@ -157,7 +199,11 @@ function QueuedRow({
     : `${transfer.amount.toString()} units`;
 
   return (
-    <li className="rounded-lg border border-line bg-surface">
+    <li
+      className={`rounded-lg border bg-surface ${
+        highlighted ? "border-accent ring-1 ring-accent/40" : "border-line"
+      }`}
+    >
       <div className="flex flex-wrap items-start gap-4 p-4">
         <AddressCard address={transfer.to} />
 

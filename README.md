@@ -82,6 +82,11 @@ hold the account hostage.
 recipient is held regardless of what the engine thinks. The score changes what the user is *told*,
 never what the contract *allows*.
 
+**A hold nobody hears about is only a delay.** The watcher alerts the owner *and* the guardian
+within a poll, with a one-click cancel link that lands on the transfer. An alert is never sent
+twice and a failure is never dropped, because a user who stops watching for themselves on the
+strength of a promise deserves that promise kept.
+
 **Scores explain themselves.** Every finding carries a sentence naming the contact being imitated
 and both fingerprints. A bare number asks for trust; a reason lets the user catch what the rules
 missed.
@@ -97,9 +102,10 @@ similarity rule scored it zero. Measured: `safe` (0) before, `danger` (71) after
 | Component | State |
 | --- | --- |
 | `contracts/` — policy, 7702 delegate, vault, factory | Built. 53 tests: unit, fuzz, invariant. 92.8% lines, 64.6% branches |
-| `packages/engine/` — fingerprints, heuristics, scoring | Built. 59 tests including property tests |
+| `packages/engine/` — fingerprints, heuristics, scoring | Built. 65 tests including property tests |
+| `packages/chain/` — history with signer resolution, policy reads | Built. Shared by the app and the indexer |
 | `apps/web/` — Scan, Send, Pending | Built. Scan reads mainnet directly and resolves signers; Send and Pending drive a deployed policy |
-| `apps/indexer/` — event indexing and risk API | Not started |
+| `apps/indexer/` — hold watcher, alerts, risk API | Built. 17 tests on alert idempotency and resume |
 | `apps/extension/` — clipboard guard | Not started |
 | `analysis/` — replay against real mainnet cases | Built. Verifies the 2024 WBTC case from chain, measures live poisoning volume, replays the shipped detector |
 
@@ -149,7 +155,8 @@ packages/engine/    Pure TypeScript. Runs identically in the app, the extension 
 apps/web/           Next.js. Scan reads history and checks signers; Send quotes before you sign;
                     Pending counts down against chain time and cancels
 apps/extension/     Clipboard guard
-apps/indexer/       Event indexing + risk API
+apps/indexer/       Watches for holds, tells the owner and the guardian, serves risk queries
+packages/chain/     Reading history and policy state. One implementation of "check the signer"
 analysis/           Replaying the detectors against real cases
 docs/               architecture.md, threat-model.md
 ```

@@ -66,3 +66,27 @@ export function shortHex(value: string, lead = 6, tail = 4): string {
 export function addressesEqual(a: string, b: string): boolean {
   return normalizeAddress(a) === normalizeAddress(b);
 }
+
+/** What is wrong with a string that was supposed to be an address. */
+export type AddressFormat = "valid" | "not-an-address" | "bad-checksum";
+
+/**
+ * Tell "not an address" apart from "an address that has been altered".
+ *
+ * Worth separating, because the second is a finding rather than a typo. An address written
+ * entirely in one case carries no checksum information and has to be accepted — that is how
+ * most addresses are pasted. But a *mixed-case* address whose capitalisation does not match
+ * its own hash has been corrupted somewhere between the sender and the screen: a character
+ * changed, a copy truncated and repaired, a document that mangled it.
+ *
+ * Rejecting both with the same message throws that signal away, and it is the one signal in
+ * this package that costs nothing and has no false positives.
+ */
+export function checkAddressFormat(value: string): AddressFormat {
+  if (!isAddress(value)) return "not-an-address";
+
+  const body = value.slice(2);
+  if (body === body.toLowerCase() || body === body.toUpperCase()) return "valid";
+
+  return toChecksumAddress(value) === value ? "valid" : "bad-checksum";
+}

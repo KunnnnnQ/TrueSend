@@ -11,11 +11,13 @@
 export {
   addressBytes,
   addressesEqual,
+  checkAddressFormat,
   isAddress,
   normalizeAddress,
   shortHex,
   toChecksumAddress,
   type Address,
+  type AddressFormat,
 } from "./address.js";
 
 export {

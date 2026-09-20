@@ -1,0 +1,25 @@
+{
+  "name": "@truesend/indexer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Watches TrueSend policies for holds, tells the owner and the guardian, and serves risk queries.",
+  "license": "MIT",
+  "scripts": {
+    "dev": "tsc -p tsconfig.build.json && node dist/main.js",
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node dist/main.js",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@truesend/chain": "workspace:*",
+    "@truesend/engine": "workspace:*",
+    "viem": "^2.37.6"
+  },
+  "devDependencies": {
+    "@types/node": "^24.7.0",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  }
+}

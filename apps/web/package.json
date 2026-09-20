@@ -8,11 +8,11 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "abi": "node scripts/extract-abi.mjs",
     "test": "echo \"no unit tests in the web app; logic lives in @truesend/engine\" && exit 0"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.90.2",
+    "@truesend/chain": "workspace:*",
     "@truesend/engine": "workspace:*",
     "next": "^15.5.4",
     "react": "^19.2.0",

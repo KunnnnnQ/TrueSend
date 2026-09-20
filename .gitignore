@@ -32,6 +32,8 @@ apps/indexer/generated/
 *.sqlite
 *.sqlite-journal
 *.db
+*.db-shm
+*.db-wal
 
 # ---- extension ----
 apps/extension/.wxt/
