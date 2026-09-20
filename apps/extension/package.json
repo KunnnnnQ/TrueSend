@@ -1,0 +1,26 @@
+{
+  "name": "@truesend/extension",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Clipboard and paste guard, and a page scan that finds lookalike addresses sitting next to each other.",
+  "license": "MIT",
+  "scripts": {
+    "dev": "wxt",
+    "build": "wxt build",
+    "zip": "wxt zip",
+    "postinstall": "wxt prepare",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "harness": "esbuild dev/harness.ts --bundle --format=esm --outfile=dev/harness.js"
+  },
+  "dependencies": {
+    "@truesend/engine": "workspace:*"
+  },
+  "devDependencies": {
+    "happy-dom": "^20.0.0",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4",
+    "wxt": "^0.21.4"
+  }
+}

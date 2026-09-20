@@ -38,6 +38,8 @@ apps/indexer/generated/
 # ---- extension ----
 apps/extension/.wxt/
 apps/extension/.output/
+# Bundled from dev/harness.ts by `pnpm --filter @truesend/extension harness`.
+apps/extension/dev/harness.js
 
 # ---- python / analysis ----
 __pycache__/

@@ -1,0 +1,76 @@
+:root {
+  color-scheme: dark;
+  --ink: #0b0f18;
+  --raised: #121826;
+  --line: #1e2636;
+  --text: #e8ecf4;
+  --muted: #8b97ad;
+  --faint: #5b6679;
+  --danger: #f2555a;
+  --accent: #6ea8fe;
+}
+
+body {
+  margin: 0;
+  width: 340px;
+  background: var(--ink);
+  color: var(--text);
+  font: 13px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+main { padding: 14px; }
+h1 { margin: 0; font-size: 15px; }
+h2 { margin: 0 0 4px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--faint); }
+.lead { margin: 6px 0 16px; color: var(--muted); font-size: 12px; }
+.hint { margin: 0 0 10px; color: var(--faint); font-size: 11px; }
+
+form { display: grid; grid-template-columns: 1fr auto; gap: 6px; }
+#address { grid-column: 1 / -1; }
+input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 7px 9px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: #05070c;
+  color: var(--text);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 12px;
+}
+input:focus { outline: none; border-color: var(--accent); }
+#label { font-family: inherit; }
+
+button {
+  padding: 7px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: var(--raised);
+  color: var(--text);
+  font-size: 12px;
+  cursor: pointer;
+}
+button:hover { border-color: #2b3549; }
+
+.error { margin: 8px 0 0; color: var(--danger); font-size: 11px; }
+
+ul { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 6px; }
+li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+}
+li .who { flex: 1; min-width: 0; }
+li .name { font-size: 12px; }
+li .hex, li .phrase {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 11px;
+}
+li .hex { color: var(--muted); }
+li .phrase { color: var(--faint); }
+li .remove { all: unset; cursor: pointer; color: var(--faint); padding: 0 4px; }
+li .remove:hover { color: var(--danger); }
+
+.empty { color: var(--faint); font-size: 12px; margin-top: 12px; }

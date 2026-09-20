@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TrueSend</title>
+  </head>
+  <body>
+    <main>
+      <h1>TrueSend</h1>
+      <p class="lead">
+        Every address you copy gets four words. Two addresses on one page that a wallet would
+        render identically get marked where they sit.
+      </p>
+
+      <section>
+        <h2>Addresses you know</h2>
+        <p class="hint">
+          Anything that imitates one of these is flagged the moment you copy or paste it. Nothing
+          here leaves your browser.
+        </p>
+        <form id="add">
+          <input id="address" placeholder="0x…" spellcheck="false" autocomplete="off" />
+          <input id="label" placeholder="Who is this?" autocomplete="off" />
+          <button type="submit">Save</button>
+        </form>
+        <p id="error" class="error" hidden></p>
+        <ul id="list"></ul>
+      </section>
+    </main>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

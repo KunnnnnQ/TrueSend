@@ -82,6 +82,12 @@ hold the account hostage.
 recipient is held regardless of what the engine thinks. The score changes what the user is *told*,
 never what the contract *allows*.
 
+**One signal needs nothing remembered.** When someone reads their own transaction list, the
+planted address and the one it imitates are both on the screen. The extension outlines them where
+they sit, in the list, next to each other — no history, no network, no guess about intent. Asking
+a user to compare two 42-character strings from memory is the thing they cannot do, and the
+reason the attack works.
+
 **A hold nobody hears about is only a delay.** The watcher alerts the owner *and* the guardian
 within a poll, with a one-click cancel link that lands on the transfer. An alert is never sent
 twice and a failure is never dropped, because a user who stops watching for themselves on the
@@ -102,11 +108,11 @@ similarity rule scored it zero. Measured: `safe` (0) before, `danger` (71) after
 | Component | State |
 | --- | --- |
 | `contracts/` — policy, 7702 delegate, vault, factory | Built. 53 tests: unit, fuzz, invariant. 92.8% lines, 64.6% branches |
-| `packages/engine/` — fingerprints, heuristics, scoring | Built. 65 tests including property tests |
+| `packages/engine/` — fingerprints, heuristics, scoring | Built. 80 tests including property tests |
 | `packages/chain/` — history with signer resolution, policy reads | Built. Shared by the app and the indexer |
 | `apps/web/` — Scan, Send, Pending | Built. Scan reads mainnet directly and resolves signers; Send and Pending drive a deployed policy |
 | `apps/indexer/` — hold watcher, alerts, risk API | Built. 17 tests on alert idempotency and resume |
-| `apps/extension/` — clipboard guard | Not started |
+| `apps/extension/` — copy and paste guard, in-page collision scan | Built. 23 tests |
 | `analysis/` — replay against real mainnet cases | Built. Verifies the 2024 WBTC case from chain, measures live poisoning volume, replays the shipped detector |
 
 Not audited. Branch coverage is the weakest number here and the first place a reviewer should
@@ -154,7 +160,7 @@ contracts/          Foundry. PolicyLib + GuardedBase, then GuardedAccount (7702)
 packages/engine/    Pure TypeScript. Runs identically in the app, the extension and the API
 apps/web/           Next.js. Scan reads history and checks signers; Send quotes before you sign;
                     Pending counts down against chain time and cancels
-apps/extension/     Clipboard guard
+apps/extension/     Copy and paste guard. Outlines addresses on a page that render identically
 apps/indexer/       Watches for holds, tells the owner and the guardian, serves risk queries
 packages/chain/     Reading history and policy state. One implementation of "check the signer"
 analysis/           Replaying the detectors against real cases

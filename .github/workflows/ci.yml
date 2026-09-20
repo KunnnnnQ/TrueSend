@@ -67,6 +67,9 @@ jobs:
 
       - name: Install
         run: pnpm install --frozen-lockfile
+        env:
+          # The extension's postinstall generates WXT's types, which the typecheck needs.
+          NODE_ENV: development
 
       - name: Typecheck
         run: pnpm -r typecheck

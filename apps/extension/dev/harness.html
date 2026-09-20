@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TrueSend guard — preview</title>
+    <style>
+      :root { color-scheme: dark; }
+      body {
+        margin: 0; padding: 28px; background: #05070c; color: #e8ecf4;
+        font: 14px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
+      }
+      h1 { font-size: 17px; margin: 0 0 4px; }
+      p.lead { color: #8b97ad; margin: 0 0 22px; max-width: 60ch; font-size: 13px; }
+      h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: #5b6679; margin: 24px 0 8px; }
+      .panel { border: 1px solid #1e2636; border-radius: 10px; padding: 14px; background: #0b0f18; }
+      table { border-collapse: collapse; width: 100%; font-size: 13px; }
+      th { text-align: left; color: #5b6679; font-weight: 500; font-size: 11px;
+           text-transform: uppercase; letter-spacing: .05em; padding: 0 10px 8px 0; }
+      td { padding: 7px 10px 7px 0; border-top: 1px solid #141a26; }
+      .addr { font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: #c8d1e0; }
+      .amount { color: #8b97ad; }
+      input {
+        width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 6px;
+        border: 1px solid #1e2636; background: #05070c; color: #e8ecf4;
+        font-family: ui-monospace, Menlo, monospace; font-size: 12px;
+      }
+      .controls { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+      button {
+        padding: 7px 12px; border-radius: 6px; border: 1px solid #2b3549;
+        background: #121826; color: #e8ecf4; font-size: 12px; cursor: pointer;
+      }
+      button:hover { background: #1a2130; }
+      #marked { color: #8b97ad; font-size: 12px; margin: 8px 0 0; }
+      .note { color: #5b6679; font-size: 12px; margin-top: 8px; }
+    </style>
+  </head>
+  <body>
+    <h1>TrueSend guard</h1>
+    <p class="lead">
+      The same modules the extension's content script uses, on an ordinary page. The table below
+      is a transaction list with a planted lookalike in it — the shape a real wallet history takes.
+    </p>
+
+    <h2>A wallet history</h2>
+    <div class="panel">
+      <table>
+        <thead>
+          <tr><th>When</th><th>To</th><th>Amount</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>3 May, 14:02</td><td class="addr">0xab58c49b70d5e2f1a0c9f3d7e6b4a2c8d1f00e93</td><td class="amount">1,200 USDC</td></tr>
+          <tr><td>3 May, 14:44</td><td class="addr">0x742d35cc6634c0532925a3b844bc454e4438f44e</td><td class="amount">40 USDC</td></tr>
+          <tr><td>3 May, 15:11</td><td class="addr">0xab58c41122334455667788990011223344ff0e93</td><td class="amount">0 ETH</td></tr>
+          <tr><td>4 May, 09:20</td><td class="addr">0x9d7d8b567ee10bcb4f9db438245e1d0668175d72</td><td class="amount">310 USDC</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">
+      Rows one and three are the pair. Select an address and copy it to see what the extension
+      does, or use the buttons.
+    </p>
+
+    <h2>Judge an address</h2>
+    <div class="panel">
+      <input id="candidate" spellcheck="false"
+             value="0xab58c41122334455667788990011223344ff0e93" />
+      <div class="controls">
+        <button id="judge" type="button">Judge against the page</button>
+        <button id="judge-saved" type="button">Judge with "Alice" saved</button>
+        <button id="mark" type="button">Mark collisions in place</button>
+        <button id="clear" type="button">Clear marks</button>
+      </div>
+      <p id="marked"></p>
+    </div>
+
+    <script type="module" src="./harness.js"></script>
+  </body>
+</html>

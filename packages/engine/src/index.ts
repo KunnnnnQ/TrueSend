@@ -51,6 +51,14 @@ export {
 } from "./risk.js";
 
 export {
+  collidingAddresses,
+  collidingPairs,
+  findAddresses,
+  type AddressCollision,
+  type AddressMatch,
+} from "./scan.js";
+
+export {
   confusableSkeleton,
   inspectTokenSymbol,
   isPlainSymbol,
