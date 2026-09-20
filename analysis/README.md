@@ -135,12 +135,74 @@ The narrower homoglyph rules still run, because they name *which* token is being
 are no longer what the detection rests on. All three contracts are now regression tests, with
 their real addresses, in `packages/engine/test/tokens.test.ts`.
 
+## Does it cry wolf?
+
+Everything above measures whether the detector *catches* things. This measures whether it is
+bearable to live with, which decides whether anyone keeps it switched on — and a tool that gets
+switched off protects nobody.
+
+`false-positives.mjs` picks wallets at random from people who just made a genuine payment,
+rebuilds each history the way the product does, and scores every counterparty in it.
+
+Over **40 wallets and 2,501 counterparties**:
+
+| | |
+| --- | --- |
+| counterparties flagged at all | 239 (9.6%) |
+| — on a **fact** | 217 (8.7%) |
+| — on a **heuristic** | 22 (0.9%) |
+| **wallets that saw no warning at all** | **23 of 40 (57.5%)** |
+
+**90.8% of every warning rests on a checkable fact** — a transfer log naming the user as
+sender in a transaction they demonstrably did not sign. That is not a false positive in any
+useful sense; it is a discovery. The 22 heuristic-only warnings are the ones that could be wrong.
+
+### The objection that could have sunk this
+
+A `Transfer` log naming you as sender in someone else's transaction is *usually* a fabrication —
+but it is also exactly what a legitimate intent-based settlement looks like. A CoW or UniswapX
+solver moves your tokens after you sign an order off chain, and the log names you while the
+transaction names them. If a meaningful share of the 354 fabricated records were those, the
+headline would be worthless.
+
+The discriminator used is **whether the wallet has ever signed a transfer of that token itself**,
+which needs no list of known tokens and so cannot be wrong about a token the list forgot. If you
+have never signed a transfer of a token, you never held it, and a record of you sending it is
+fabricated.
+
+| | |
+| --- | --- |
+| zero value — never a settlement | 41 (11.6%) |
+| a token the wallet has never signed — they never held it | 313 (88.4%) |
+| **a token the wallet has used — could be a solver** | **0 (0.0%)** |
+
+Zero, at this sample size. Not one of them could be a legitimate settlement.
+
+### Lookalikes are never coincidence
+
+A lookalike needs four leading and four trailing hex characters to match: 32 bits. Across this
+sample the expected number of chance collisions is **0.00022**. The number observed was
+**159**.
+
+That is the heuristic's whole justification, and it is a factor of about seven hundred thousand
+rather than a judgement call.
+
+### The distribution is heavy-tailed
+
+Danger verdicts per wallet, sorted: 71, 53, 36, 14, 12, 9, 9, 6, … and then 23 zeros.
+
+Most wallets see nothing. A few are hammered. Reporting only the mean would hide both facts, and
+the second one is the reason the product exists.
+
 ## What these numbers are not
 
-- **A false-positive rate now exists** — see above — but it is measured on *active* wallets,
-  sampled from addresses that made a payment in the last few minutes. Active addresses are
-  targeted more than dormant ones, so the warning rate here is an upper bound on what a typical
-  holder would see, not a typical figure.
+- **The false-positive measurement is on *active* wallets**, sampled from addresses that made a
+  payment in the last few minutes. Active addresses are targeted more than dormant ones, so
+  9.6% is an upper bound on what a typical holder would see, not a typical figure.
+- **22 heuristic-only warnings is not the same as 22 false positives.** Those are the ones that
+  *could* be wrong, and given the collision arithmetic above almost certainly are not — most are
+  likely cases where the fabricated record that corroborates them fell outside the scanned window.
+  Nothing here establishes that, and it is not claimed.
 - **The control set is not a false-positive rate either.** Those addresses were already known to
   be real payees, so of course they came back clean. It shows the detector does not fire on an
   obvious safe case and nothing more.

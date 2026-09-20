@@ -100,6 +100,13 @@ within a poll, with a one-click cancel link that lands on the transfer. An alert
 twice and a failure is never dropped, because a user who stops watching for themselves on the
 strength of a promise deserves that promise kept.
 
+**It has been measured against the thing that kills security tools.** Across 40 randomly sampled
+active wallets and 2,501 counterparties, 57.5% of wallets saw no warning at all, and **91% of
+every warning that did fire rests on a checkable fact** rather than an inference — a transfer log
+naming the user as sender in a transaction they demonstrably did not sign. A tool that cries wolf
+gets switched off, and then it protects nobody, so that number is the one worth arguing about.
+[`analysis/README.md`](analysis/README.md#does-it-cry-wolf).
+
 **Scores explain themselves.** Every finding carries a sentence naming the contact being imitated
 and both fingerprints. A bare number asks for trust; a reason lets the user catch what the rules
 missed.
@@ -120,7 +127,7 @@ similarity rule scored it zero. Measured: `safe` (0) before, `danger` (71) after
 | `apps/web/` — Scan, Send, Pending | Built. Scan reads mainnet directly and resolves signers; Send and Pending drive a deployed policy |
 | `apps/indexer/` — hold watcher, alerts, risk API | Built. 17 tests on alert idempotency and resume |
 | `apps/extension/` — copy and paste guard, in-page collision scan | Built. 23 tests |
-| `analysis/` — replay against real mainnet cases | Built. Verifies the 2024 WBTC case from chain, measures live poisoning volume, replays the shipped detector |
+| `analysis/` — replay against real mainnet cases | Built. Verifies the 2024 WBTC case from chain, measures live poisoning volume and the false-positive rate, replays the shipped detector |
 
 Not audited.
 

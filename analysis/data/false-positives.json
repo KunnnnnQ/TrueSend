@@ -1,51 +1,159 @@
 {
-  "scannedAt": "2026-09-20T13:27:14.048Z",
+  "scannedAt": "2026-09-20T13:52:02.013Z",
   "sampledFrom": {
-    "fromBlock": 26018869,
-    "toBlock": 26018988,
+    "fromBlock": 26018948,
+    "toBlock": 26019067,
     "token": "USDT"
   },
   "historyWindow": {
-    "fromBlock": 26002988,
-    "toBlock": 26018988
+    "fromBlock": 26005067,
+    "toBlock": 26019067
   },
-  "wallets": 24,
-  "counterparties": 99,
+  "wallets": 40,
+  "counterparties": 2501,
   "perCounterparty": {
-    "flagged": 14,
-    "onAFact": 14,
-    "onAHeuristic": 0,
-    "danger": 14,
+    "flagged": 239,
+    "onAFact": 217,
+    "onAHeuristic": 22,
+    "danger": 239,
     "caution": 0
   },
   "perWallet": {
-    "quiet": 18,
-    "withAnyDanger": 6
+    "quiet": 23,
+    "withAnyDanger": 17
   },
   "findings": {
-    "spoofed-outgoing-transfer": 14,
-    "lookalike-of-known-payee": 8,
-    "never-paid-before": 44,
-    "appeared-right-after-payment": 1
+    "never-paid-before": 974,
+    "lookalike-of-known-payee": 159,
+    "appeared-right-after-payment": 81,
+    "spoofed-outgoing-transfer": 217
   },
   "fabricatedRecords": {
-    "zeroValue": 4,
-    "unknownToken": 23,
-    "canonicalWithValue": 0,
+    "zeroValue": 41,
+    "tokenTheyNeverTouched": 313,
+    "tokenTheyHaveUsed": 0,
     "ambiguousSample": []
   },
-  "expectedChanceCollisions": 1.237494871020317e-7,
+  "expectedChanceCollisions": 0.0002166930353268981,
   "detail": [
     {
-      "owner": "0x8bb88a3eafd6ba0b6cce254c0c447c4cf5860afe",
-      "transfers": 1220,
-      "counterparties": 27,
-      "danger": 3,
+      "owner": "0x83c41363cbee0081dab75cb841fa24f3db46627e",
+      "transfers": 1454,
+      "counterparties": 1038,
+      "danger": 36,
       "caution": 0,
-      "fabricated": 3,
+      "fabricated": 32,
       "dangerDetail": [
         {
-          "address": "0x30C1CC70B006C973723273Be0d3d5d42988Be6d7",
+          "address": "0xF3045e2Ad48865CD5E75a2de3F1465Ad33eCd5F3",
+          "score": 71,
+          "codes": [
+            "lookalike-of-known-payee",
+            "appeared-right-after-payment",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0x55fFAC41400C3f24D7656Ae38E0BB17Ad654411A",
+          "score": 71,
+          "codes": [
+            "lookalike-of-known-payee",
+            "appeared-right-after-payment",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0x9389690aBE6dC175A405855DD22CCb862B532678",
+          "score": 71,
+          "codes": [
+            "lookalike-of-known-payee",
+            "appeared-right-after-payment",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0x6407316168464E8DF22B05df78C0278c00E3a57e",
+          "score": 75,
+          "codes": [
+            "lookalike-of-known-payee",
+            "appeared-right-after-payment",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0xA8720dC0aACB1785a5a32eE103110aAD1ebB6390",
+          "score": 71,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "never-paid-before"
+          ]
+        }
+      ]
+    },
+    {
+      "owner": "0x7b1f858ab9a29ea754d5d09dcbe6ba7eb89c453f",
+      "transfers": 1,
+      "counterparties": 1,
+      "danger": 0,
+      "caution": 0,
+      "fabricated": 0,
+      "dangerDetail": []
+    },
+    {
+      "owner": "0x1c889c9dc642aea847e90c2067596bffebabeaa8",
+      "transfers": 2,
+      "counterparties": 2,
+      "danger": 0,
+      "caution": 0,
+      "fabricated": 0,
+      "dangerDetail": []
+    },
+    {
+      "owner": "0x4fa36b7abab63df7759a2434eda8bd62f8aaf617",
+      "transfers": 2,
+      "counterparties": 2,
+      "danger": 0,
+      "caution": 0,
+      "fabricated": 0,
+      "dangerDetail": []
+    },
+    {
+      "owner": "0x68d1220918cb24642fa3f16a90a9ec000c3d3ed3",
+      "transfers": 2,
+      "counterparties": 2,
+      "danger": 0,
+      "caution": 0,
+      "fabricated": 0,
+      "dangerDetail": []
+    },
+    {
+      "owner": "0xa4e638a11afc936cdee9a8131f663ff716cf1e8d",
+      "transfers": 3,
+      "counterparties": 3,
+      "danger": 0,
+      "caution": 0,
+      "fabricated": 0,
+      "dangerDetail": []
+    },
+    {
+      "owner": "0xc0f652a3c4e6d81a425e10d833d13a7b085ac5c0",
+      "transfers": 5,
+      "counterparties": 4,
+      "danger": 0,
+      "caution": 0,
+      "fabricated": 0,
+      "dangerDetail": []
+    },
+    {
+      "owner": "0x6d493027c2a4f209207385c1edccc4558fae8853",
+      "transfers": 40,
+      "counterparties": 21,
+      "danger": 14,
+      "caution": 0,
+      "fabricated": 14,
+      "dangerDetail": [
+        {
+          "address": "0x0B75a0399c7C963765681C291e4fF7160Db0d850",
           "score": 100,
           "codes": [
             "spoofed-outgoing-transfer",
@@ -54,68 +162,7 @@
           ]
         },
         {
-          "address": "0xF729722D9DB52C5B9C39C56311b9DCC9042D44fB",
-          "score": 71,
-          "codes": [
-            "spoofed-outgoing-transfer",
-            "never-paid-before"
-          ]
-        },
-        {
-          "address": "0xF729C516f0BbD65Dd937F7220477585C83Fa44fB",
-          "score": 71,
-          "codes": [
-            "spoofed-outgoing-transfer",
-            "never-paid-before"
-          ]
-        }
-      ]
-    },
-    {
-      "owner": "0x6bdc28b01ccf8ca4a2315dc751d98459364cde7a",
-      "transfers": 19,
-      "counterparties": 9,
-      "danger": 2,
-      "caution": 0,
-      "fabricated": 2,
-      "dangerDetail": [
-        {
-          "address": "0xF76dbD8739103723C1CC01f0240c6fE532e84A6E",
-          "score": 71,
-          "codes": [
-            "spoofed-outgoing-transfer",
-            "never-paid-before"
-          ]
-        },
-        {
-          "address": "0xf76d00307aF0373D0146F8A32a8abCff80e54a6E",
-          "score": 71,
-          "codes": [
-            "spoofed-outgoing-transfer",
-            "never-paid-before"
-          ]
-        }
-      ]
-    },
-    {
-      "owner": "0xa53d22d890c5697094797fac2276ae39909e3cf0",
-      "transfers": 8,
-      "counterparties": 5,
-      "danger": 0,
-      "caution": 0,
-      "fabricated": 0,
-      "dangerDetail": []
-    },
-    {
-      "owner": "0x6048b509c8d130d860ce46bc4f4980b00d2f638d",
-      "transfers": 4,
-      "counterparties": 3,
-      "danger": 2,
-      "caution": 0,
-      "fabricated": 2,
-      "dangerDetail": [
-        {
-          "address": "0x5b8D37738730401010dCb7bAdd88d1ccf29ba066",
+          "address": "0x0B752eBF7f12E4e5e3Eb82387d36304Add3fD850",
           "score": 100,
           "codes": [
             "spoofed-outgoing-transfer",
@@ -125,7 +172,92 @@
           ]
         },
         {
-          "address": "0x3a5F38556969D21864Ea28388d09e9aC12fca066",
+          "address": "0x5CA124DC654a4E0D31d7450F100b7A112433c1F4",
+          "score": 100,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "lookalike-of-known-payee",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0x5CA1Da63C45C472fF80eA6CD7630221140A4c1F4",
+          "score": 100,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "lookalike-of-known-payee",
+            "appeared-right-after-payment",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0x0B75E3CcB730f02aF3b889F9E7E743F97Fc5D850",
+          "score": 100,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "lookalike-of-known-payee",
+            "never-paid-before"
+          ]
+        }
+      ]
+    },
+    {
+      "owner": "0x71adaf54d48e1031b3c1c28ca7239a7955486255",
+      "transfers": 3,
+      "counterparties": 3,
+      "danger": 0,
+      "caution": 0,
+      "fabricated": 0,
+      "dangerDetail": []
+    },
+    {
+      "owner": "0xcd6b218dc60c5588c4aa91daba5282c051d676bf",
+      "transfers": 3,
+      "counterparties": 3,
+      "danger": 1,
+      "caution": 0,
+      "fabricated": 1,
+      "dangerDetail": [
+        {
+          "address": "0xFb5BDDECdC15ff3Bf346B9C6ec544be3ae472127",
+          "score": 100,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "lookalike-of-known-payee",
+            "never-paid-before"
+          ]
+        }
+      ]
+    },
+    {
+      "owner": "0xd075eb314570c80ddc6490c991f9f8201306bf6e",
+      "transfers": 5,
+      "counterparties": 3,
+      "danger": 0,
+      "caution": 0,
+      "fabricated": 0,
+      "dangerDetail": []
+    },
+    {
+      "owner": "0xb7399443bcf8f89355c7339c280b4e2ea76cc80e",
+      "transfers": 13,
+      "counterparties": 6,
+      "danger": 2,
+      "caution": 0,
+      "fabricated": 2,
+      "dangerDetail": [
+        {
+          "address": "0x6C148f24864dE7697176427493ac17D39d4B0E5f",
+          "score": 100,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "lookalike-of-known-payee",
+            "appeared-right-after-payment",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0x1BFEb0466c5d528c0dECbF0362986A6afD710e5f",
           "score": 71,
           "codes": [
             "spoofed-outgoing-transfer",
@@ -135,8 +267,8 @@
       ]
     },
     {
-      "owner": "0xd3e928730b6e82113f42d6f9fc1dc3a88552d992",
-      "transfers": 16,
+      "owner": "0xed8f4a065caee964fb6332aea394929424f2a9be",
+      "transfers": 4,
       "counterparties": 3,
       "danger": 0,
       "caution": 0,
@@ -144,7 +276,16 @@
       "dangerDetail": []
     },
     {
-      "owner": "0x6b2609b467b9ea5627504df89c7675a0ae7d7365",
+      "owner": "0x37a107f4b868127e813af7f41cb87ebf51a16c01",
+      "transfers": 10,
+      "counterparties": 3,
+      "danger": 0,
+      "caution": 0,
+      "fabricated": 0,
+      "dangerDetail": []
+    },
+    {
+      "owner": "0x4c521cb1c31148a1858c04f36f3cda1cc2752c85",
       "transfers": 2,
       "counterparties": 2,
       "danger": 0,
@@ -153,34 +294,99 @@
       "dangerDetail": []
     },
     {
-      "owner": "0x1f90d37fb64805891c3a0d44aa7a5c88a13d9095",
-      "transfers": 3,
-      "counterparties": 3,
-      "danger": 0,
+      "owner": "0x0ced1dc1c7de020343709a7a6e841fa7472152fd",
+      "transfers": 39,
+      "counterparties": 17,
+      "danger": 6,
       "caution": 0,
-      "fabricated": 0,
-      "dangerDetail": []
+      "fabricated": 6,
+      "dangerDetail": [
+        {
+          "address": "0xFce7021711432003ADE9CF3E60ad8db080432D6a",
+          "score": 100,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "lookalike-of-known-payee",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0x5a3EB0DD7282658331dA34198CD5092285c82d6a",
+          "score": 71,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0x5c26542a8A1e8d26ddaDfF650E26934cB99ac2f1",
+          "score": 100,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "lookalike-of-known-payee",
+            "appeared-right-after-payment",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0xe23Af1Dc05bE88cdB90A8066FF0E74C87C87c2f1",
+          "score": 71,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0x2E2d5ae0f184243cB24fF82b3d860549B7A3048b",
+          "score": 100,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "lookalike-of-known-payee",
+            "never-paid-before"
+          ]
+        }
+      ]
     },
     {
-      "owner": "0xe8f371e96ccf349ebd1c61a3d7fc45e68fae01db",
-      "transfers": 2,
-      "counterparties": 1,
-      "danger": 0,
+      "owner": "0x1e695b4bfce35f6363b8f025130cdc82047351b7",
+      "transfers": 12,
+      "counterparties": 5,
+      "danger": 3,
       "caution": 0,
-      "fabricated": 0,
-      "dangerDetail": []
+      "fabricated": 3,
+      "dangerDetail": [
+        {
+          "address": "0x27Dbc80dA954bF66F7ecE443167DC1D727fE4605",
+          "score": 100,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "lookalike-of-known-payee",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0x27db81269F7E33F15B6A586C9490b5630dae4605",
+          "score": 100,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "lookalike-of-known-payee",
+            "appeared-right-after-payment",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0x27Db5e2f6b5a53B13D2FCf20a6B855E9C8744605",
+          "score": 100,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "lookalike-of-known-payee",
+            "never-paid-before"
+          ]
+        }
+      ]
     },
     {
-      "owner": "0x45e01584bfc4d2c1be748d9665dd9d4414d87b78",
-      "transfers": 3,
-      "counterparties": 1,
-      "danger": 0,
-      "caution": 0,
-      "fabricated": 0,
-      "dangerDetail": []
-    },
-    {
-      "owner": "0x569f0269753643dc19cd6f1df6928f631dcde75c",
+      "owner": "0x009e53486da21cf8cd845e7055c36a5871437e0d",
       "transfers": 2,
       "counterparties": 2,
       "danger": 0,
@@ -189,7 +395,488 @@
       "dangerDetail": []
     },
     {
-      "owner": "0x01f3c5bd90f3a32246560af77d58b722c748de87",
+      "owner": "0x1712c7ad7c1cf780cfa7fc1b02858d98204fcb2c",
+      "transfers": 2,
+      "counterparties": 2,
+      "danger": 0,
+      "caution": 0,
+      "fabricated": 0,
+      "dangerDetail": []
+    },
+    {
+      "owner": "0x40d27dde8f3fdf5d68608f220695eb52aeda7da4",
+      "transfers": 5,
+      "counterparties": 4,
+      "danger": 0,
+      "caution": 0,
+      "fabricated": 0,
+      "dangerDetail": []
+    },
+    {
+      "owner": "0xcd8ed94f0a1e74c8668534ae0074272de270970c",
+      "transfers": 17,
+      "counterparties": 15,
+      "danger": 6,
+      "caution": 0,
+      "fabricated": 6,
+      "dangerDetail": [
+        {
+          "address": "0x30D969cBA36b8702e9d4Bd37B788cB27ACfBD280",
+          "score": 100,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "lookalike-of-known-payee",
+            "appeared-right-after-payment",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0x30D95638c16c555a0b3F3583d28eA3eC3aC1D280",
+          "score": 100,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "lookalike-of-known-payee",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0x5B1474Fd899d1663435a9999f9D858Ee9b7De871",
+          "score": 100,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "lookalike-of-known-payee",
+            "appeared-right-after-payment",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0x5B1417a85078afa32F6C41aaA82953cD164CE871",
+          "score": 100,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "lookalike-of-known-payee",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0x30d4c2980E519bDc1E3D57d61dC12453283ad280",
+          "score": 71,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "never-paid-before"
+          ]
+        }
+      ]
+    },
+    {
+      "owner": "0x9c2d925e2bd77d29cc14f7a1d6a0a48669b04189",
+      "transfers": 2,
+      "counterparties": 2,
+      "danger": 0,
+      "caution": 0,
+      "fabricated": 0,
+      "dangerDetail": []
+    },
+    {
+      "owner": "0x39a4e233e73dae25365ce86dc278b2be8598cf2a",
+      "transfers": 28,
+      "counterparties": 11,
+      "danger": 9,
+      "caution": 0,
+      "fabricated": 7,
+      "dangerDetail": [
+        {
+          "address": "0xDB345Aa1330683ae11298c76dB4F9D465943e070",
+          "score": 100,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "lookalike-of-known-payee",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0x69Fc0ae840C3e669Ee03C913F8af3A77379fe070",
+          "score": 71,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0xdB343DA8102b185Ed6C57E827A9a62900375E070",
+          "score": 100,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "lookalike-of-known-payee",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0x2854b5562dF0f11D2Fc9523a8deB07aD1b2DbDd8",
+          "score": 100,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "lookalike-of-known-payee",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0x9094396875Af5683B472A2B7E169F4A247f6bdd8",
+          "score": 71,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "never-paid-before"
+          ]
+        }
+      ]
+    },
+    {
+      "owner": "0xb7152d5900da932b7fc3cac97aebfc815f88d5ca",
+      "transfers": 714,
+      "counterparties": 547,
+      "danger": 71,
+      "caution": 0,
+      "fabricated": 62,
+      "dangerDetail": [
+        {
+          "address": "0x55779393E18b2C681A143C9d15d18834e8D21F66",
+          "score": 100,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "lookalike-of-known-payee",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0x8a840C767E67848DC242305049C4C77B145BE931",
+          "score": 100,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "lookalike-of-known-payee",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0x93c410509E2dd7C12897A27cEd4771BBc6596507",
+          "score": 100,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "lookalike-of-known-payee",
+            "appeared-right-after-payment",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0x04F6EA821E3F80fF969765E718db5DFc6491C5d0",
+          "score": 100,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "lookalike-of-known-payee",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0x79eA2b7291a496943D1CCcFcb8F1bB896a4C4FD8",
+          "score": 100,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "lookalike-of-known-payee",
+            "never-paid-before"
+          ]
+        }
+      ]
+    },
+    {
+      "owner": "0x2284fbe9c1d14c373f25d00f7dd66d10979f16b6",
+      "transfers": 14,
+      "counterparties": 6,
+      "danger": 3,
+      "caution": 0,
+      "fabricated": 3,
+      "dangerDetail": [
+        {
+          "address": "0xff8AA36dc7190e82B691400967c65e590f3B06C3",
+          "score": 100,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "lookalike-of-known-payee",
+            "appeared-right-after-payment",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0xFffd222A9e585E0f321f8C54D25e2D40305Eb6c3",
+          "score": 71,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0xfF8A9f11CE222178bA0CE9F7241EcfB3DC7A06c3",
+          "score": 100,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "lookalike-of-known-payee",
+            "appeared-right-after-payment",
+            "never-paid-before"
+          ]
+        }
+      ]
+    },
+    {
+      "owner": "0x800131e51533ad8036a6cb056e9f7417a7363f6f",
+      "transfers": 2,
+      "counterparties": 2,
+      "danger": 0,
+      "caution": 0,
+      "fabricated": 0,
+      "dangerDetail": []
+    },
+    {
+      "owner": "0x35c6f9e86f0801d3cda5cd9a6f3d40b70501c186",
+      "transfers": 1,
+      "counterparties": 1,
+      "danger": 0,
+      "caution": 0,
+      "fabricated": 0,
+      "dangerDetail": []
+    },
+    {
+      "owner": "0x50e5f1af04afd135ad48dd9b8be410e97f5a557f",
+      "transfers": 27,
+      "counterparties": 15,
+      "danger": 9,
+      "caution": 0,
+      "fabricated": 9,
+      "dangerDetail": [
+        {
+          "address": "0x4E7fD8D72b06301bf807D4631dd98089EDD3c40D",
+          "score": 100,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "lookalike-of-known-payee",
+            "appeared-right-after-payment",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0x4E7f9921f6b12dA2c5EBbA563E63Ab3BD0C4C40D",
+          "score": 100,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "lookalike-of-known-payee",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0xed2E49cf27f8eF4847D14d6F999Cae15526EA6fC",
+          "score": 100,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "lookalike-of-known-payee",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0xED2e3e66A9113042F4025Fb9305AC7b93CA8a6Fc",
+          "score": 100,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "lookalike-of-known-payee",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0x91E284D25c407Ab7A5b786ba18ef75BF7FB6e061",
+          "score": 71,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "never-paid-before"
+          ]
+        }
+      ]
+    },
+    {
+      "owner": "0x6720f8c2351c1a146d868fec098038066291c8e5",
+      "transfers": 4,
+      "counterparties": 4,
+      "danger": 0,
+      "caution": 0,
+      "fabricated": 0,
+      "dangerDetail": []
+    },
+    {
+      "owner": "0x04a95b03d384b623e7bfe23f3c25a838105e4a4c",
+      "transfers": 18,
+      "counterparties": 10,
+      "danger": 5,
+      "caution": 0,
+      "fabricated": 5,
+      "dangerDetail": [
+        {
+          "address": "0xe475aBa9a1a9F594b4443b95d56cfe32769dce24",
+          "score": 71,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0x0e6E2fe8ECe47786De7c2b621001cc7b9134B317",
+          "score": 100,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "lookalike-of-known-payee",
+            "appeared-right-after-payment",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0xAc641B206c53f49813b0B4f5Cdb944E52366b317",
+          "score": 71,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0x0fB147024d80B10D17e1b6540Dc37888c30aa0E6",
+          "score": 100,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "lookalike-of-known-payee",
+            "appeared-right-after-payment",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0x1d2E11d3ef8eCd9345cdd3697BbF58e8c718a0e6",
+          "score": 71,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "never-paid-before"
+          ]
+        }
+      ]
+    },
+    {
+      "owner": "0x70d1fcb348c9f33ef66139381211fb3f801b004f",
+      "transfers": 162,
+      "counterparties": 13,
+      "danger": 5,
+      "caution": 0,
+      "fabricated": 3,
+      "dangerDetail": [
+        {
+          "address": "0x2CfFc53643850ed250721962E200c80264AB2680",
+          "score": 100,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "lookalike-of-known-payee",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0xDf7c554B234C83CBD26b2408cc1f2A4F4a302680",
+          "score": 71,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0x2Cffe2b72b4234DF36fEB702F51C6392Af0b2680",
+          "score": 46,
+          "codes": [
+            "lookalike-of-known-payee",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0x2cFffC6fbc2cc793B974822B695d8c50a2122680",
+          "score": 100,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "lookalike-of-known-payee",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0x2cFF5ad501F8d0301f7403E43e47E941D1B42680",
+          "score": 46,
+          "codes": [
+            "lookalike-of-known-payee",
+            "never-paid-before"
+          ]
+        }
+      ]
+    },
+    {
+      "owner": "0x6687ace34a4d3ef7ee73b06b7b3678187fc25a4c",
+      "transfers": 168,
+      "counterparties": 35,
+      "danger": 12,
+      "caution": 0,
+      "fabricated": 11,
+      "dangerDetail": [
+        {
+          "address": "0x5B7051fb7708222f94a0140f2672cb9B17b0D1dF",
+          "score": 100,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "lookalike-of-known-payee",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0x5B70692C3382E28Ae625A9de9375f6a93b9cD1Df",
+          "score": 100,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "lookalike-of-known-payee",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0x5B70f4c5aeF40809924C5eE8D609C21992a351dF",
+          "score": 71,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0xC1d17a73B07a1FC692a750b7E16e5738504ca1b5",
+          "score": 100,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "lookalike-of-known-payee",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0xc1d13856Bc85deF481B31aBC8c1F7138Ad82a1b5",
+          "score": 100,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "lookalike-of-known-payee",
+            "never-paid-before"
+          ]
+        }
+      ]
+    },
+    {
+      "owner": "0x9d5448e633ae2ced2a9460653bfa9bfa81e03bb1",
+      "transfers": 5,
+      "counterparties": 3,
+      "danger": 0,
+      "caution": 0,
+      "fabricated": 0,
+      "dangerDetail": []
+    },
+    {
+      "owner": "0xc61ec92cf11c1c4a3cc4b0b739106b465f7a18d3",
       "transfers": 7,
       "counterparties": 4,
       "danger": 2,
@@ -197,7 +884,7 @@
       "fabricated": 2,
       "dangerDetail": [
         {
-          "address": "0x1ea802BF9D287151cAA20a5cfdEbD76517351789",
+          "address": "0xC4A14233d742C7573D6B201a36867344A0A79B2e",
           "score": 100,
           "codes": [
             "spoofed-outgoing-transfer",
@@ -206,7 +893,7 @@
           ]
         },
         {
-          "address": "0x1ea8d022A72Ec674DbdA2bD8A3b5A32b52Ce1789",
+          "address": "0xC4A188bCB4fD58E3Be12386b42f9BE23E5349B2e",
           "score": 100,
           "codes": [
             "spoofed-outgoing-transfer",
@@ -217,7 +904,16 @@
       ]
     },
     {
-      "owner": "0xb5a405b7054cbef00d84dfae21ff803e25a41a82",
+      "owner": "0x8b5688192b139425f2429f8aa90aa5274e6dc465",
+      "transfers": 3,
+      "counterparties": 2,
+      "danger": 0,
+      "caution": 0,
+      "fabricated": 0,
+      "dangerDetail": []
+    },
+    {
+      "owner": "0x14ab26e88a3e144536b47660418b1da76e23c056",
       "transfers": 2,
       "counterparties": 2,
       "danger": 0,
@@ -226,33 +922,15 @@
       "dangerDetail": []
     },
     {
-      "owner": "0x3463b508f4737206f3f9d54633263caa51b01f67",
-      "transfers": 3,
+      "owner": "0x7b2fe783e0e5d470b6af86d66990be9220a1320b",
+      "transfers": 8,
       "counterparties": 3,
-      "danger": 0,
-      "caution": 0,
-      "fabricated": 0,
-      "dangerDetail": []
-    },
-    {
-      "owner": "0x265f4a793f755d2f1b0b8a5173678c14be7633ac",
-      "transfers": 4,
-      "counterparties": 2,
-      "danger": 0,
-      "caution": 0,
-      "fabricated": 0,
-      "dangerDetail": []
-    },
-    {
-      "owner": "0x0c97bbd421c42dd6e59ffae6989cff87025eddce",
-      "transfers": 18,
-      "counterparties": 10,
       "danger": 2,
       "caution": 0,
       "fabricated": 2,
       "dangerDetail": [
         {
-          "address": "0x85B563fb8079456023Dbf60B1929A5c2151AF704",
+          "address": "0x37423382c56A3E873BF394e1E9B2b2294a3DcE07",
           "score": 100,
           "codes": [
             "spoofed-outgoing-transfer",
@@ -261,7 +939,7 @@
           ]
         },
         {
-          "address": "0x85b5469E521c20F106a0fe54f6932Fb39215f704",
+          "address": "0x3742Edcf1f5D07C26A1C02c88692Fe46Bf7BcE07",
           "score": 100,
           "codes": [
             "spoofed-outgoing-transfer",
@@ -272,7 +950,7 @@
       ]
     },
     {
-      "owner": "0xdea6b4934ed9633a6f7d8744d1dc653eedaea6cb",
+      "owner": "0xb9d6f2be5f4726c55d13732e8c91057706bcdffe",
       "transfers": 2,
       "counterparties": 2,
       "danger": 0,
@@ -281,99 +959,69 @@
       "dangerDetail": []
     },
     {
-      "owner": "0xb2952fb0154d857162ff7c455d4c86023e4f9392",
-      "transfers": 2,
-      "counterparties": 2,
-      "danger": 0,
+      "owner": "0xb86950f2a9d8cbb5bdeaff79cc02f499372bfc56",
+      "transfers": 1011,
+      "counterparties": 694,
+      "danger": 53,
       "caution": 0,
-      "fabricated": 0,
-      "dangerDetail": []
-    },
-    {
-      "owner": "0x33052995004ce825788bb3739704b3aacca3fcc1",
-      "transfers": 2,
-      "counterparties": 2,
-      "danger": 0,
-      "caution": 0,
-      "fabricated": 0,
-      "dangerDetail": []
-    },
-    {
-      "owner": "0x575ba41fd925bb640def53f2aa046c82fd1191eb",
-      "transfers": 2,
-      "counterparties": 2,
-      "danger": 0,
-      "caution": 0,
-      "fabricated": 0,
-      "dangerDetail": []
-    },
-    {
-      "owner": "0xe786b004832c26bdde8d06ce45fb6e4b99535921",
-      "transfers": 4,
-      "counterparties": 3,
-      "danger": 0,
-      "caution": 0,
-      "fabricated": 0,
-      "dangerDetail": []
-    },
-    {
-      "owner": "0x5ac22e8c704561ff8499d024f835ad52e1cffba9",
-      "transfers": 9,
-      "counterparties": 4,
-      "danger": 3,
-      "caution": 0,
-      "fabricated": 3,
+      "fabricated": 49,
       "dangerDetail": [
         {
-          "address": "0x91025F98E589a79cA9ce4D2E26D9ecc566827222",
+          "address": "0xa45C0E8AcCa124586a0FcD30a84718A3246F9871",
           "score": 100,
           "codes": [
             "spoofed-outgoing-transfer",
             "lookalike-of-known-payee",
+            "appeared-right-after-payment",
             "never-paid-before"
           ]
         },
         {
-          "address": "0x9102741f54C7Ae3f4B614Fefeb2A91Dc95C67222",
+          "address": "0xd57C282318ad10082cAb2eE29Dc826d03014bE00",
           "score": 100,
           "codes": [
             "spoofed-outgoing-transfer",
             "lookalike-of-known-payee",
+            "appeared-right-after-payment",
             "never-paid-before"
           ]
         },
         {
-          "address": "0x9F4B2A58224be32286d1b01379ee52896a157222",
-          "score": 71,
+          "address": "0xbeDd724c3F3e07e6935F9B2009CE2F1c99BfC382",
+          "score": 100,
           "codes": [
             "spoofed-outgoing-transfer",
+            "lookalike-of-known-payee",
+            "appeared-right-after-payment",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0xF1670837D78563e1cFca125A49f77318d77CDb44",
+          "score": 100,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "lookalike-of-known-payee",
+            "appeared-right-after-payment",
+            "never-paid-before"
+          ]
+        },
+        {
+          "address": "0x9cf4c89815A15314c2a2eD22C66b9D80547966DF",
+          "score": 100,
+          "codes": [
+            "spoofed-outgoing-transfer",
+            "lookalike-of-known-payee",
+            "appeared-right-after-payment",
             "never-paid-before"
           ]
         }
       ]
     },
     {
-      "owner": "0xc1b301652b10177568a2c59eac0cbc8fae1bf023",
-      "transfers": 3,
-      "counterparties": 3,
-      "danger": 0,
-      "caution": 0,
-      "fabricated": 0,
-      "dangerDetail": []
-    },
-    {
-      "owner": "0x535f11e0a21e36ad8a2e930ebc6e63dc5404ab01",
-      "transfers": 2,
-      "counterparties": 2,
-      "danger": 0,
-      "caution": 0,
-      "fabricated": 0,
-      "dangerDetail": []
-    },
-    {
-      "owner": "0xeb55e5947fc24dbedd1c90373e092e46505b7aea",
-      "transfers": 2,
-      "counterparties": 2,
+      "owner": "0x82f133a9e126043e2f555ceb1523781a48787f67",
+      "transfers": 10,
+      "counterparties": 4,
       "danger": 0,
       "caution": 0,
       "fabricated": 0,

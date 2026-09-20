@@ -27,6 +27,7 @@ const asTime = (block) => block * SECONDS_PER_BLOCK;
 
 const scan = JSON.parse(await readFile(join(dataDir, "scan-latest.json"), "utf8"));
 const wbtc = JSON.parse(await readFile(join(dataDir, "case-wbtc-2024-05-03.json"), "utf8"));
+const noise = JSON.parse(await readFile(join(dataDir, "false-positives.json"), "utf8"));
 
 console.log("Running the shipped engine against real mainnet activity.\n");
 
@@ -181,6 +182,19 @@ console.log(`  WBTC case, signer-aware indexer ${headline.wbtcSignerAware}`);
 console.log(`  planted addresses flagged danger ${pct(tally.signerAware.danger, total)} (signer-aware)`);
 console.log(`  false alarms on real payees      ${pct(control.danger + control.caution, total)}`);
 
+// The measurement that decides whether anyone keeps this switched on. Checked here rather than
+// left in a README, because a number nothing verifies is a number that drifts.
+const noiseFactShare = noise.perCounterparty.onAFact / noise.perCounterparty.flagged;
+const noiseQuietShare = noise.perWallet.quiet / noise.wallets;
+
+console.log(`\nOn ${noise.wallets} randomly sampled wallets (${noise.counterparties} counterparties):`);
+console.log(`  warnings resting on a fact       ${(noiseFactShare * 100).toFixed(1)}%`);
+console.log(`  wallets that saw nothing at all  ${(noiseQuietShare * 100).toFixed(1)}%`);
+console.log(
+  `  fabrications that could have been a solver settlement instead: ` +
+    `${noise.fabricatedRecords.tokenTheyHaveUsed}`,
+);
+
 if (CHECK) {
   const problems = [];
   if (headline.wbtcSignerAware !== "danger") {
@@ -191,6 +205,18 @@ if (CHECK) {
   }
   if (headline.controlFalseAlarms > 0.01) {
     problems.push(`${pct(control.danger + control.caution, total)} of real payees raised an alarm, expected <= 1%`);
+  }
+  if (noiseFactShare < 0.8) {
+    problems.push(
+      `only ${(noiseFactShare * 100).toFixed(1)}% of warnings rest on a fact, expected >= 80% — ` +
+        `the detector has started guessing more than it knows`,
+    );
+  }
+  if (noiseQuietShare < 0.4) {
+    problems.push(
+      `only ${(noiseQuietShare * 100).toFixed(1)}% of sampled wallets saw nothing, expected >= 40% — ` +
+        `a tool this noisy gets switched off`,
+    );
   }
   if (problems.length) {
     console.log("\nFAILED:");
