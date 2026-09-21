@@ -132,6 +132,42 @@ export function createClient(endpoints, {timeoutMs = 25_000, retries = 3} = {}) 
     return out;
   }
 
+  /**
+   * Like `batch`, but hands back why each call failed instead of flattening it to `null`.
+   *
+   * A reverted `eth_call` and a request that never got an answer are different facts: the first
+   * says the contract refused, the second says nothing at all. Any measurement that classifies on
+   * the reply has to tell them apart, or an endpoint having a bad minute becomes a finding.
+   */
+  async function batchSettled(method, paramsList, {chunkSize = 50} = {}) {
+    const out = paramsList.map(() => ({ok: false, refused: false, error: "no answer"}));
+
+    for (let start = 0; start < paramsList.length; start += chunkSize) {
+      const slice = paramsList.slice(start, start + chunkSize);
+      const body = slice.map((params, i) => ({jsonrpc: "2.0", id: start + i, method, params}));
+
+      let responses;
+      for (let attempt = 0; attempt <= retries; attempt++) {
+        const endpoint = endpoints[(cursor + attempt) % endpoints.length];
+        try {
+          const parsed = await post(body, endpoint);
+          if (Array.isArray(parsed)) {
+            responses = parsed;
+            break;
+          }
+        } catch {
+          // fall through to the next endpoint
+        }
+        await sleep(600 * (attempt + 1));
+      }
+
+      if (!responses) continue;
+      for (const response of responses) out[response.id] = settle(response);
+    }
+
+    return out;
+  }
+
   async function getLogs(filter) {
     return call("eth_getLogs", [filter]);
   }
@@ -177,8 +213,23 @@ export function createClient(endpoints, {timeoutMs = 25_000, retries = 3} = {}) 
     return Number.parseInt(await call("eth_blockNumber", []), 16);
   }
 
-  return {call, batch, getLogs, getLogsRange, blockNumber};
+  return {call, batch, batchSettled, getLogs, getLogsRange, blockNumber};
 }
+
+/**
+ * Whether a node is saying "the contract refused" or "I cannot tell you".
+ *
+ * Only the first is a fact about the chain. Pruned state answers `missing trie node`, a rate
+ * limiter answers something else again, and reading either of those as a refusal would let a
+ * node's bad afternoon turn into a result.
+ */
+function settle(response) {
+  if (!response.error) return {ok: true, result: response.result};
+  const message = response.error.message ?? String(response.error);
+  return {ok: false, refused: REFUSED.test(message), error: message};
+}
+
+const REFUSED = /execution reverted|invalid opcode|out of gas|invalid jump/i;
 
 export function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
