@@ -11,6 +11,7 @@ const REAL_PAYEE = "0x4585fe77225b41b697c938b018e2ac67ac5a20c0" as Address;
 const USDT = "0xdac17f958d2ee523a2206206994597c13d831ec7" as Address;
 /** The contract the attacker deployed for the WBTC bait: symbol `ETH`, name `Ether`, 6 decimals. */
 const BAIT = "0x739352337c902c3874b95f14e81ebbcf1b7b262e" as Address;
+const EXCHANGE_PAYER = "0x28c6c06298d514db089934071355e5743bf21d60" as Address;
 
 function transfer(over: Partial<TransferRecord> & Pick<TransferRecord, "from" | "to">): TransferRecord {
   return {
@@ -254,5 +255,81 @@ describe("addresses that are not counterparties", () => {
     ]);
 
     expect(history.map((e) => e.address)).toEqual([REAL_PAYEE]);
+  });
+});
+
+/**
+ * An owner that cannot sign anything.
+ *
+ * An ERC-4337 smart account never appears as `tx.from`: its user operations are submitted by a
+ * bundler. EIP-7702 puts this in the protocol — an account whose code is not a valid delegation
+ * designator "may not originate transactions" at all — so for such an owner "they did not sign
+ * it" is not evidence of anything. It is the only thing that can ever be true.
+ *
+ * The damage is not the missing trust signal. `assessAddress` builds its payee set from entries
+ * with `outgoingCount > 0`, and the lookalike rule only compares against that set, so an owner
+ * whose every payment is submitted by somebody else has no payees and **the lookalike rule cannot
+ * fire at all**. The detector is not weakened for these users, it is switched off.
+ */
+describe("an owner that cannot sign anything", () => {
+  const SMART_ACCOUNT = "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc" as Address;
+  const BUNDLER = "0x0000000000000000000000000000000000b0d1e5" as Address;
+  /** Shares REAL_PAYEE's four leading and four trailing characters, and nothing else: 32 bits. */
+  const LOOKALIKE = "0x45851111111111111111111111111111dead20c0" as Address;
+
+  const paidSomebody = [
+    transfer({from: EXCHANGE_PAYER, to: SMART_ACCOUNT, value: 9_000_000n, at: 50}),
+    transfer({from: SMART_ACCOUNT, to: REAL_PAYEE, value: 5_000_000n, signer: BUNDLER, at: 100}),
+  ];
+
+  it("sees a lookalike of a payee the account really paid", () => {
+    const history = foldHistory(SMART_ACCOUNT, paidSomebody, {ownerCanSign: false});
+    const verdict = assessAddress({to: LOOKALIKE, history, now: 200});
+
+    expect(verdict.findings.map((f) => f.code)).toContain("lookalike-of-known-payee");
+  });
+
+  it("records the payment as a payment, since a contract only moves what its own code moves", () => {
+    const history = foldHistory(SMART_ACCOUNT, paidSomebody, {ownerCanSign: false});
+    const payee = history.find((e) => e.address === REAL_PAYEE);
+
+    expect(payee?.outgoingCount).toBe(1);
+    expect(payee?.spoofedOutgoingCount).toBe(0);
+    expect(payee?.lastOutgoingAt).toBe(100);
+  });
+
+  /** The blindness, kept as a test so the reason for the flag is not lost. */
+  it("is blind to that same lookalike when told the owner signs for itself", () => {
+    const history = foldHistory(SMART_ACCOUNT, paidSomebody);
+    const verdict = assessAddress({to: LOOKALIKE, history, now: 200});
+
+    expect(verdict.findings.map((f) => f.code)).not.toContain("lookalike-of-known-payee");
+  });
+
+  /** A fabrication is still a fabrication: a contract cannot move what it never held either. */
+  it("still catches a fabricated record against a contract account", () => {
+    const history = foldHistory(
+      SMART_ACCOUNT,
+      [transfer({from: SMART_ACCOUNT, to: ATTACKER, token: BAIT, value: 50_000n, signer: BOT, at: 100})],
+      {ownerCanSign: false},
+    );
+    const verdict = assessAddress({to: ATTACKER, history, now: 200});
+
+    expect(history[0]?.spoofedOutgoingCount).toBe(1);
+    expect(history[0]?.outgoingCount).toBe(0);
+    expect(verdict.level).toBe("danger");
+  });
+
+  it("still catches a zero-value fabrication against a contract account", () => {
+    const history = foldHistory(
+      SMART_ACCOUNT,
+      [
+        transfer({from: EXCHANGE_PAYER, to: SMART_ACCOUNT, value: 9_000_000n, at: 50}),
+        transfer({from: SMART_ACCOUNT, to: ATTACKER, value: 0n, signer: BOT, at: 100}),
+      ],
+      {ownerCanSign: false},
+    );
+
+    expect(history.find((e) => e.address === ATTACKER)?.spoofedOutgoingCount).toBe(1);
   });
 });

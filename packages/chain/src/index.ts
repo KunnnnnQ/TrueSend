@@ -14,6 +14,13 @@ export {
 } from "./client.js";
 
 export {
+  accountKind,
+  canSignOwnTransactions,
+  classifyAccount,
+  type AccountKind,
+} from "./account.js";
+
+export {
   scanHistory,
   type KnownToken,
   type ScanOptions,

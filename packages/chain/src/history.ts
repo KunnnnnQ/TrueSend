@@ -2,6 +2,7 @@ import {parseAbiItem, parseUnits, type Address, type PublicClient} from "viem";
 
 import {foldHistory, type AddressSighting, type TransferRecord} from "@truesend/engine";
 
+import {accountKind, canSignOwnTransactions, type AccountKind} from "./account.js";
 import {splitOnRefusal, type BlockRange} from "./client.js";
 
 const TRANSFER_EVENT = parseAbiItem(
@@ -35,6 +36,14 @@ export interface ScanResult {
   signersResolved: number;
   /** Every token contract seen, including ones nobody has heard of. */
   tokensSeen: Address[];
+  /**
+   * Whether the owner is an account that signs for itself.
+   *
+   * Reported rather than kept private because it changes how every other field should be read: a
+   * contract account never appears as `tx.from`, so for one of those "the owner did not sign it"
+   * is a fact about the account type and not about the transfer.
+   */
+  ownerKind: AccountKind;
 }
 
 export interface ScanOptions {
@@ -70,6 +79,9 @@ export async function scanHistory(
   options: ScanOptions = {},
 ): Promise<ScanResult> {
   const {knownTokens = [], onProgress, concurrency = 8} = options;
+
+  // Started here and awaited at the end: one request, and no reason to make the scan wait on it.
+  const kind = accountKind(client, owner);
 
   const spans = chunk(range, CHUNK_BLOCKS);
   let done = 0;
@@ -179,15 +191,18 @@ export async function scanHistory(
     ];
   });
 
+  const ownerKind = await kind;
+
   onProgress?.({fraction: 1, message: "Done"});
 
   return {
     owner: owner.toLowerCase() as Address,
     range,
     transfers,
-    history: foldHistory(owner, transfers),
+    history: foldHistory(owner, transfers, {ownerCanSign: canSignOwnTransactions(ownerKind)}),
     signersResolved: signers.size,
     tokensSeen: [...new Set(transfers.map((t) => t.token))],
+    ownerKind,
   };
 }
 

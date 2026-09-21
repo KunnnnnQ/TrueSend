@@ -1,0 +1,37 @@
+{
+  "scannedAt": "2026-09-21T01:55:52.929Z",
+  "range": {
+    "fromBlock": 26022713,
+    "toBlock": 26022737,
+    "blocks": 25
+  },
+  "tokens": [
+    "USDT",
+    "USDC"
+  ],
+  "distinctSenders": 1928,
+  "kinds": {
+    "eoa": 1205,
+    "delegated-eoa": 314,
+    "contract": 409
+  },
+  "shares": {
+    "eoa": 0.625,
+    "delegated-eoa": 0.1628630705394191,
+    "contract": 0.2121369294605809
+  },
+  "examples": {
+    "contract": {
+      "address": "0x000000000004444c5dc75cb358380d2e3de08a90",
+      "code": "0x60a0806040526004361015610012575f80fd5b5f3560e01c90"
+    },
+    "eoa": {
+      "address": "0x63c79fccd0a21e4a4d87056a0efe3b85d8c373d4",
+      "code": "0x"
+    },
+    "delegated-eoa": {
+      "address": "0xf23e6a02e3606d4b12a7394ea800c4a0b1f63cd5",
+      "code": "0xef010063c0c19a282a1b52b07dd5a65b58948a07dae32b"
+    }
+  }
+}

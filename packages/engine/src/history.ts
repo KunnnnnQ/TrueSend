@@ -33,6 +33,40 @@ export interface TransferRecord {
 /** Mints and burns name this address; it is not an account anyone can be paid at. */
 const ZERO = "0x0000000000000000000000000000000000000000" as Address;
 
+export interface FoldOptions {
+  /**
+   * Whether this owner is able to sign its own transactions at all.
+   *
+   * Everything else in this module rests on comparing the owner against `tx.from`. For a contract
+   * account that comparison can never be true, and EIP-7702 says so in the protocol rather than
+   * by convention: accounts "whose code is a valid delegation indicator, i.e. `0xef0100 ||
+   * address`" may originate transactions, and *"accounts with any other code values may not
+   * originate transactions."* An ERC-4337 smart account's user operations reach the chain inside
+   * a bundler's transaction, so `tx.from` is the bundler, always.
+   *
+   * Leaving this at its default and pointing the engine at such an account does not merely weaken
+   * the result. `assessAddress` draws its payee set from entries with `outgoingCount > 0` and the
+   * lookalike rule only compares against that set, so an owner whose every payment is submitted
+   * by somebody else has no payees, and **the lookalike rule cannot fire at all**. The detector
+   * is not degraded for these users; it is off.
+   *
+   * Set it to `false` and the signer test is dropped, because it is not a test — it has one
+   * possible answer. What replaces it is the same question asked of the tokens: a movement that
+   * really happened is the account's own doing, since a contract's balance only moves when its
+   * own code moves it. A record of something the account never held stays a fabrication, so the
+   * May 2024 bait would still be caught against a smart account.
+   *
+   * It costs precision at the other end: a solver settling for a smart account also lands in
+   * `outgoingCount`, because nothing on chain distinguishes that from the account paying
+   * directly. Listing a solver as a payee is harmless — solver addresses are nobody's lookalike —
+   * and the alternative is a detector that sees nothing.
+   *
+   * Defaults to `true`, which keeps the strict signer test. A caller that has not looked at the
+   * owner's code gets the conservative behaviour rather than the convenient one.
+   */
+  ownerCanSign?: boolean;
+}
+
 /**
  * Fold a raw transfer list into one summary per counterparty.
  *
@@ -48,7 +82,9 @@ const ZERO = "0x0000000000000000000000000000000000000000" as Address;
 export function foldHistory(
   owner: string,
   transfers: readonly TransferRecord[],
+  options: FoldOptions = {},
 ): AddressSighting[] {
+  const {ownerCanSign = true} = options;
   const me = normalizeAddress(owner);
   const byCounterparty = new Map<Address, AddressSighting>();
   const held = tokensTheOwnerHasHeld(me, transfers);
@@ -85,10 +121,15 @@ export function foldHistory(
 
     if (from === me) {
       const entry = entryFor(to, transfer.at);
-      if (normalizeAddress(transfer.signer) === me) {
+      const theySignedIt = normalizeAddress(transfer.signer) === me;
+      const valueMoved = couldHaveMoved(transfer, held);
+
+      // For an owner that cannot sign, `theySignedIt` is never true and carries no information,
+      // so a movement that really happened is the account's own doing. See `FoldOptions`.
+      if (theySignedIt || (!ownerCanSign && valueMoved)) {
         entry.outgoingCount++;
         entry.lastOutgoingAt = Math.max(entry.lastOutgoingAt ?? 0, transfer.at);
-      } else if (couldHaveMoved(transfer, held)) {
+      } else if (valueMoved) {
         entry.authorisedOutgoingCount = (entry.authorisedOutgoingCount ?? 0) + 1;
       } else {
         entry.spoofedOutgoingCount++;
