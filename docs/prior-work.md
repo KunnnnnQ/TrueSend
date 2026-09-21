@@ -66,7 +66,7 @@ victims actually lose funds. This is a low-yield, essentially free, industrially
 It also sets the bar for any defence: at that base rate, a detector that cries wolf will be
 switched off long before it ever encounters the one transfer that mattered. That is why
 `analysis/` measures the quiet case at all, and why `evaluate-engine.mjs --check` gates on
-"57.5% of sampled wallets saw nothing" alongside the detection rate. A detection number on its
+"52.5% of sampled wallets saw nothing" alongside the detection rate. A detection number on its
 own would be meaningless against a 0.04% base rate.
 
 **On timing — settled, and not in this project's favour.** I flagged this as open and then read
@@ -262,7 +262,39 @@ parallel session and editing them would clobber its work.
 2. **`README.md`'s framing of the problem should cite arXiv:2508.12107's "only three of 53
    wallets warn"**, next to the existing claim about what wallets display. It is a stronger and
    more checkable statement than the current one and it is not mine.
-3. **`analysis/README.md`'s concentration paragraph should note the CCS'24 four-entity/92%-profit
+3. **`README.md`'s cry-wolf paragraph is now out of date and should be restated.** It says "40
+   randomly sampled active wallets and 2,501 counterparties, 57.5% of wallets saw no warning at
+   all, and 91% of every warning … rests on a checkable fact". The re-measurement supersedes all
+   four figures: **59 wallets, 21,899 counterparties, 52.5% quiet, 97.2% resting on a fact** —
+   and the facts are now checked rather than asserted, all 884 of them. The paragraph should also
+   lose the implication that a per-counterparty percentage means much, given the median wallet in
+   the sample has 3 counterparties and the largest has 15,674. This one is a correctness fix, not
+   an improvement: the numbers currently in that file are no longer what the repository measures.
+4. **`analysis/README.md`'s concentration paragraph should note the CCS'24 four-entity/92%-profit
    finding** as independent corroboration of the planter-keyed registry design, with the
    granularity caveat. That file is mine and the change is made in the same commit as this
    document.
+
+## A gap this opened and did not close
+
+Found while measuring the solver false positives, recorded here because it is real and unfixed.
+
+**A smart account's payments are all signed by somebody else.** An ERC-4337 account's user
+operations are submitted by a bundler, so `tx.from` is the bundler and never the account. The
+EntryPoint at `0x0000000071727de22e5e9d8baf0edac6f37da032` appeared in the measured window moving
+tokens for 85 distinct accounts in twelve minutes.
+
+The fix in `foldHistory` stops those being called fabrications, because a smart account holds the
+tokens it spends. It does not fix the other half: `outgoingCount` still never increments for such
+an account, so **a smart-account user's genuine payees are never recognised as payees**. The
+"you have paid this address before" signal — the one the whole trust model rests on — is dead for
+them, and silently.
+
+The clean signal exists but not in this layer: `eth_getCode(owner)` says whether the owner is a
+contract, and for a contract account "the owner did not sign" carries no information at all. That
+is a change to `packages/chain` and a new input to the engine, not a change to a rule, so it is
+written down rather than rushed.
+
+It matters more here than it would elsewhere, because this project's own `GuardedAccount` puts
+code on a user's account by EIP-7702 — and an account with code delegating to a bundler is
+exactly the shape described above.

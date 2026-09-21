@@ -177,7 +177,7 @@ per-wallet row is the one that says what a person actually sees.
 A `Transfer` log naming you as sender in someone else's transaction is *usually* a fabrication —
 but it is also exactly what a legitimate intent-based settlement looks like. A CoW or UniswapX
 solver moves your tokens after you sign an order off chain, and the log names you while the
-transaction names them. If a meaningful share of the 354 fabricated records were those, the
+transaction names them. If a meaningful share of these records were those, the
 headline would be worthless.
 
 **The first version of this test was wrong, and wrong in the direction that flattered the
