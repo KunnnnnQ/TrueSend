@@ -5,7 +5,10 @@ fabricate one.**
 
 Anyone can call a contract that emits a `Transfer` log naming *you* as the sender. No approval, no
 signature, nothing you can refuse. Your history then shows a payment to an address you have never
-paid, and every wallet renders it as a payment you made.
+paid, and whether your wallet notices depends on a filter it bought from somebody else. Of 53
+popular Ethereum wallets evaluated in 2025, 16 displayed fabricated transfers as real, most
+outsourced the filtering to their activity provider, and **only three warned when the user went to
+pay the address** ([Guan and Li, arXiv:2508.12107](https://arxiv.org/abs/2508.12107)).
 
 That is how 1155 WBTC was lost in May 2024. The victim's "cautious test transfer" 73 minutes
 before the real one was signed by somebody else, on a token contract whose symbol is `ETH`. Every
@@ -100,12 +103,23 @@ within a poll, with a one-click cancel link that lands on the transfer. An alert
 twice and a failure is never dropped, because a user who stops watching for themselves on the
 strength of a promise deserves that promise kept.
 
-**It has been measured against the thing that kills security tools.** Across 40 randomly sampled
-active wallets and 2,501 counterparties, 57.5% of wallets saw no warning at all, and **91% of
-every warning that did fire rests on a checkable fact** rather than an inference — a transfer log
-naming the user as sender in a transaction they demonstrably did not sign. A tool that cries wolf
-gets switched off, and then it protects nobody, so that number is the one worth arguing about.
-[`analysis/README.md`](analysis/README.md#does-it-cry-wolf).
+**It has been measured against the thing that kills security tools.** Across 59 randomly sampled
+active wallets, 52.5% saw no warning at all, and **97% of every warning that did fire rests on a
+checkable fact** rather than an inference — a transfer log naming the user as sender in a
+transaction they demonstrably did not sign. Those facts are checked rather than asserted: each
+record is reconciled against the token's own balances, and all 884 held up. A tool that cries
+wolf gets switched off, and then it protects nobody, so that number is the one worth arguing
+about. [`analysis/README.md`](analysis/README.md#does-it-cry-wolf).
+
+**Measuring it found two ways it cried wolf, and both are fixed.** A transfer you did not sign is
+not always a fabrication: someone you authorised — a Permit2 filler, a CoW solver, a relayer
+spending a gasless signature — can move your tokens for you, and 4.6% of nonzero USDT and USDC
+transfers are exactly that. The detector scored those 71/100 danger, the same score it gives the
+address that took 1155 WBTC. And for a smart account, whose every payment is submitted by a
+bundler, the signer test has only one answer, so the lookalike rule had no payees to compare
+against and could not fire at all. Telling a smart account from a delegated EOA — which also has
+code but still signs — is read from the EIP-7702 designator rather than guessed; on live mainnet,
+16% of token senders are delegated EOAs.
 
 **Scores explain themselves.** Every finding carries a sentence naming the contact being imitated
 and both fingerprints. A bare number asks for trust; a reason lets the user catch what the rules

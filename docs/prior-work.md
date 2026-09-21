@@ -251,50 +251,46 @@ Stated plainly, because a hackathon judge should not have to work it out.
 the full texts to settle and it is not load-bearing either way. The timing question is settled,
 and it went against this project — see §2.
 
-## Changes this suggests
+## Changes this suggested, and where they went
 
-Recorded here rather than made, because `docs/threat-model.md` and `README.md` are shared with a
-parallel session and editing them would clobber its work.
+These were recorded rather than made while `docs/threat-model.md` and `README.md` were shared with
+a parallel session. That session has finished and all of them are in:
 
-1. **`docs/threat-model.md` should gain a section on the delegation-signing habit**, citing
-   arXiv:2512.12174 and pointing at `SafeVault` as the no-delegation path. This is the most
-   important of the three: it is a risk the project's own design introduces.
-2. **`README.md`'s framing of the problem should cite arXiv:2508.12107's "only three of 53
-   wallets warn"**, next to the existing claim about what wallets display. It is a stronger and
-   more checkable statement than the current one and it is not mine.
-3. **`README.md`'s cry-wolf paragraph is now out of date and should be restated.** It says "40
-   randomly sampled active wallets and 2,501 counterparties, 57.5% of wallets saw no warning at
-   all, and 91% of every warning … rests on a checkable fact". The re-measurement supersedes all
-   four figures: **59 wallets, 21,899 counterparties, 52.5% quiet, 97.2% resting on a fact** —
-   and the facts are now checked rather than asserted, all 884 of them. The paragraph should also
-   lose the implication that a per-counterparty percentage means much, given the median wallet in
-   the sample has 3 counterparties and the largest has 15,674. This one is a correctness fix, not
-   an improvement: the numbers currently in that file are no longer what the repository measures.
-4. **`analysis/README.md`'s concentration paragraph should note the CCS'24 four-entity/92%-profit
-   finding** as independent corroboration of the planter-keyed registry design, with the
-   granularity caveat. That file is mine and the change is made in the same commit as this
-   document.
+1. **The delegation-signing habit** — `docs/threat-model.md`, "Teaching people to sign
+   delegations is teaching them the habit an attack needs", citing arXiv:2512.12174 and pointing
+   at `SafeVault` as the path that takes no delegation at all.
+2. **"Only three of 53 wallets warn"** — `README.md`'s opening, which it also corrected. The old
+   line said *every* wallet renders a fabricated transfer as a payment. The paper that supports
+   the argument says 16 of 53 did while most filter through a provider, so the measured version
+   is both more accurate and stronger than the sweeping one.
+3. **The cry-wolf figures** — `README.md` now quotes the re-measurement, and says the facts behind
+   it are checked against the chain rather than asserted.
+4. **The CCS'24 concentration finding** — `analysis/README.md`, made at the time.
 
-## A gap this opened and did not close
+## A gap this opened, and how it closed
 
-Found while measuring the solver false positives, recorded here because it is real and unfixed.
+Found while measuring the solver false positives.
 
-**A smart account's payments are all signed by somebody else.** An ERC-4337 account's user
-operations are submitted by a bundler, so `tx.from` is the bundler and never the account. The
-EntryPoint at `0x0000000071727de22e5e9d8baf0edac6f37da032` appeared in the measured window moving
-tokens for 85 distinct accounts in twelve minutes.
+**A smart account's payments are all submitted by somebody else.** An ERC-4337 account's user
+operations reach the chain inside a bundler's transaction, so `tx.from` is the bundler and never
+the account. The EntryPoint at `0x0000000071727de22e5e9d8baf0edac6f37da032` moved tokens for 85
+distinct accounts in one twelve-minute window.
 
-The fix in `foldHistory` stops those being called fabrications, because a smart account holds the
-tokens it spends. It does not fix the other half: `outgoingCount` still never increments for such
-an account, so **a smart-account user's genuine payees are never recognised as payees**. The
-"you have paid this address before" signal — the one the whole trust model rests on — is dead for
-them, and silently.
+The consequence was worse than this section first said. `assessAddress` builds its payee set from
+`outgoingCount > 0` and the lookalike rule only compares against that set, so for these users the
+rule could not fire at all. Not a weakened signal — an absent one, and a test now shows it scoring
+a lookalike of a real payee as `no-history-at-all`.
 
-The clean signal exists but not in this layer: `eth_getCode(owner)` says whether the owner is a
-contract, and for a contract account "the owner did not sign" carries no information at all. That
-is a change to `packages/chain` and a new input to the engine, not a change to a rule, so it is
-written down rather than rushed.
+It is closed by reading the owner's code once per scan and dropping the signer test where it
+cannot pass. The classification is EIP-7702's own: accounts whose code is a valid delegation
+designator may originate transactions, and *"accounts with any other code values may not"*. See
+`packages/chain/src/account.ts`.
 
-It matters more here than it would elsewhere, because this project's own `GuardedAccount` puts
-code on a user's account by EIP-7702 — and an account with code delegating to a bundler is
-exactly the shape described above.
+**An earlier version of this section had it backwards about this project's own accounts.** It said
+`GuardedAccount`, by putting code on a user's account, produces "exactly the shape described
+above". It does not. A 7702 delegation leaves an EOA that still signs, and the designator says so.
+The real risk for `GuardedAccount` users was the *opposite* mistake: reading "has code" as "is a
+contract" and dropping the signer test for an account that does sign. On live mainnet 16% of the
+addresses sending USDT and USDC are delegated EOAs, so that would not have been a corner case. The
+classifier matches the designator exactly for that reason, and `account-kinds.mjs` fails if it
+ever stops finding them.

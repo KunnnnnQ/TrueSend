@@ -1,6 +1,6 @@
 # Validating the detectors against real mainnet activity
 
-Six scripts, no API key, no notebook. Each one fetches from public RPC endpoints and either
+Seven scripts, no API key, no notebook. Each one fetches from public RPC endpoints and either
 asserts its claims or fails.
 
 ```bash
@@ -10,6 +10,7 @@ node src/evaluate-engine.mjs       # run the shipped detector over both
 node src/false-positives.mjs       # find out whether it cries wolf
 node src/authorised-movements.mjs  # find out whether it cries wolf at solvers
 node src/check-reconcile.mjs       # calibrate the instrument the last two rest on
+node src/account-kinds.mjs         # find out which senders can sign at all
 ```
 
 `evaluate-engine.mjs` imports `@truesend/engine` from its built `dist`, exactly as the web app
@@ -252,6 +253,38 @@ also the real limit of the fix: the engine learns about a holding by watching th
 a token acquired before the start of the scanned window is invisible and the warning comes back.
 None of the eight hit that, but a longer-dormant holder would. Only a balance read removes it, and
 that belongs in the chain layer, not in a pure rule.
+
+### Some accounts cannot sign anything, and the detector was blind to all of them
+
+The whole engine compares the owner against `tx.from`, and for a contract account that comparison
+can never be true. An ERC-4337 smart account's payments reach the chain inside a bundler's
+transaction; EIP-7702 puts it in the protocol that accounts with code other than a delegation
+designator *"may not originate transactions"* at all.
+
+That was worse than a missing trust signal. `assessAddress` builds its payee set from payments the
+owner signed, and the lookalike rule only compares against that set. A smart account has none, so
+**the lookalike rule could not fire for it at all** — a test shows a lookalike of a payee the
+account really paid scoring `no-history-at-all`.
+
+The fix reads the owner's code once per scan. The obvious version — "has code, therefore a
+contract" — would have been a second bug, because an EIP-7702 delegated EOA also has code and
+still signs. `account-kinds.mjs` measures how much that distinction is worth, on the addresses
+named as the sender of a USDT or USDC transfer:
+
+| | |
+| --- | --- |
+| plain EOA | 1,205 (62.5%) |
+| **EIP-7702 delegated EOA — has code, still signs** | **314 (16.3%)** |
+| contract | 409 (21.2%) |
+
+The naive reading would have dropped the signer test for one sender in six, and for every user of
+this project's own `GuardedAccount`, which is a delegation. So the designator is matched exactly —
+`0xef0100` and twenty more bytes, checked against a live account rather than a fixture.
+
+The contract share is an upper bound on smart *wallets*: pools, routers and vaults appear as
+senders inside other people's transactions too, and the live example the script found was a
+Uniswap v4 pool manager. The delegated share has no such caveat, because a delegation designator
+only ever sits on an EOA.
 
 ### Lookalikes are never coincidence
 

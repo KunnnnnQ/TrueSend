@@ -124,6 +124,33 @@ policy. TrueSend cannot prevent that and does not try. Mitigation belongs at the
 which is why "an authorization translator that explains what a delegation grants" is listed as
 future work rather than claimed as solved.
 
+### Teaching people to sign delegations is teaching them the habit an attack needs
+
+Qi, Wang, Li, Zhu and Chen, *EIP-7702 Phishing Attack*
+([arXiv:2512.12174](https://arxiv.org/abs/2512.12174), December 2025), describe a phishing class
+whose primitive is a single signature:
+
+> instead of deceiving users into signing individual transactions, an attacker can induce a
+> victim to sign a single authorization tuple that grants unconditional and persistent execution
+> control over the account.
+
+`GuardedAccount` asks the user to sign exactly that kind of tuple. A user who has been walked
+through "sign this delegation, it protects you" has been trained in the gesture the attack
+depends on, and the gesture looks the same whoever is asking.
+
+This is a property of the mechanism and no delegate contract can fix it. What can honestly be
+said:
+
+- `SafeVault` needs no delegation at all, so the protection does not *require* accepting this
+  risk — a user who finds the trade-off unacceptable has a path that does not take it;
+- the delegate uses ERC-7201 namespaced storage because its slots live in the user's own account,
+  which this model already treats as contested ground;
+- nothing here ever asks a user to sign an authorization they did not initiate.
+
+None of that dissolves the tension, and it should not be presented as if it does. The honest
+statement is that this project makes one delegation worth signing and cannot make the next one
+safe.
+
 ### The fabrication rule depends on the indexer
 
 `spoofed-outgoing-transfer` fires on a fact — a transfer log naming the user as sender in a
@@ -132,6 +159,34 @@ fact. An indexer that believes logs reports the fabrication as a genuine payment
 then has nothing to go on: replayed against the WBTC case, it scores `safe` with no findings at
 all. `AddressSighting.spoofedOutgoingCount` is a required field precisely so that this cannot be
 skipped by accident, but a wrong value silently disarms the strongest rule in the set.
+
+### Telling a fabrication from an authorised movement is not exact
+
+A transfer log naming you as sender, in a transaction you did not sign, is not automatically a
+fabrication. Someone you authorised can move your tokens — a Permit2 filler, a CoW or UniswapX
+solver, a relayer spending an EIP-3009 signature, any contract holding an allowance you granted.
+Measured over twelve minutes of mainnet, that was 4.6% of nonzero USDT and USDC transfers, across
+252 distinct ordinary accounts. `foldHistory` used to call every one of them a fabrication and
+score the counterparty 65, which is danger.
+
+It now separates them by asking whether the owner could have moved anything: a zero-value record
+moved nothing, and a nonzero record of a token the history never shows arriving is a record of
+something the owner never had. Three limits come with that, none of them removable by a rule that
+reads only logs and signatures:
+
+- **It is bounded by the scanned window.** The engine learns of a holding by watching the token
+  arrive, so a token acquired before the window starts looks unheld and the warning returns. This
+  costs a false alarm, never a miss. Only a balance read removes it, and that belongs in the
+  chain layer.
+- **The exemption can be bought for one more log.** An attacker who also emits a nonzero inbound
+  of their own token makes the owner look like a holder. The token contract is theirs, so every
+  claim it makes is theirs to choose. In a sample of 1,370 nonzero records not one attacker had
+  done this, which is a fact about how the attack is run today rather than a property of the rule
+  — `analysis/README.md` says so, and says to re-measure it.
+- **For a contract account the signer test is dropped entirely**, because it has one possible
+  answer. A solver settling for a smart account is then recorded as a payment that account made.
+  Listing a solver as a payee is harmless, and the alternative — measured, not supposed — is a
+  detector that sees nothing at all for those users.
 
 ### The registry cannot be trusted, only weighted
 
