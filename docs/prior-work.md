@@ -8,7 +8,8 @@ corroborate a peer-reviewed finding I had not read. Both are worth saying out lo
 
 ## What was actually verified
 
-I read **abstracts**, fetched from the publishers and quoted below. I have **not** read the full
+I read **abstracts**, fetched from the publishers and quoted below — plus the **full text** of
+arXiv:2501.16681, which §2 needed and which changed what §2 says. I have **not** read the full
 texts. Everything attributed to a paper here appears in its abstract; nothing is attributed on
 the strength of a search-result snippet, and there are figures floating around in snippets —
 "14 million phishing transfers", "1.44 million benign addresses" — that are plausibly from these
@@ -68,14 +69,43 @@ switched off long before it ever encounters the one transfer that mattered. That
 "57.5% of sampled wallets saw nothing" alongside the detection rate. A detection number on its
 own would be meaningless against a 0.04% base rate.
 
-**On timing.** The abstract names "address similarity, timing" among the success conditions but
-gives no figure for the interval between a victim's real payment and the planting of the
-lookalike. `analysis/` measures it: median **26 blocks** (~5 minutes), 90th percentile 146,
-82% within 50 blocks — which is what `RECENT_PAYMENT_WINDOW_SECONDS` is set from, instead of from
-intuition. **I do not know whether the full paper reports this.** The abstract does not, I have
-not read the body, and I am not claiming it is novel. If the paper has it, this is a replication;
-if it does not, it is a small contribution. Either way the number is measured and reproducible,
-and that is the part the project depends on.
+**On timing — settled, and not in this project's favour.** I flagged this as open and then read
+the full text. Section 4.1 defines the detection window:
+
+> we focus on the 20 minutes following the original transfer, which corresponds to blocks n+1 to
+> n+m+1 where m=100 and 400 for Ethereum and BSC, respectively
+
+and Section 5.2 defends it: doubling to 200 blocks "captures 1,363 (0.17%) more poisoning
+transfers". So the paper does quantify the interval — as a parameter with evidence behind it. No
+figure or table I could find plots the delay itself, but Figure 10's caption does mention
+"timing" and I could not read the figure, so I am not claiming the distribution is absent.
+
+`analysis/` measures one: median **26 blocks** (~5 minutes), 90th percentile 146, 82% within 50
+blocks. That is where `RECENT_PAYMENT_WINDOW_SECONDS` comes from. It is no longer offered as a
+contribution.
+
+**The two also disagree, which is worth more than the claim would have been.** If a tenth of
+plants really land beyond 146 blocks, widening a 100-block window to 200 should pick up several
+percent — not 0.17%. The likeliest reason is that the numbers are anchored differently: their
+window opens after *any* transfer the victim makes, so a lookalike planted 300 blocks after one
+payment usually falls within 100 blocks of a later one and is already counted. Mine measures to
+the specific payment the lookalike imitates. On top of that my scan window is 1,200 blocks, which
+truncates long gaps outright — the "longest observed 1,125" is pressed against that edge and is
+not a real maximum. I have not resolved it. A reader should treat my percentiles as describing my
+sampling frame rather than the attack.
+
+**Concentration, independently, a third time.** Section 5.3 finds **49 attack groups** with more
+than one lookalike address, accounting for **97.4%** of poisoning transactions, the top seven or
+eight dominating, and Group 1 alone responsible for 1.39 million lookalike addresses. Three
+measurements — this, CCS'24's four entities, and this repository's 18 planter addresses in a
+four-hour window — agree about where the attack comes from, having been made three different ways.
+
+**What the attackers spend, which sets the bar for the lookalike rule.** Section 7.2 estimates
+Group 1 burned "3.0×10^7 CPU-days or 27,093 GPU-days" grinding addresses, reaching a maximum
+20-digit match where other groups reach 14. TrueSend's lookalike rule triggers on four leading
+plus four trailing hex characters — eight. Real attackers routinely produce more than twice that,
+so the threshold sits comfortably below what it has to catch, and a matched pair is even less
+likely to be coincidence than the 32-bit arithmetic in `analysis/README.md` suggests.
 
 ## 3. Ethereum Crypto Wallets under Address Poisoning: How Usable and Secure Are They?
 
@@ -198,22 +228,28 @@ Stated plainly, because a hackathon judge should not have to work it out.
   weighted highest, it is structurally impossible for an integrator to omit by accident: an
   indexer that does not resolve signers must write `0` deliberately. This came from the engine
   scoring the verified WBTC case **0/100, `safe`** before the rule existed.
-- **A measured timing distribution** driving the recency window (median 26 blocks) — subject to
-  the caveat in §2 that I have not checked the USENIX paper's body.
-- **The solver objection, measured rather than argued.** A `Transfer` log naming you as sender in
-  someone else's transaction is also what a legitimate CoW or UniswapX settlement looks like. The
-  discriminator used — has this wallet ever *signed* a transfer of this token — needs no token
-  list and so cannot be wrong about a token a list forgot. Result: 0 of 354 fabricated records
-  could have been a settlement. I did not find this objection addressed in any of the abstracts,
-  which is weak evidence of anything; it is addressed here because it would have sunk the headline
-  number if true.
+- ~~A measured timing distribution.~~ **Withdrawn.** Reading the full text showed USENIX'25
+  quantifies the interval as a 100-block window with evidence for it, and my percentiles disagree
+  with theirs for reasons I cannot resolve. See §2. The window in the code is still set from a
+  measurement rather than from intuition; it is not a finding.
+- **The solver objection, settled against the chain.** A `Transfer` log naming you as sender in
+  someone else's transaction is also exactly what a legitimate settlement looks like. The first
+  discriminator for this was wrong: it asked whether the wallet had ever *signed* a transfer of
+  the token, and receiving a token needs no signature, so it filed every gasless-permit seller
+  under "impossible" and returned a clean zero. Replaced by reconciling each record against the
+  token's own balances. Of **1,746** unsigned records across 59 wallets, 1,736 were fabrications
+  and **ten were not** — seven of those settled through CoW Protocol's settlement contract. The
+  engine had been scoring them 71/100 danger, the same score it gives the WBTC attacker, and no
+  longer does. I did not find this failure mode discussed in any of the abstracts, which is weak
+  evidence of anything; it is here because it would have sunk the headline number if left alone.
 - **An on-chain defence.** All three papers characterise or evaluate. None of the abstracts
   describes a contract that holds a first transfer to an unknown recipient. The detector can be
   wrong; the cooldown does not consult it, which is why an unknown recipient is held regardless of
   score.
 
-**What is honestly uncertain:** whether the timing figure and the solver discriminator are novel.
-Both would need the full texts to settle, and neither is load-bearing for the project.
+**What is honestly uncertain:** whether the reconciliation discriminator is novel. That would need
+the full texts to settle and it is not load-bearing either way. The timing question is settled,
+and it went against this project — see §2.
 
 ## Changes this suggests
 

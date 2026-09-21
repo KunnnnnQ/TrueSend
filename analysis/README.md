@@ -1,13 +1,15 @@
 # Validating the detectors against real mainnet activity
 
-Three scripts, no API key, no notebook. Each one fetches from public RPC endpoints and either
+Six scripts, no API key, no notebook. Each one fetches from public RPC endpoints and either
 asserts its claims or fails.
 
 ```bash
-node src/verify-wbtc-case.mjs    # re-derive the May 2024 WBTC loss from chain
-node src/scan-poisoning.mjs      # measure what is happening right now
-node src/evaluate-engine.mjs     # run the shipped detector over both
-node src/false-positives.mjs     # find out whether it cries wolf
+node src/verify-wbtc-case.mjs      # re-derive the May 2024 WBTC loss from chain
+node src/scan-poisoning.mjs        # measure what is happening right now
+node src/evaluate-engine.mjs       # run the shipped detector over both
+node src/false-positives.mjs       # find out whether it cries wolf
+node src/authorised-movements.mjs  # find out whether it cries wolf at solvers
+node src/check-reconcile.mjs       # calibrate the instrument the last two rest on
 ```
 
 `evaluate-engine.mjs` imports `@truesend/engine` from its built `dist`, exactly as the web app
@@ -152,18 +154,23 @@ switched off protects nobody.
 `false-positives.mjs` picks wallets at random from people who just made a genuine payment,
 rebuilds each history the way the product does, and scores every counterparty in it.
 
-Over **40 wallets and 2,501 counterparties**:
+Over **59 wallets and 21,899 counterparties**:
 
 | | |
 | --- | --- |
-| counterparties flagged at all | 239 (9.6%) |
-| — on a **fact** | 217 (8.7%) |
-| — on a **heuristic** | 22 (0.9%) |
-| **wallets that saw no warning at all** | **23 of 40 (57.5%)** |
+| counterparties flagged at all | 909 (4.2%) |
+| — on a **fact** | 884 (4.0%) |
+| — on a **heuristic** | 25 (0.1%) |
+| **wallets that saw no warning at all** | **31 of 59 (52.5%)** |
 
-**90.8% of every warning rests on a checkable fact** — a transfer log naming the user as
-sender in a transaction they demonstrably did not sign. That is not a false positive in any
-useful sense; it is a discovery. The 22 heuristic-only warnings are the ones that could be wrong.
+**97.2% of every warning rests on a checkable fact** — a transfer log naming the user as sender
+in a transaction they demonstrably did not sign. Every one of those 884 was then checked against
+the chain rather than taken on trust, and all 884 held up; see below. The 25 heuristic-only
+warnings are the ones that could be wrong.
+
+Read the per-counterparty percentages carefully. The median wallet here has **3** counterparties
+and the largest has **15,674**, so an aggregate "4.2%" is mostly describing that one wallet. The
+per-wallet row is the one that says what a person actually sees.
 
 ### The objection that could have sunk this
 
@@ -173,31 +180,72 @@ solver moves your tokens after you sign an order off chain, and the log names yo
 transaction names them. If a meaningful share of the 354 fabricated records were those, the
 headline would be worthless.
 
-The discriminator used is **whether the wallet has ever signed a transfer of that token itself**,
-which needs no list of known tokens and so cannot be wrong about a token the list forgot. If you
-have never signed a transfer of a token, you never held it, and a record of you sending it is
-fabricated.
+**The first version of this test was wrong, and wrong in the direction that flattered the
+result.** It asked whether the wallet had ever *signed* a transfer of the token, on the reasoning
+that "if you have never signed a transfer of a token, you never held it". Receiving a token needs
+no signature. A wallet paid in USDC that sells it through a gasless permit has never signed
+anything touching USDC, and its USDC really leaves. That test filed every such case under
+impossible and duly returned a clean zero.
+
+`reconcile.mjs` asks the token instead of guessing. An honest token's balances move exactly as
+its logs say, so each record is checked against the owner's balance either side of its block,
+against the net of every transfer log in that block that touches them. `check-reconcile.mjs`
+calibrates it first, on two records whose nature was already established: the fabricated WBTC
+bait, which must not read as real, and the 1155 WBTC the victim genuinely sent, which must.
+
+Of **1,746** records claiming these wallets paid somebody without signing:
 
 | | |
 | --- | --- |
-| zero value — never a settlement | 41 (11.6%) |
-| a token the wallet has never signed — they never held it | 313 (88.4%) |
-| **a token the wallet has used — could be a solver** | **0 (0.0%)** |
+| zero value — nothing moved, so nothing was paid | 376 (21.5%) |
+| the contract will not answer `balanceOf` at all | 1,119 (64.1%) |
+| balances contradict the logs | 241 (13.8%) |
+| **value really left the wallet — not a fabrication** | **10 (0.6%)** |
+| could not be checked | 0 |
 
-Zero, at this sample size. Not one of them could be a legitimate settlement.
+99.4% were fabrications. **Ten were not.** Seven of the ten were settled through
+`0x9008d19f…560ab41` — CoW Protocol's settlement contract — nine were USDG and one USDT. The old
+test called 1,369 records impossible-to-be-a-settlement, and **nine of them were CoW
+settlements**: the predicted failure mode, in the data, in exactly the predicted place.
+
+The largest bucket deserves its own look. **64% of fabricated records come from a contract that
+will not answer `balanceOf` at all.** Those are not tokens. They are log emitters.
+
+### Which rule the product should use, measured rather than argued
+
+Reconciling needs archive state, which the product does not have — public endpoints serve recent
+state only. So it is ground truth, used to score rules that see only what the product sees. On
+the 1,370 nonzero records:
+
+| rule | left alone | false alarm | caught | **missed** |
+| --- | --- | --- | --- | --- |
+| flag every unsigned transfer (what the product used to do) | 0 | 10 | 1,360 | **0** |
+| **real if the owner has held the token — shipped** | **10** | **0** | **1,360** | **0** |
+| real if they have signed a transfer of that token | 1 | 9 | 1,360 | **0** |
+| real if they have ever received that token | 10 | 0 | 1,360 | **0** |
+
+A *missed* is a fabrication the rule waves through, and it has to stay at zero: a false alarm
+costs trust, a miss costs somebody their money.
+
+Nothing was missed by any rule, and that is itself a measurement rather than a property of the
+rules. It says that in this sample **no attacker planted a nonzero inbound of their own token** —
+the one cheap move that would buy the exemption. That is a fact about how the attack is currently
+run, and it is the thing to re-measure if these rules ever start looking too good.
+
+`foldHistory` implements the shipped row; see `packages/engine/src/history.ts`.
 
 ### Lookalikes are never coincidence
 
 A lookalike needs four leading and four trailing hex characters to match: 32 bits. Across this
-sample the expected number of chance collisions is **0.00022**. The number observed was
-**159**.
+sample the expected number of chance collisions is **0.030**. The number observed was **575**.
 
-That is the heuristic's whole justification, and it is a factor of about seven hundred thousand
+That is the heuristic's whole justification, and it is a factor of roughly nineteen thousand
 rather than a judgement call.
 
 ### The distribution is heavy-tailed
 
-Danger verdicts per wallet, sorted: 71, 53, 36, 14, 12, 9, 9, 6, … and then 23 zeros.
+Danger verdicts per wallet, sorted: 163, 154, 95, 71, 63, 56, 50, 44, 44, 31, … and then 31
+zeros.
 
 Most wallets see nothing. A few are hammered. Reporting only the mean would hide both facts, and
 the second one is the reason the product exists.
@@ -206,8 +254,8 @@ the second one is the reason the product exists.
 
 - **The false-positive measurement is on *active* wallets**, sampled from addresses that made a
   payment in the last few minutes. Active addresses are targeted more than dormant ones, so
-  9.6% is an upper bound on what a typical holder would see, not a typical figure.
-- **22 heuristic-only warnings is not the same as 22 false positives.** Those are the ones that
+  4.2% is an upper bound on what a typical holder would see, not a typical figure.
+- **25 heuristic-only warnings is not the same as 25 false positives.** Those are the ones that
   *could* be wrong, and given the collision arithmetic above almost certainly are not — most are
   likely cases where the fabricated record that corroborates them fell outside the scanned window.
   Nothing here establishes that, and it is not claimed.

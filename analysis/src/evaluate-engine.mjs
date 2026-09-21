@@ -190,9 +190,23 @@ const noiseQuietShare = noise.perWallet.quiet / noise.wallets;
 console.log(`\nOn ${noise.wallets} randomly sampled wallets (${noise.counterparties} counterparties):`);
 console.log(`  warnings resting on a fact       ${(noiseFactShare * 100).toFixed(1)}%`);
 console.log(`  wallets that saw nothing at all  ${(noiseQuietShare * 100).toFixed(1)}%`);
+
+/**
+ * The share of those "facts" that survive being checked against the chain.
+ *
+ * A warning that says "somebody fabricated a record of you paying this address" is either true or
+ * it is not, and `reconcile` settles which by asking the token whether its balances moved the way
+ * its logs claim. Reporting the share of fact-warnings without checking them would be counting
+ * the detector's own opinion of itself.
+ */
+const factsChecked = noise.factWarnings.right + noise.factWarnings.wrong;
+const factsHeldUp = factsChecked === 0 ? 1 : noise.factWarnings.right / factsChecked;
+
+console.log(`  of those, checked against chain  ${factsChecked}`);
+console.log(`  and found to be true             ${(factsHeldUp * 100).toFixed(1)}%`);
 console.log(
-  `  fabrications that could have been a solver settlement instead: ` +
-    `${noise.fabricatedRecords.tokenTheyHaveUsed}`,
+  `  records where value really moved (so not a fabrication at all): ` +
+    `${noise.unsignedOutgoing.stateAgrees} of ${noise.unsignedOutgoing.checked} checked`,
 );
 
 if (CHECK) {
@@ -216,6 +230,26 @@ if (CHECK) {
     problems.push(
       `only ${(noiseQuietShare * 100).toFixed(1)}% of sampled wallets saw nothing, expected >= 40% — ` +
         `a tool this noisy gets switched off`,
+    );
+  }
+  if (noise.unsignedOutgoing.checked === 0) {
+    problems.push(
+      `not one unsigned record could be reconciled against the chain, so the fact-check below ` +
+        `proves nothing — check the archive endpoint before believing the rest`,
+    );
+  }
+  /**
+   * The floor sits below the 100% actually measured, on purpose.
+   *
+   * A warning that calls a record fabricated is either right or wrong, and the chain settles it.
+   * Pinning the gate at the measured 100% would fail CI the first time one legitimate settlement
+   * slipped into a sample, which is noise rather than regression. What must not happen quietly is
+   * the detector drifting into asserting fabrications that did not occur.
+   */
+  if (factsChecked > 0 && factsHeldUp < 0.95) {
+    problems.push(
+      `only ${(factsHeldUp * 100).toFixed(1)}% of fact-warnings survived being checked against ` +
+        `the chain, expected >= 95% — the detector is calling real movements fabrications`,
     );
   }
   if (problems.length) {
