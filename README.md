@@ -136,8 +136,8 @@ similarity rule scored it zero. Measured: `safe` (0) before, `danger` (71) after
 | Component | State |
 | --- | --- |
 | `contracts/` — policy, 7702 delegate, vault, factory, community registry | Built. 94 tests: unit, fuzz, invariant. 100% branch coverage |
-| `packages/engine/` — fingerprints, heuristics, scoring | Built. 98 tests including property tests |
-| `packages/chain/` — history with signer resolution, policy reads | Built. Shared by the app and the indexer |
+| `packages/engine/` — fingerprints, heuristics, scoring | Built. 121 tests including property tests |
+| `packages/chain/` — history with signer resolution, policy reads | Built. 15 tests. Shared by the app and the indexer |
 | `apps/web/` — Scan, Send, Pending | Built. Scan reads mainnet directly and resolves signers; Send and Pending drive a deployed policy |
 | `apps/indexer/` — hold watcher, alerts, risk API | Built. 17 tests on alert idempotency and resume |
 | `apps/extension/` — copy and paste guard, in-page collision scan | Built. 23 tests |
