@@ -183,10 +183,31 @@ reads only logs and signatures:
   claim it makes is theirs to choose. In a sample of 1,370 nonzero records not one attacker had
   done this, which is a fact about how the attack is run today rather than a property of the rule
   — `analysis/README.md` says so, and says to re-measure it.
-- **For a contract account the signer test is dropped entirely**, because it has one possible
-  answer. A solver settling for a smart account is then recorded as a payment that account made.
-  Listing a solver as a payee is harmless, and the alternative — measured, not supposed — is a
-  detector that sees nothing at all for those users.
+- **A contract account can never sign, so the signer test never has to ask it the question** — a
+  contract can never be `tx.from`, for anyone, which needs no per-account flag to be true. A value
+  that really moved for one of those accounts lands in the same bucket as a solver settling for an
+  EOA: authorised, not a fabrication, and — this is the part worth stating plainly rather than
+  assuming — **also not credited as a payment the account made.** An earlier version of this
+  engine did credit it, on the reasoning that a contract's balance only moves when its own code
+  moves it. That reasoning has this section's own opening sentence as its counterexample: a
+  `Transfer` log is not evidence, including the log that says a token arrived, so `held` — read
+  from logs — is exactly as forgeable as the fabrication rule being defended against. Two log
+  entries on an attacker-owned token, no signature from anyone real at any point, and the earlier
+  version would credit the attacker's own address as a genuine payee — which does not just avoid a
+  danger score, it suppresses every baseline suspicion including "this address has never been paid
+  before." That is strictly worse than the fabrication it was meant to catch. Found by asking
+  whether the fix was actually safe rather than trusting that its tests were green, fixed before it
+  reached a deployed contract or a live user, and pinned as a permanent regression test in
+  `packages/engine/test/history.test.ts` (`describe("the exact hole this used to have")`).
+- **The cost of that fix is real and is not hidden.** `assessAddress` builds its payee set from
+  `outgoingCount > 0`; a contract account's transfers can now only ever land in
+  `authorisedOutgoingCount`, so it has no payees and **the lookalike rule has nothing to compare
+  against for a smart-account owner.** This is not a workaround away from — nothing that reads only
+  logs and a signer can tell "the account's own logic authorised this" apart from "an attacker's
+  token claimed it happened," so there is no safe version of this that keeps the lookalike rule
+  working for these accounts. The fabrication rule (`spoofed-outgoing-transfer`) is unaffected and
+  is the one that matters more: it needs no payee, and it is what would catch the May 2024 case
+  regardless of which kind of account the victim was.
 
 ### The registry cannot be trusted, only weighted
 

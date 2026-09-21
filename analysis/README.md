@@ -266,10 +266,11 @@ owner signed, and the lookalike rule only compares against that set. A smart acc
 **the lookalike rule could not fire for it at all** — a test shows a lookalike of a payee the
 account really paid scoring `no-history-at-all`.
 
-The fix reads the owner's code once per scan. The obvious version — "has code, therefore a
-contract" — would have been a second bug, because an EIP-7702 delegated EOA also has code and
-still signs. `account-kinds.mjs` measures how much that distinction is worth, on the addresses
-named as the sender of a USDT or USDC transfer:
+`scanHistory` reads the owner's code once per scan to tell a contract account from an ordinary
+one. The obvious version of that check — "has code, therefore a contract" — would have been a
+second bug, because an EIP-7702 delegated EOA also has code and still signs. `account-kinds.mjs`
+measures how much that distinction is worth, on the addresses named as the sender of a USDT or
+USDC transfer:
 
 | | |
 | --- | --- |
@@ -285,6 +286,37 @@ The contract share is an upper bound on smart *wallets*: pools, routers and vaul
 senders inside other people's transactions too, and the live example the script found was a
 Uniswap v4 pool manager. The delegated share has no such caveat, because a delegation designator
 only ever sits on an EOA.
+
+**Reading the classification correctly turned out to be the easy part.** Knowing an account
+cannot sign says what to *stop* doing — stop demanding a signature that structurally cannot exist —
+and the first attempt filled that gap by trusting the tokens instead: a value-moving record
+against a token the history shows arriving must be the account's own doing, since a contract's
+balance only moves when its own code moves it.
+
+That reasoning has this file's own opening argument as its counterexample. `held` — whether the
+account "has" a token — is established by reading a `Transfer` log, and a log is not evidence of
+anything a token contract didn't choose to claim. An attacker's own token can emit "the account
+received one wei of this" for free, then "the account sent some back" right after, and the first
+version credited that as a genuine payment with no signature anywhere in the reasoning. Worse than
+the plain fabrication it replaced: a plain fabrication scores danger; this **suppressed every
+baseline suspicion**, including "this address has never been paid before," and would have made an
+attacker's own address read as a fully trusted payee for the price of two log entries.
+
+Found by asking whether the fix was actually safe rather than trusting that its tests were green,
+before it reached a deployed contract or a live user. Fixed by giving a contract account exactly
+the treatment a solver already gets against an EOA: a value-moving unsigned record lands in
+`authorisedOutgoingCount`, never in `outgoingCount`, whoever the owner is. Pinned as a permanent
+regression test in `packages/engine/test/history.test.ts`
+(`describe("the exact hole this used to have")`), reproducing the two-log attack exactly and
+asserting the baseline suspicion survives it.
+
+**The honest cost, stated rather than hidden:** the lookalike rule still has no payees to compare
+against for a smart-account owner, because nothing that reads only logs and a signer can tell "the
+account's own logic authorised this" apart from "a token contract claimed it happened." That is not
+a bug to be found later — there is no safe version of this that keeps the rule working for these
+accounts from this information alone. The fabrication rule is unaffected and is the one that
+matters more: it needs no payee, and it is what would have caught the May 2024 case regardless of
+which kind of account the victim was.
 
 ### Lookalikes are never coincidence
 

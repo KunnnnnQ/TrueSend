@@ -111,15 +111,31 @@ record is reconciled against the token's own balances, and all 884 held up. A to
 wolf gets switched off, and then it protects nobody, so that number is the one worth arguing
 about. [`analysis/README.md`](analysis/README.md#does-it-cry-wolf).
 
-**Measuring it found two ways it cried wolf, and both are fixed.** A transfer you did not sign is
-not always a fabrication: someone you authorised — a Permit2 filler, a CoW solver, a relayer
-spending a gasless signature — can move your tokens for you, and 4.6% of nonzero USDT and USDC
-transfers are exactly that. The detector scored those 71/100 danger, the same score it gives the
-address that took 1155 WBTC. And for a smart account, whose every payment is submitted by a
-bundler, the signer test has only one answer, so the lookalike rule had no payees to compare
-against and could not fire at all. Telling a smart account from a delegated EOA — which also has
-code but still signs — is read from the EIP-7702 designator rather than guessed; on live mainnet,
-16% of token senders are delegated EOAs.
+**Measuring it found two ways it cried wolf. Fixing the second one found a worse bug hiding behind
+the fix.** A transfer you did not sign is not always a fabrication: someone you authorised — a
+Permit2 filler, a CoW solver, a relayer spending a gasless signature — can move your tokens for
+you, and 4.6% of nonzero USDT and USDC transfers are exactly that. The detector scored those
+71/100 danger, the same score it gives the address that took 1155 WBTC. Fixed, and checked against
+eight real histories pulled from live mainnet: 71/100 danger before, 0–6/100 safe after.
+
+The second one is a smart account, whose every payment is submitted by a bundler rather than
+signed by the account itself — telling one apart from an EIP-7702 delegated EOA, which also has
+code but still signs, is read from the exact designator EIP-7702 defines rather than guessed; on
+live mainnet 16% of token senders are delegated EOAs, so guessing wrong would not have been a
+corner case. The first fix for this credited a smart account's *unsigned* transfers as genuine
+payments, on the reasoning that a contract's balance only moves when its own code moves it — which
+is false for the same reason the fabrication rule exists at all: a `Transfer` log is not evidence,
+so an attacker's own token can claim a smart account received and later sent its tokens for the
+price of two log entries and no signature from anyone. That version would have scored the
+attacker's own address a clean, fully-trusted payee. Found before it shipped anywhere, by asking
+whether the fix was actually safe rather than trusting green tests; pinned as a permanent
+regression test. The account classification stays and is correct; a contract account's unsigned
+transfers now land in the same bucket as an EOA's authorised third party, never as a payment it
+made — which means the lookalike rule still has no payees to compare against for a smart-account
+owner. That gap is real, open, and recorded in
+[`docs/threat-model.md`](docs/threat-model.md), not patched with something unsafe. The fabrication
+rule — the one that matters more, and the only reason the WBTC case is caught at all — works
+correctly for these accounts either way.
 
 **Scores explain themselves.** Every finding carries a sentence naming the contact being imitated
 and both fingerprints. A bare number asks for trust; a reason lets the user catch what the rules
@@ -136,7 +152,7 @@ similarity rule scored it zero. Measured: `safe` (0) before, `danger` (71) after
 | Component | State |
 | --- | --- |
 | `contracts/` — policy, 7702 delegate, vault, factory, community registry | Built. 94 tests: unit, fuzz, invariant. 100% branch coverage |
-| `packages/engine/` — fingerprints, heuristics, scoring | Built. 121 tests including property tests |
+| `packages/engine/` — fingerprints, heuristics, scoring | Built. 122 tests including property tests |
 | `packages/chain/` — history with signer resolution, policy reads | Built. 15 tests. Shared by the app and the indexer |
 | `apps/web/` — Scan, Send, Pending | Built. Scan reads mainnet directly and resolves signers; Send and Pending drive a deployed policy |
 | `apps/indexer/` — hold watcher, alerts, risk API | Built. 17 tests on alert idempotency and resume |

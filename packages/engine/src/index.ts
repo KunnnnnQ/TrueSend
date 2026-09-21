@@ -36,7 +36,6 @@ export {
 export {
   counterparties,
   foldHistory,
-  type FoldOptions,
   type TransferRecord,
 } from "./history.js";
 

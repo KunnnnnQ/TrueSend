@@ -264,12 +264,27 @@ describe("addresses that are not counterparties", () => {
  * An ERC-4337 smart account never appears as `tx.from`: its user operations are submitted by a
  * bundler. EIP-7702 puts this in the protocol — an account whose code is not a valid delegation
  * designator "may not originate transactions" at all — so for such an owner "they did not sign
- * it" is not evidence of anything. It is the only thing that can ever be true.
+ * it" is not evidence of anything. `theySignedIt` is simply always false for one, and needs no
+ * special case to be false safely.
  *
- * The damage is not the missing trust signal. `assessAddress` builds its payee set from entries
- * with `outgoingCount > 0`, and the lookalike rule only compares against that set, so an owner
- * whose every payment is submitted by somebody else has no payees and **the lookalike rule cannot
- * fire at all**. The detector is not weakened for these users, it is switched off.
+ * This file used to special-case it anyway: a value-moving unsigned record against a contract
+ * account was credited as `outgoingCount`, on the reasoning that a contract's balance only moves
+ * when its own code moves it. **That reasoning has the hole this whole module exists to close,
+ * one layer up.** `held` — whether the owner "has" a token — is established by reading a
+ * `Transfer` log, and a log is not evidence of anything a token contract didn't choose to claim.
+ * An attacker's own token can emit "the account received one wei of this" for free, then "the
+ * account sent some back" right after, and the old code read that as a genuine payment with no
+ * signature anywhere in the reasoning — which is strictly worse than the plain fabrication it was
+ * built to catch, because a plain fabrication scores danger and this one **suppressed every
+ * baseline suspicion**, including "this address has never been paid before." `describe("the exact
+ * hole this used to have")` below reproduces it against the current code and pins that it is
+ * closed.
+ *
+ * What is real and stays: `assessAddress` builds its payee set from `outgoingCount > 0`, and the
+ * lookalike rule only compares against that set. A contract account's outgoing transfers can now
+ * only ever land in `authorisedOutgoingCount`, never `outgoingCount`, so it has no payees and the
+ * lookalike rule has nothing to compare against for it — a real, open limitation, recorded in
+ * `docs/threat-model.md` rather than patched with something unsafe.
  */
 describe("an owner that cannot sign anything", () => {
   const SMART_ACCOUNT = "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc" as Address;
@@ -282,37 +297,28 @@ describe("an owner that cannot sign anything", () => {
     transfer({from: SMART_ACCOUNT, to: REAL_PAYEE, value: 5_000_000n, signer: BUNDLER, at: 100}),
   ];
 
-  it("sees a lookalike of a payee the account really paid", () => {
-    const history = foldHistory(SMART_ACCOUNT, paidSomebody, {ownerCanSign: false});
-    const verdict = assessAddress({to: LOOKALIKE, history, now: 200});
-
-    expect(verdict.findings.map((f) => f.code)).toContain("lookalike-of-known-payee");
-  });
-
-  it("records the payment as a payment, since a contract only moves what its own code moves", () => {
-    const history = foldHistory(SMART_ACCOUNT, paidSomebody, {ownerCanSign: false});
+  it("records a real payment as authorised, not as a payment, since nothing here has a signature", () => {
+    const history = foldHistory(SMART_ACCOUNT, paidSomebody);
     const payee = history.find((e) => e.address === REAL_PAYEE);
 
-    expect(payee?.outgoingCount).toBe(1);
+    expect(payee?.outgoingCount).toBe(0);
+    expect(payee?.authorisedOutgoingCount).toBe(1);
     expect(payee?.spoofedOutgoingCount).toBe(0);
-    expect(payee?.lastOutgoingAt).toBe(100);
   });
 
-  /** The blindness, kept as a test so the reason for the flag is not lost. */
-  it("is blind to that same lookalike when told the owner signs for itself", () => {
+  /** The open limitation, kept as a test so it is a documented fact rather than a surprise. */
+  it("has no payee to compare a lookalike against, even for an address it really paid", () => {
     const history = foldHistory(SMART_ACCOUNT, paidSomebody);
     const verdict = assessAddress({to: LOOKALIKE, history, now: 200});
 
     expect(verdict.findings.map((f) => f.code)).not.toContain("lookalike-of-known-payee");
   });
 
-  /** A fabrication is still a fabrication: a contract cannot move what it never held either. */
+  /** A fabrication is still a fabrication: nobody can authorise moving a token nobody ever held. */
   it("still catches a fabricated record against a contract account", () => {
-    const history = foldHistory(
-      SMART_ACCOUNT,
-      [transfer({from: SMART_ACCOUNT, to: ATTACKER, token: BAIT, value: 50_000n, signer: BOT, at: 100})],
-      {ownerCanSign: false},
-    );
+    const history = foldHistory(SMART_ACCOUNT, [
+      transfer({from: SMART_ACCOUNT, to: ATTACKER, token: BAIT, value: 50_000n, signer: BOT, at: 100}),
+    ]);
     const verdict = assessAddress({to: ATTACKER, history, now: 200});
 
     expect(history[0]?.spoofedOutgoingCount).toBe(1);
@@ -321,15 +327,62 @@ describe("an owner that cannot sign anything", () => {
   });
 
   it("still catches a zero-value fabrication against a contract account", () => {
-    const history = foldHistory(
-      SMART_ACCOUNT,
-      [
-        transfer({from: EXCHANGE_PAYER, to: SMART_ACCOUNT, value: 9_000_000n, at: 50}),
-        transfer({from: SMART_ACCOUNT, to: ATTACKER, value: 0n, signer: BOT, at: 100}),
-      ],
-      {ownerCanSign: false},
-    );
+    const history = foldHistory(SMART_ACCOUNT, [
+      transfer({from: EXCHANGE_PAYER, to: SMART_ACCOUNT, value: 9_000_000n, at: 50}),
+      transfer({from: SMART_ACCOUNT, to: ATTACKER, value: 0n, signer: BOT, at: 100}),
+    ]);
 
     expect(history.find((e) => e.address === ATTACKER)?.spoofedOutgoingCount).toBe(1);
+  });
+});
+
+/**
+ * The exact hole a version of this file shipped for a while, closed and pinned so it cannot come
+ * back unnoticed.
+ *
+ * Found by asking, after the fix above landed, whether it was actually safe rather than assuming
+ * it because the tests at the time were green. The two records below are the attacker's entire
+ * cost: one contract they deployed, two log entries, no signature from anyone real at any point.
+ */
+describe("the exact hole this used to have", () => {
+  const SMART_ACCOUNT = "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc" as Address;
+  const FAKE_TOKEN = "0x0000000000000000000000000000000000fa4e01" as Address;
+  const SOME_ADDRESS = "0x000000000000000000000000000000000000bb01" as Address;
+
+  const forgedTrust = [
+    // One wei, attacker's own token, no signature required from anybody: this alone used to be
+    // enough to make the fold believe the account "held" the token.
+    transfer({from: ATTACKER, to: SMART_ACCOUNT, token: FAKE_TOKEN, value: 1n, at: 100, signer: ATTACKER}),
+    // The fabricated "payment", same token, signed by nobody who is or ever was the account.
+    transfer({
+      from: SMART_ACCOUNT,
+      to: ATTACKER,
+      token: FAKE_TOKEN,
+      value: 50_000n,
+      signer: SOME_ADDRESS,
+      at: 200,
+    }),
+  ];
+
+  it("does not credit the forged pair as a genuine payment", () => {
+    const history = foldHistory(SMART_ACCOUNT, forgedTrust);
+    const entry = history.find((e) => e.address === ATTACKER);
+
+    expect(entry?.outgoingCount).toBe(0);
+    expect(entry?.authorisedOutgoingCount).toBe(1);
+  });
+
+  /**
+   * The part that actually mattered: `outgoingCount > 0` is what silences the baseline findings
+   * in `risk.ts`, so crediting it would have made a forged address read as fully trusted rather
+   * than merely unremarkable. This is the assertion the old version of this test suite did not
+   * have, and its absence is why the hole shipped.
+   */
+  it("does not suppress the baseline suspicion a genuinely first-seen address gets", () => {
+    const history = foldHistory(SMART_ACCOUNT, forgedTrust);
+    const verdict = assessAddress({to: ATTACKER, history, now: 300});
+
+    expect(verdict.findings.map((f) => f.code)).toContain("never-paid-before");
+    expect(verdict.score).toBeGreaterThan(0);
   });
 });

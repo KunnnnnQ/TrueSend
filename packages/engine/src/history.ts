@@ -33,58 +33,48 @@ export interface TransferRecord {
 /** Mints and burns name this address; it is not an account anyone can be paid at. */
 const ZERO = "0x0000000000000000000000000000000000000000" as Address;
 
-export interface FoldOptions {
-  /**
-   * Whether this owner is able to sign its own transactions at all.
-   *
-   * Everything else in this module rests on comparing the owner against `tx.from`. For a contract
-   * account that comparison can never be true, and EIP-7702 says so in the protocol rather than
-   * by convention: accounts "whose code is a valid delegation indicator, i.e. `0xef0100 ||
-   * address`" may originate transactions, and *"accounts with any other code values may not
-   * originate transactions."* An ERC-4337 smart account's user operations reach the chain inside
-   * a bundler's transaction, so `tx.from` is the bundler, always.
-   *
-   * Leaving this at its default and pointing the engine at such an account does not merely weaken
-   * the result. `assessAddress` draws its payee set from entries with `outgoingCount > 0` and the
-   * lookalike rule only compares against that set, so an owner whose every payment is submitted
-   * by somebody else has no payees, and **the lookalike rule cannot fire at all**. The detector
-   * is not degraded for these users; it is off.
-   *
-   * Set it to `false` and the signer test is dropped, because it is not a test — it has one
-   * possible answer. What replaces it is the same question asked of the tokens: a movement that
-   * really happened is the account's own doing, since a contract's balance only moves when its
-   * own code moves it. A record of something the account never held stays a fabrication, so the
-   * May 2024 bait would still be caught against a smart account.
-   *
-   * It costs precision at the other end: a solver settling for a smart account also lands in
-   * `outgoingCount`, because nothing on chain distinguishes that from the account paying
-   * directly. Listing a solver as a payee is harmless — solver addresses are nobody's lookalike —
-   * and the alternative is a detector that sees nothing.
-   *
-   * Defaults to `true`, which keeps the strict signer test. A caller that has not looked at the
-   * owner's code gets the conservative behaviour rather than the convenient one.
-   */
-  ownerCanSign?: boolean;
-}
-
 /**
  * Fold a raw transfer list into one summary per counterparty.
  *
  * The rule that matters is four lines down: a transfer log naming the owner as sender counts as a
- * payment they made **only if they signed the transaction**. Otherwise it is a fabrication, and it
- * goes to `spoofedOutgoingCount` instead of to `outgoingCount`.
+ * payment they made **only if they signed the transaction**. Otherwise it is not `outgoingCount`,
+ * whatever else it might be — see `couldHaveMoved` for the one exception, and the paragraph below
+ * for why there is only one.
  *
  * Getting this backwards does not merely lose a signal, it inverts one. A fabricated outgoing
  * record read as genuine makes an attacker look like a counterparty the user has already paid —
  * which is precisely the effect the attacker paid gas for. See `analysis/README.md` for how often
  * this happens in practice; in the sampled window it was 99.88% of zero-value USDT transfers.
+ *
+ * A contract account — an ERC-4337 smart account, a Safe, anything with real code — can never be
+ * `tx.from`, so `theySignedIt` below is always false for one. This function does not special-case
+ * that. **An earlier version did**: it reasoned that a contract's balance only moves when its own
+ * code moves it, so a value-moving record against a held token must be the account's own doing,
+ * and credited it as `outgoingCount` the same as a real signature. That reasoning has exactly the
+ * hole this whole module exists to close, one layer up: `held` is established by reading a
+ * `Transfer` log, and a log is not evidence — a token contract the attacker deployed can emit
+ * "the account received one wei of my token" for the price of nothing, and "the account sent me
+ * some more of it" right after, and the fold read that as a genuine payment with no signature
+ * anywhere in the chain of reasoning. That is strictly worse than the plain fabrication it was
+ * supposed to catch: a plain fabrication lands in `spoofedOutgoingCount` and scores danger; this
+ * landed in `outgoingCount` and **suppressed every baseline suspicion**, including the fact that
+ * the address had never been seen before. Caught with a two-log reproduction before it shipped
+ * anywhere; see `packages/chain/src/account.ts` for the account classification this was trying to
+ * use, which is correct and still used elsewhere — the mistake was routing it into a decision this
+ * module cannot make safely, not the classification itself.
+ *
+ * So a contract account gets exactly the same treatment as a third party settling for an EOA: a
+ * value-moving record lands in `authorisedOutgoingCount`, never in `outgoingCount`. The cost is
+ * real and is not hidden — `assessAddress` builds its payee set from `outgoingCount > 0`, so a
+ * smart-account owner has no payees and the lookalike rule has nothing to compare against for one.
+ * The fabrication rule (`spoofedOutgoingCount`) is unaffected and is the one that matters more: it
+ * needs no payee, and it is what would have caught the May 2024 case regardless of account kind.
+ * `docs/threat-model.md` records the lookalike gap as an open limitation rather than a closed one.
  */
 export function foldHistory(
   owner: string,
   transfers: readonly TransferRecord[],
-  options: FoldOptions = {},
 ): AddressSighting[] {
-  const {ownerCanSign = true} = options;
   const me = normalizeAddress(owner);
   const byCounterparty = new Map<Address, AddressSighting>();
   const held = tokensTheOwnerHasHeld(me, transfers);
@@ -124,9 +114,10 @@ export function foldHistory(
       const theySignedIt = normalizeAddress(transfer.signer) === me;
       const valueMoved = couldHaveMoved(transfer, held);
 
-      // For an owner that cannot sign, `theySignedIt` is never true and carries no information,
-      // so a movement that really happened is the account's own doing. See `FoldOptions`.
-      if (theySignedIt || (!ownerCanSign && valueMoved)) {
+      // `theySignedIt` needs no account-kind check to be safe: it is structurally false for a
+      // contract account (nothing without a private key can ever be `tx.from`) and only true for
+      // an EOA that genuinely signed. See the doc comment above for the branch this replaced.
+      if (theySignedIt) {
         entry.outgoingCount++;
         entry.lastOutgoingAt = Math.max(entry.lastOutgoingAt ?? 0, transfer.at);
       } else if (valueMoved) {

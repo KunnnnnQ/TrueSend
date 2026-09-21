@@ -2,7 +2,7 @@ import {parseAbiItem, parseUnits, type Address, type PublicClient} from "viem";
 
 import {foldHistory, type AddressSighting, type TransferRecord} from "@truesend/engine";
 
-import {accountKind, canSignOwnTransactions, type AccountKind} from "./account.js";
+import {accountKind, type AccountKind} from "./account.js";
 import {splitOnRefusal, type BlockRange} from "./client.js";
 
 const TRANSFER_EVENT = parseAbiItem(
@@ -37,11 +37,14 @@ export interface ScanResult {
   /** Every token contract seen, including ones nobody has heard of. */
   tokensSeen: Address[];
   /**
-   * Whether the owner is an account that signs for itself.
+   * What kind of account the owner is.
    *
-   * Reported rather than kept private because it changes how every other field should be read: a
-   * contract account never appears as `tx.from`, so for one of those "the owner did not sign it"
-   * is a fact about the account type and not about the transfer.
+   * Read from the chain and reported rather than kept private, because it is useful information
+   * on its own — a caller may want to say "this is a smart-contract wallet" somewhere in the UI —
+   * even though `foldHistory` no longer branches on it. An earlier version passed it through to
+   * change how the fold treated unsigned outgoing transfers for a contract account; that turned
+   * out to be unsafe (see the doc comment on `foldHistory` in `@truesend/engine`) and was removed.
+   * The classification itself was never the problem and stays.
    */
   ownerKind: AccountKind;
 }
@@ -199,7 +202,7 @@ export async function scanHistory(
     owner: owner.toLowerCase() as Address,
     range,
     transfers,
-    history: foldHistory(owner, transfers, {ownerCanSign: canSignOwnTransactions(ownerKind)}),
+    history: foldHistory(owner, transfers),
     signersResolved: signers.size,
     tokensSeen: [...new Set(transfers.map((t) => t.token))],
     ownerKind,

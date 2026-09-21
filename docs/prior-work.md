@@ -267,9 +267,11 @@ a parallel session. That session has finished and all of them are in:
    it are checked against the chain rather than asserted.
 4. **The CCS'24 concentration finding** — `analysis/README.md`, made at the time.
 
-## A gap this opened, and how it closed
+## A gap this opened, one that closed, and one my own first fix opened wider
 
-Found while measuring the solver false positives.
+Found while measuring the solver false positives, and this section has now been wrong twice in two
+different directions — recorded in the order it actually happened, because the sequence is the
+point: a fix that looked complete because its own tests were green, was not.
 
 **A smart account's payments are all submitted by somebody else.** An ERC-4337 account's user
 operations reach the chain inside a bundler's transaction, so `tx.from` is the bundler and never
@@ -281,11 +283,6 @@ The consequence was worse than this section first said. `assessAddress` builds i
 rule could not fire at all. Not a weakened signal — an absent one, and a test now shows it scoring
 a lookalike of a real payee as `no-history-at-all`.
 
-It is closed by reading the owner's code once per scan and dropping the signer test where it
-cannot pass. The classification is EIP-7702's own: accounts whose code is a valid delegation
-designator may originate transactions, and *"accounts with any other code values may not"*. See
-`packages/chain/src/account.ts`.
-
 **An earlier version of this section had it backwards about this project's own accounts.** It said
 `GuardedAccount`, by putting code on a user's account, produces "exactly the shape described
 above". It does not. A 7702 delegation leaves an EOA that still signs, and the designator says so.
@@ -293,4 +290,36 @@ The real risk for `GuardedAccount` users was the *opposite* mistake: reading "ha
 contract" and dropping the signer test for an account that does sign. On live mainnet 16% of the
 addresses sending USDT and USDC are delegated EOAs, so that would not have been a corner case. The
 classifier matches the designator exactly for that reason, and `account-kinds.mjs` fails if it
-ever stops finding them.
+ever stops finding them. That part was right and stays.
+
+**What it was paired with was not.** The first fix read the owner's code once per scan and, where
+the signer test could not pass, credited a value-moving unsigned record as a genuine payment —
+reasoning that a contract's balance only moves when its own code moves it. That reasoning has the
+project's own central claim as its counterexample: a `Transfer` log is not evidence of anything a
+token contract didn't choose to claim, including the log that says a token arrived. `held` —
+whether the account "has" a token — is read from exactly such a log, with no signature anywhere in
+the check.
+Two entries on an attacker-owned token — one wei in, some larger amount back out, nobody real
+signing either — and the account's own address would be credited as having genuinely paid the
+attacker. Not a weakened signal this time either: `outgoingCount > 0` is what silences the baseline
+"never seen before" suspicion in `risk.ts`, so the forged pair did not just avoid a danger score, it
+would have made the attacker's address read as fully, cleanly trusted. Worse than the fabrication
+being defended against, which at least scores danger.
+
+Found by asking whether the fix was actually safe rather than trusting that its own tests were
+green — the two tests that shipped with it exercised a real payment and a real fabrication, and
+never tried the forged pair. Fixed by removing the special case entirely: a contract account now
+gets exactly the treatment a solver already gets against an EOA, a value-moving unsigned record
+landing in `authorisedOutgoingCount` and never in `outgoingCount`, which needs no per-account flag
+because a contract structurally can never be `tx.from` in the first place. Pinned as a permanent
+regression test — `packages/engine/test/history.test.ts`,
+`describe("the exact hole this used to have")` — that reproduces the two-log forgery and asserts
+the baseline suspicion survives it.
+
+The account classification in `packages/chain/src/account.ts` was never the problem and is still
+used: it is correct, checked against live mainnet code, and worth having on its own. What it cannot
+safely be used for is manufacturing trust for an account that cannot sign — there is no way, from
+logs and a signer alone, to tell "the account's own logic authorised this" apart from "a token
+contract claimed it did." The lookalike rule's blindness for smart-account payees is therefore not
+closed. It is a real, open limitation, recorded plainly in `docs/threat-model.md` rather than
+patched with something that only looked like a fix.
