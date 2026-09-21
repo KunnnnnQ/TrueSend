@@ -234,6 +234,25 @@ run, and it is the thing to re-measure if these rules ever start looking too goo
 
 `foldHistory` implements the shipped row; see `packages/engine/src/history.ts`.
 
+`authorised-movements.mjs` then checks the fix end to end rather than on paper. It finds people
+on mainnet whose tokens moved without their signature, rebuilds each history the way the Scan
+screen does, and scores the address the tokens went to:
+
+| | verdict on the recipient |
+| --- | --- |
+| before the fix | **danger, 71/100** — `spoofed-outgoing-transfer` |
+| after, over 8 real histories | **safe, 0–6/100** — 0 of 8 called an attacker |
+
+71 is the same score the engine gives the WBTC attacker, which is the point: for three days the
+detector could not tell a CoW solver from the address that took 1155 WBTC.
+
+Handing the engine the single unsigned record on its own would have rigged this — with no history
+at all it cannot know the owner ever held the token, so of course it cries fabrication. That is
+also the real limit of the fix: the engine learns about a holding by watching the token arrive, so
+a token acquired before the start of the scanned window is invisible and the warning comes back.
+None of the eight hit that, but a longer-dormant holder would. Only a balance read removes it, and
+that belongs in the chain layer, not in a pure rule.
+
 ### Lookalikes are never coincidence
 
 A lookalike needs four leading and four trailing hex characters to match: 32 bits. Across this
