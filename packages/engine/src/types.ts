@@ -33,7 +33,8 @@ export interface AddressSighting {
   /** Inbound transfers below the dust threshold — the same trick with a token that needs it. */
   dustIncoming: number;
   /**
-   * Transfer logs that name the user as the sender in a transaction the user did not sign.
+   * Transfer logs naming the user as sender, in a transaction the user did not sign, **where
+   * nothing the user owned can have moved**.
    *
    * These are fabrications, and they are the single strongest signal in this set — not a
    * heuristic but a checkable fact. A wallet history built by believing logs shows them as
@@ -41,11 +42,33 @@ export interface AddressSighting {
    * case sent 1155 WBTC to an address whose only credential was a fabricated record of a
    * 0.05 "ETH" payment they had never made. See `analysis/`.
    *
+   * The qualifier is not decoration. This used to count *every* unsigned outgoing log, on the
+   * reasoning that a transfer you did not sign is a transfer you did not make — which is true,
+   * and does not mean it was fabricated. Someone you authorised can move your tokens: a Permit2
+   * filler, a CoW or UniswapX solver, a relayer spending an EIP-3009 signature so you need no
+   * ETH for gas, or any contract holding an allowance you granted. Those move real value, and
+   * over twelve minutes of mainnet 4.6% of nonzero USDT and USDC transfers were exactly that —
+   * 252 distinct ordinary accounts. Counting them here scored every one of those counterparties
+   * 65 and put a solver in **danger**. See `analysis/src/authorised-movements.mjs`, which
+   * demonstrates it against the shipped engine rather than asserting it.
+   *
    * Required rather than optional on purpose. An indexer that does not resolve transaction
    * signers has to write `0` here deliberately, and take responsibility for it, instead of
    * getting the dangerous default for free.
    */
   spoofedOutgoingCount: number;
+  /**
+   * Transfers of the user's own tokens, moved to this address by somebody else.
+   *
+   * Not a payment the user chose to make, so it must never reach `outgoingCount` and make a
+   * stranger look like a trusted payee. Not a fabrication either, so it must not reach
+   * `spoofedOutgoingCount` and make a solver look like an attacker. It carries no weight in the
+   * score; it exists so the distinction is visible rather than silently dropped.
+   *
+   * Optional, so that an indexer written against the earlier shape keeps working — leaving it out
+   * can only lose information, never invent trust.
+   */
+  authorisedOutgoingCount?: number;
   /** Unix seconds this address first appeared anywhere in the user's history. */
   firstSeenAt: number;
   lastSeenAt: number;

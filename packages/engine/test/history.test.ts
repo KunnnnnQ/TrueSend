@@ -9,6 +9,8 @@ const ATTACKER = "0xd9a1c3788d81257612e2581a6ea0ada244853a91" as Address;
 const BOT = "0x517dc8e50b8bf03a1d69c84d27bf96dc5a911db2" as Address;
 const REAL_PAYEE = "0x4585fe77225b41b697c938b018e2ac67ac5a20c0" as Address;
 const USDT = "0xdac17f958d2ee523a2206206994597c13d831ec7" as Address;
+/** The contract the attacker deployed for the WBTC bait: symbol `ETH`, name `Ether`, 6 decimals. */
+const BAIT = "0x739352337c902c3874b95f14e81ebbcf1b7b262e" as Address;
 
 function transfer(over: Partial<TransferRecord> & Pick<TransferRecord, "from" | "to">): TransferRecord {
   return {
@@ -116,13 +118,128 @@ describe("foldHistory", () => {
   it("keeps genuine and fabricated payments to the same address apart", () => {
     const [entry] = foldHistory(ME, [
       transfer({from: ME, to: ATTACKER, signer: ME, at: 100}),
-      transfer({from: ME, to: ATTACKER, signer: BOT, at: 200}),
-      transfer({from: ME, to: ATTACKER, signer: BOT, at: 300}),
+      transfer({from: ME, to: ATTACKER, signer: BOT, token: BAIT, at: 200}),
+      transfer({from: ME, to: ATTACKER, signer: BOT, token: BAIT, at: 300}),
     ]);
 
     expect(entry?.outgoingCount).toBe(1);
     expect(entry?.spoofedOutgoingCount).toBe(2);
     expect(entry?.lastOutgoingAt).toBe(100);
+  });
+});
+
+/**
+ * Measured on mainnet before any of this was written. Over twelve minutes, 4.6% of nonzero USDT
+ * and USDC transfers moved an ordinary account's tokens without that account signing — 252
+ * distinct people, most through Permit2, with CoW Protocol's settlement contract among them.
+ *
+ * The fold used to call every one of those a fabrication and score the counterparty 65, which is
+ * danger. `analysis/src/authorised-movements.mjs` demonstrates it against the shipped engine.
+ */
+describe("tokens somebody else was authorised to move", () => {
+  const SOLVER = "0x9008d19f58aabd9ed0d60971565aa8510560ab41" as Address;
+  const FILLER = "0x0000000000000000000000000000000000000f11" as Address;
+  const EXCHANGE = "0x28c6c06298d514db089934071355e5743bf21d60" as Address;
+
+  const at = (history: ReturnType<typeof foldHistory>, address: Address) =>
+    history.find((entry) => entry.address === address);
+
+  /** Being paid in a token needs no signature, which is exactly what the old rule forgot. */
+  it("does not call it a fabrication when the owner was paid the token and never signed for it", () => {
+    const history = foldHistory(ME, [
+      transfer({from: EXCHANGE, to: ME, value: 5_000_000n, at: 100}),
+      transfer({from: ME, to: SOLVER, value: 5_000_000n, signer: FILLER, at: 200}),
+    ]);
+
+    expect(at(history, SOLVER)?.spoofedOutgoingCount).toBe(0);
+    expect(at(history, SOLVER)?.authorisedOutgoingCount).toBe(1);
+  });
+
+  it("does not call it a payment either, so the solver never looks trusted", () => {
+    const history = foldHistory(ME, [
+      transfer({from: EXCHANGE, to: ME, value: 5_000_000n, at: 100}),
+      transfer({from: ME, to: SOLVER, value: 5_000_000n, signer: FILLER, at: 200}),
+    ]);
+
+    expect(at(history, SOLVER)?.outgoingCount).toBe(0);
+    expect(at(history, SOLVER)?.lastOutgoingAt).toBeUndefined();
+  });
+
+  it("stops scoring the solver as an attacker", () => {
+    const history = foldHistory(ME, [
+      transfer({from: EXCHANGE, to: ME, value: 5_000_000n, at: 100}),
+      transfer({from: ME, to: SOLVER, value: 5_000_000n, signer: FILLER, at: 200}),
+    ]);
+    const verdict = assessAddress({to: SOLVER, history, now: 300});
+
+    expect(verdict.findings.map((f) => f.code)).not.toContain("spoofed-outgoing-transfer");
+    expect(verdict.level).not.toBe("danger");
+  });
+
+  it("counts it when the owner moved the token themselves at some point", () => {
+    const history = foldHistory(ME, [
+      transfer({from: ME, to: REAL_PAYEE, value: 1n, signer: ME, at: 100}),
+      transfer({from: ME, to: SOLVER, value: 5_000_000n, signer: FILLER, at: 200}),
+    ]);
+
+    expect(at(history, SOLVER)?.authorisedOutgoingCount).toBe(1);
+    expect(at(history, SOLVER)?.spoofedOutgoingCount).toBe(0);
+  });
+
+  /**
+   * The case the exemption must never reach. This is the WBTC bait: a contract the attacker
+   * deployed, and — checked on chain — not one transfer of it ever went *to* the victim.
+   */
+  it("still calls it a fabrication when the owner never held the token", () => {
+    const history = foldHistory(ME, [
+      transfer({from: EXCHANGE, to: ME, value: 5_000_000n, at: 100}),
+      transfer({from: ME, to: ATTACKER, token: BAIT, value: 50_000n, signer: BOT, at: 200}),
+    ]);
+    const verdict = assessAddress({to: ATTACKER, history, now: 300});
+
+    expect(at(history, ATTACKER)?.spoofedOutgoingCount).toBe(1);
+    expect(at(history, ATTACKER)?.authorisedOutgoingCount).toBeUndefined();
+    expect(verdict.level).toBe("danger");
+  });
+
+  /** Nobody settles nothing, so a zero-value record is fabricated whatever the owner holds. */
+  it("still calls a zero-value record a fabrication, token held or not", () => {
+    const history = foldHistory(ME, [
+      transfer({from: EXCHANGE, to: ME, value: 5_000_000n, at: 100}),
+      transfer({from: ME, to: ATTACKER, value: 0n, signer: BOT, at: 200}),
+    ]);
+
+    expect(at(history, ATTACKER)?.spoofedOutgoingCount).toBe(1);
+  });
+
+  /**
+   * A zero-value inbound is a poisoning primitive in its own right. Letting one establish that
+   * the owner holds a token would hand the exemption straight to the thing being detected.
+   */
+  it("does not let a zero-value inbound establish that the owner holds anything", () => {
+    const history = foldHistory(ME, [
+      transfer({from: ATTACKER, to: ME, token: BAIT, value: 0n, at: 100}),
+      transfer({from: ME, to: ATTACKER, token: BAIT, value: 50_000n, signer: BOT, at: 200}),
+    ]);
+
+    expect(at(history, ATTACKER)?.spoofedOutgoingCount).toBe(1);
+    expect(at(history, ATTACKER)?.authorisedOutgoingCount).toBeUndefined();
+  });
+
+  /**
+   * The documented cost of the rule, pinned so nobody discovers it by surprise: an attacker who
+   * also emits a nonzero inbound of their own token buys the exemption for one extra log. The
+   * cheapest version of the attack — one log, no setup — is what the rule defeats.
+   */
+  it("can be bought off by an attacker willing to emit a second log", () => {
+    const history = foldHistory(ME, [
+      transfer({from: ATTACKER, to: ME, token: BAIT, value: 1n, at: 100}),
+      transfer({from: ME, to: ATTACKER, token: BAIT, value: 50_000n, signer: BOT, at: 200}),
+    ]);
+
+    expect(at(history, ATTACKER)?.spoofedOutgoingCount).toBe(0);
+    // Not a free pass: the inbound it had to plant is itself something the score can see.
+    expect(at(history, ATTACKER)?.incomingCount).toBe(1);
   });
 });
 

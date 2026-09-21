@@ -51,6 +51,7 @@ export function foldHistory(
 ): AddressSighting[] {
   const me = normalizeAddress(owner);
   const byCounterparty = new Map<Address, AddressSighting>();
+  const held = tokensTheOwnerHasHeld(me, transfers);
 
   const entryFor = (address: Address, at: number): AddressSighting => {
     let entry = byCounterparty.get(address);
@@ -87,6 +88,8 @@ export function foldHistory(
       if (normalizeAddress(transfer.signer) === me) {
         entry.outgoingCount++;
         entry.lastOutgoingAt = Math.max(entry.lastOutgoingAt ?? 0, transfer.at);
+      } else if (couldHaveMoved(transfer, held)) {
+        entry.authorisedOutgoingCount = (entry.authorisedOutgoingCount ?? 0) + 1;
       } else {
         entry.spoofedOutgoingCount++;
       }
@@ -102,6 +105,75 @@ export function foldHistory(
   }
 
   return [...byCounterparty.values()].sort((a, b) => b.lastSeenAt - a.lastSeenAt);
+}
+
+/**
+ * Could this transfer have moved something the owner actually had?
+ *
+ * The question the fold has to answer before calling a record a fabrication. Its two halves are
+ * settled very differently.
+ *
+ * **Zero value settles itself.** Nothing moved, so it cannot have been a payment — and it cannot
+ * have been a settlement either, because nobody settles nothing. This is the classic poisoning
+ * primitive: a zero-value `transferFrom` needs no allowance on most tokens, costs a little gas,
+ * and plants a payment that never happened. In a sampled window, 99.88% of zero-value USDT
+ * transfers named a sender who had not signed.
+ *
+ * **Nonzero turns on whether the owner ever had the token.** Nobody can authorise the movement of
+ * something they never held, so a nonzero record of a token that has never once arrived in this
+ * history, and that the owner has never signed for, is a fabrication whoever signed it. That is
+ * exactly the shape of the May 2024 WBTC bait: a contract the attacker deployed, symbol `ETH`,
+ * a single log naming the victim as sender, and — checked on chain — not one transfer of it ever
+ * going *to* the victim. Where the owner has held it, a third party moving it is an ordinary
+ * authorised movement, and calling that an attack is crying wolf at a solver.
+ *
+ * **What this gives up.** An attacker who also emits a fake *incoming* log of their own token
+ * makes the owner look like a holder and buys the exemption, for the price of one more log.
+ * Nothing here stops that, and no rule reading only logs and signatures can: the token contract
+ * belongs to the attacker, so every claim it makes is theirs to choose. What the rule does is
+ * make the cheapest form of the attack — one log, no setup — fail. The defence does not rest on
+ * it alone either; the contracts never consult this score, and an unknown recipient is held
+ * regardless of what it says.
+ */
+function couldHaveMoved(transfer: TransferRecord, held: ReadonlySet<Address>): boolean {
+  return transfer.value > 0n && held.has(normalizeAddress(transfer.token));
+}
+
+/**
+ * Tokens this history shows the owner actually having, established two ways.
+ *
+ * **Something arrived** — a transfer of it to the owner carrying value. Receiving needs no
+ * signature, and that is the whole point. An earlier version of this reasoning asked whether the
+ * owner had ever *signed* a transfer of the token and concluded that otherwise they had never
+ * held it. That is false, and false in the expensive direction: a wallet paid in USDC that sells
+ * it through a gasless permit never signs anything touching USDC, so every counterparty it ever
+ * had would have been called an attacker.
+ *
+ * **Or they moved it themselves** — a transfer they signed. Nobody signs away what they do not
+ * have.
+ *
+ * Zero-value arrivals do not count. A zero-value inbound is itself a poisoning primitive, and
+ * letting one establish a holding would hand the exemption to the thing being detected.
+ *
+ * Bounded by whatever history it is given: a token received before the start of the scanned
+ * window looks unheld. That costs a false alarm, never a miss — the right way round for a limit
+ * that cannot be removed without an archive node.
+ */
+function tokensTheOwnerHasHeld(
+  owner: Address,
+  transfers: readonly TransferRecord[],
+): ReadonlySet<Address> {
+  const held = new Set<Address>();
+
+  for (const transfer of transfers) {
+    const token = normalizeAddress(transfer.token);
+    if (normalizeAddress(transfer.to) === owner && transfer.value > 0n) held.add(token);
+    if (normalizeAddress(transfer.from) === owner && normalizeAddress(transfer.signer) === owner) {
+      held.add(token);
+    }
+  }
+
+  return held;
 }
 
 /**
