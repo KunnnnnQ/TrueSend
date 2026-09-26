@@ -3,6 +3,7 @@ import {findAddresses} from "@truesend/engine";
 import {judge, type SavedAddress} from "../src/guard.js";
 import {hide, showVerdict} from "../src/overlay.js";
 import {addressesOnPage, clearMarks, markCollisions} from "../src/page.js";
+import {selectedText} from "../src/selection.js";
 
 /**
  * The guard, running on every page.
@@ -35,8 +36,9 @@ export default defineContentScript({
     document.addEventListener("copy", () => {
       // The selection, not the clipboard. Reading what the user just highlighted needs no
       // clipboard permission at all, and the extension never sees anything they did not just act
-      // on.
-      const [match] = findAddresses(document.getSelection()?.toString() ?? "");
+      // on. Includes a selection inside a form control, which is where a site's own copy button
+      // puts it (Etherscan selects a hidden textarea and copies from that).
+      const [match] = findAddresses(selectedText());
       if (!match) return;
 
       showVerdict(judge({address: match.address, onPage: addressesOnPage(), saved}));
