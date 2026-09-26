@@ -28,6 +28,7 @@ const asTime = (block) => block * SECONDS_PER_BLOCK;
 const scan = JSON.parse(await readFile(join(dataDir, "scan-latest.json"), "utf8"));
 const wbtc = JSON.parse(await readFile(join(dataDir, "case-wbtc-2024-05-03.json"), "utf8"));
 const noise = JSON.parse(await readFile(join(dataDir, "false-positives.json"), "utf8"));
+const tokenPrecision = JSON.parse(await readFile(join(dataDir, "token-precision.json"), "utf8"));
 
 console.log("Running the shipped engine against real mainnet activity.\n");
 
@@ -209,8 +210,24 @@ console.log(
     `${noise.unsignedOutgoing.stateAgrees} of ${noise.unsignedOutgoing.checked} checked`,
 );
 
+// Whether the token rules cry wolf on tokens that are fine. The curated list is the one that should
+// be nearly clean, and it is where the first version of the native-currency rule flagged MATIC, SOL
+// and POL — tokens people really hold — before this was measured.
+const curatedTokens = tokenPrecision.lists[0];
+console.log(
+  `
+Token rules over ${curatedTokens.tokens} legitimate tokens (${curatedTokens.name}): ` +
+    `${curatedTokens.flagged} flagged (${(curatedTokens.share * 100).toFixed(2)}%)`,
+);
+
 if (CHECK) {
   const problems = [];
+  if (curatedTokens.share > 0.02) {
+    problems.push(
+      `${(curatedTokens.share * 100).toFixed(1)}% of a curated list of legitimate tokens is flagged, ` +
+        `expected <= 2% — the token rules have started crying wolf on tokens people hold`,
+    );
+  }
   if (headline.wbtcSignerAware !== "danger") {
     problems.push(`the WBTC attacker scores "${headline.wbtcSignerAware}" with a signer-aware indexer, expected "danger"`);
   }

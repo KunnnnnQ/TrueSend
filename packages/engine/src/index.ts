@@ -65,10 +65,13 @@ export {
   inspectToken,
   inspectTokenSymbol,
   isPlainSymbol,
+  judgeToken,
   restrictionLevel,
+  revealSymbol,
   type CanonicalToken,
   type RestrictionLevel,
   type TokenSymbolFinding,
+  type TokenVerdict,
   type TokenSymbolIssue,
   type TokenToInspect,
 } from "./tokens.js";

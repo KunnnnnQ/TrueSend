@@ -1,0 +1,98 @@
+{
+  "measuredAt": "2026-09-26T14:10:29.279Z",
+  "lists": [
+    {
+      "name": "Uniswap default list (curated)",
+      "source": "https://raw.githubusercontent.com/Uniswap/default-token-list/main/src/tokens/mainnet.json",
+      "tokens": 407,
+      "flagged": 0,
+      "share": 0,
+      "byIssue": {},
+      "flaggedTokens": []
+    },
+    {
+      "name": "CoinGecko (broad; contains junk)",
+      "source": "https://tokens.coingecko.com/uniswap/all.json",
+      "tokens": 6001,
+      "flagged": 8,
+      "share": 0.0013331111481419764,
+      "byIssue": {
+        "non-ascii-symbol": 7,
+        "invisible-characters": 1,
+        "impersonates-native-asset": 1,
+        "mixed-scripts": 2,
+        "padded-whitespace": 1
+      },
+      "flaggedTokens": [
+        {
+          "address": "0xdadb4ae5b5d3099dd1f586f990b845f2404a1c4c",
+          "symbol": "(⟨U+0361⟩⟨U+00B0⟩⟨U+035C⟩⟨U+0296⟩⟨U+0361⟩⟨U+00B0⟩)",
+          "name": "Lenny Face",
+          "issues": [
+            "non-ascii-symbol",
+            "invisible-characters"
+          ]
+        },
+        {
+          "address": "0x5e21d1ee5cf0077b314c381720273ae82378d613",
+          "symbol": "ETH",
+          "name": "The Infinite Garden",
+          "issues": [
+            "impersonates-native-asset"
+          ]
+        },
+        {
+          "address": "0xdfa208bb0b811cfbb5fa3ea98ec37aa86180e668",
+          "symbol": "W⟨U+1F356⟩",
+          "name": "Unicorn Meat",
+          "issues": [
+            "non-ascii-symbol"
+          ]
+        },
+        {
+          "address": "0x69d29f1b0cc37d8d3b61583c99ad0ab926142069",
+          "symbol": "⟨U+018E⟩⟨U+0500⟩⟨U+018E⟩⟨U+0500⟩",
+          "name": "Pepe Inverted",
+          "issues": [
+            "non-ascii-symbol",
+            "mixed-scripts"
+          ]
+        },
+        {
+          "address": "0x2fd23a21c52fff0535328a7177da1fb31b8a819e",
+          "symbol": "S⟨U+039E⟩R",
+          "name": "Strategic ETH Reserve",
+          "issues": [
+            "non-ascii-symbol",
+            "mixed-scripts"
+          ]
+        },
+        {
+          "address": "0x76e46becff74f5f1d3ef96d7574230aeba73e5d8",
+          "symbol": "YEE⟨U+00A0⟩",
+          "name": "YEE ",
+          "issues": [
+            "non-ascii-symbol",
+            "padded-whitespace"
+          ]
+        },
+        {
+          "address": "0xfabd8d91c9c0cd3f852466bada03673918de5284",
+          "symbol": "⟨U+6211⟩⟨U+7684⟩⟨U+5200⟩⟨U+76FE⟩",
+          "name": "What the dog doing?",
+          "issues": [
+            "non-ascii-symbol"
+          ]
+        },
+        {
+          "address": "0x1f7fd18926a9646f4ff62952706dfcaed7b544bb",
+          "symbol": "BTC.⟨U+210F⟩",
+          "name": "Bitcoin.ℏ",
+          "issues": [
+            "non-ascii-symbol"
+          ]
+        }
+      ]
+    }
+  ]
+}

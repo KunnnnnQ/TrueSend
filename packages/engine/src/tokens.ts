@@ -202,14 +202,44 @@ const ENGLISH_LIST = new Intl.ListFormat("en", {style: "long", type: "conjunctio
 const SCRIPT_NEUTRAL = /[\p{Script=Common}\p{Script=Inherited}]/u;
 
 /**
- * Native assets that no honest ERC-20 calls itself.
+ * The chain's own currency, which no honest token on that chain can be called.
  *
- * A token contract is by definition not the chain's native currency, so wrapped versions are
- * named WETH, WBNB, WMATIC. A contract whose ticker is a bare `ETH` is claiming to be something
- * it cannot be — which is what the bait in the May 2024 WBTC case did, with a symbol spelled in
- * ordinary Latin letters that every homoglyph rule in here would wave through.
+ * A token contract is by definition not the chain's native currency, so a wrapped version is named
+ * WETH, and a contract whose ticker is a bare `ETH` is claiming to be something it cannot be. That
+ * is what the bait in the May 2024 WBTC case did, in ordinary Latin letters that every homoglyph
+ * rule would wave through.
+ *
+ * **This list used to hold every chain's native currency** — matic, bnb, avax, sol, pol, btc — on
+ * the reasoning that no token can be a native currency. Measured against Uniswap's curated
+ * default list for Ethereum mainnet it flagged MATIC, SOL and POL: three legitimate, widely held
+ * tokens. Polygon's, Solana's and Avalanche's currencies *are* ordinary ERC-20s on Ethereum, and a
+ * detector that paints a warning over a user's real MATIC is a detector that gets muted. "Cannot be
+ * a token" is only true of the chain you are on, so the list is now that chain's, and the default
+ * is Ethereum's — the only chain the app supports natively — with `nativeSymbols` for a caller that
+ * knows better.
  */
-const NATIVE_ASSET_SYMBOLS = new Set(["eth", "ether", "btc", "bnb", "matic", "avax", "sol", "pol"]);
+const ETHEREUM_NATIVE = ["eth", "ether"] as const;
+
+/**
+ * A symbol with the decoration taken off: folded, lower-cased, and separators and punctuation
+ * removed.
+ *
+ * The native-asset rule used to compare the symbol to the list exactly, and a live bait token
+ * walked past it by adding two dots. `Ether..` was found on 2026-09-26 in the token transfers of an
+ * account being poisoned at the time: 18 decimals, `balanceOf` reverting for the account it named
+ * as sender, and two records of that account "sending" it 1.468 of them to a lookalike, signed by
+ * someone else. It is the May 2024 bait again, one punctuation mark from being caught.
+ *
+ * Deliberately not everything is stripped. Letters and digits stay, so `ETH2` and `WETH` are still
+ * not `ETH`. And `+` stays: `ETH+` is a real token, and so are `USD+` and `DAI+`, which this rule
+ * flagged when it stripped every non-alphanumeric character — measured against CoinGecko's list.
+ * What it strips is what a bait adds for free and a real ticker has no reason to carry.
+ */
+const DECORATION = /[\s._\-\u2010-\u2015~*!?,;:'"`\u00b4^|/\\()[\]{}<>]/g;
+
+function bareLetters(symbol: string): string {
+  return confusableSkeleton(symbol).toLowerCase().replace(DECORATION, "");
+}
 
 /**
  * Cross-script twins, kept only to name *which* symbol is being imitated.
@@ -251,11 +281,17 @@ export function confusableSkeleton(symbol: string): string {
  */
 export function inspectToken(
   token: TokenToInspect,
-  options: {canonical?: readonly CanonicalToken[]; knownSymbols?: readonly string[]} = {},
+  options: {
+    canonical?: readonly CanonicalToken[];
+    knownSymbols?: readonly string[];
+    /** The chain's own currency, lower case. Defaults to Ethereum's; see `ETHEREUM_NATIVE`. */
+    nativeSymbols?: readonly string[];
+  } = {},
 ): TokenSymbolFinding[] {
   const {symbol} = token;
   const canonical = options.canonical ?? [];
   const knownSymbols = options.knownSymbols ?? canonical.map((entry) => entry.symbol);
+  const nativeSymbols = new Set(options.nativeSymbols ?? ETHEREUM_NATIVE);
   const findings: TokenSymbolFinding[] = [];
 
   // ---- the two rules that carry the detection -----------------------------
@@ -298,12 +334,13 @@ export function inspectToken(
 
   // ---- rules that add detail ----------------------------------------------
 
-  if (NATIVE_ASSET_SYMBOLS.has(confusableSkeleton(symbol).toLowerCase())) {
+  if (nativeSymbols.has(bareLetters(symbol))) {
     findings.push({
       issue: "impersonates-native-asset",
       message:
-        `This is a token contract calling itself "${symbol.trim()}", which is a native currency ` +
-        `and cannot be a token. Genuine wrapped versions are named with a leading W, like WETH.`,
+        `This is a token contract calling itself "${revealSymbol(symbol.trim())}", which is a ` +
+        `native currency and cannot be a token. Genuine wrapped versions are named with a ` +
+        `leading W, like WETH.`,
       evidence: {symbol},
     });
   }
@@ -383,4 +420,67 @@ export function hasNonAscii(symbol: string): boolean {
 
 function describe(char: string): string {
   return `U+${char.codePointAt(0)!.toString(16).toUpperCase().padStart(4, "0")}`;
+}
+
+/**
+ * A symbol written so that what is wrong with it can be seen.
+ *
+ * Every character outside printable ASCII becomes its code point in brackets: `U5⟨U+17B4⟩⟨U+17B4⟩D⟨U+A4D4⟩`
+ * instead of something that renders as `U5D` plus a letter that looks like a `T`. Two of those
+ * characters are invisible, so the raw string is the one form of this symbol that cannot show a
+ * reader the trick.
+ *
+ * It is also the only safe way to put an untrusted symbol into a page. A contract chooses its own
+ * symbol, and a right-to-left override in it reorders the text *around* it — an attacker's string
+ * that changes what the warning beside it appears to say. Printing code points rather than the
+ * characters closes that off along with the invisible ones.
+ */
+export function revealSymbol(symbol: string): string {
+  let out = "";
+  for (const char of symbol) {
+    const code = char.codePointAt(0)!;
+    out += code >= 0x20 && code <= 0x7e ? char : `⟨${describe(char)}⟩`;
+  }
+  return out;
+}
+
+/** What a token check comes to, once the token's use in the account's history is known. */
+export type TokenVerdict = "counterfeit" | "unusual" | "clean";
+
+/**
+ * Findings that say a token is claiming to be one particular real asset. Strong on their own.
+ */
+const IMPERSONATION: ReadonlySet<TokenSymbolIssue> = new Set([
+  "known-symbol-wrong-contract",
+  "impersonates-native-asset",
+  "confusable-with-known-symbol",
+]);
+
+/**
+ * Whether a token is counterfeit, or merely spelled strangely.
+ *
+ * The ASCII rule catches the whole class of exotic-alphabet fakes without anyone having to know
+ * the next homoglyph, and the price is stated by measurement: run over CoinGecko's list of about
+ * six thousand Ethereum tokens it flags eight, and most are meme tokens whose only fault is how
+ * they are spelled — a Chinese ticker, an emoji, `BTC.ℏ` — with nothing in the list marking them as
+ * fraudulent. Telling every one of those holders that they own a counterfeit is the false alarm that
+ * gets a tool muted.
+ *
+ * What separates them is the thing this project is built on. A counterfeit is planted in somebody's
+ * history by somebody else: it turns up as a record of the account "sending" it in a transaction
+ * the account never signed, or as a zero-value transfer in. A token the account bought and moved
+ * itself never does. So:
+ *
+ *  - **claiming to be a specific real asset** — the wrong contract for a known ticker, a fake
+ *    native currency, a lookalike of one — is counterfeit however the token got there;
+ *  - **spelled strangely and used against the account** is counterfeit;
+ *  - **spelled strangely and otherwise ordinary** is `unusual`: worth a sentence, not an alarm.
+ *
+ * @param plantedTransfers transfers of this token that name the account as sender without its
+ *   signature, plus zero-value ones sent to it. Counted by the caller from the history.
+ */
+export function judgeToken(findings: readonly TokenSymbolFinding[], plantedTransfers: number): TokenVerdict {
+  if (findings.length === 0) return "clean";
+  if (findings.some((finding) => IMPERSONATION.has(finding.issue))) return "counterfeit";
+  return plantedTransfers > 0 ? "counterfeit" : "unusual";
 }

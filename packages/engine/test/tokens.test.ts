@@ -6,7 +6,9 @@ import {
   inspectToken,
   inspectTokenSymbol,
   isPlainSymbol,
+  judgeToken,
   restrictionLevel,
+  revealSymbol,
   type CanonicalToken,
 } from "../src/tokens.js";
 import type {Address} from "../src/address.js";
@@ -34,6 +36,20 @@ const REAL_FAKES = {
   },
   /** Spelled perfectly in ASCII. Its only lie is where it lives. */
   rightNameWrongContract: {symbol: "USDT", address: "0x56208f118a87a41e6f78edf6dc9d70f385e150f7"},
+  /**
+   * `U`, `5`, two invisible Khmer marks, `D`, and `U+A4D4` — a Lisu letter drawn like a `T`.
+   *
+   * **The first of these the rules were not built from.** The three above were found in a random
+   * sample and the class-covering rules that replaced the homoglyph table were written to catch
+   * them. This one was on a live Blockscout page on 2026-09-26, in the token transfers of an
+   * account being poisoned at the time — beside eight more fake USDT contracts in three symbol
+   * families, two of which are the ones above. It is the test of the claim the rewrite made: that
+   * asking "is this ASCII?" catches the next homoglyph without anyone having to know it.
+   */
+  khmerFillerAndLisuT: {
+    symbol: "U5\u{17B4}\u{17B4}D\u{A4D4}",
+    address: "0x952583c189e79f41c7f65509188bce39ebad4510",
+  },
 } as const;
 
 describe("the fakes that were actually found on chain", () => {
@@ -59,6 +75,18 @@ describe("the fakes that were actually found on chain", () => {
     expect(impostor).toBeDefined();
     expect(impostor?.evidence["realAddress"]).toBe(REAL_USDT);
     expect(impostor?.message).toContain("the address is the only part that cannot be copied");
+  });
+
+  /**
+   * The one that matters most here, because no rule was written to catch it. If the detection
+   * rested on a table of known lookalike characters this is where it would fail.
+   */
+  it("catches a fake it was never built from", () => {
+    const issues = inspectToken(REAL_FAKES.khmerFillerAndLisuT, {canonical: CANONICAL}).map((f) => f.issue);
+
+    expect(issues).toContain("non-ascii-symbol");
+    expect(issues).toContain("invisible-characters");
+    expect(issues).toContain("mixed-scripts");
   });
 
   it("would have caught none of them by symbol shape alone", () => {
@@ -122,6 +150,140 @@ describe("native-asset impersonation", () => {
     const issues = inspectTokenSymbol("ЕTH").map((f) => f.issue);
     expect(issues).toContain("impersonates-native-asset");
     expect(issues).toContain("non-ascii-symbol");
+  });
+});
+
+describe("native-asset impersonation, with decoration", () => {
+  /**
+   * A live bait token, found in the token transfers of an account being poisoned on 2026-09-26:
+   * contract 0x5bc57682a5605f3c1e3e0a1cc0cab0117afe85f8, symbol and name both `Ether..`, 18
+   * decimals, `balanceOf` reverting for the account it named as sender. Two ASCII dots defeated
+   * the exact-match rule that had caught the May 2024 case.
+   */
+  it("catches the two-dot variant that got past an exact match", () => {
+    expect(inspectTokenSymbol("Ether..").map((f) => f.issue)).toContain("impersonates-native-asset");
+  });
+
+  it("catches the other things an attacker adds for free", () => {
+    for (const symbol of ["ETH.", "E.T.H", "ETH!", "ETH-", "_ETH_", "Ether...", "ETH\t"]) {
+      expect(inspectTokenSymbol(symbol).map((f) => f.issue), JSON.stringify(symbol)).toContain(
+        "impersonates-native-asset",
+      );
+    }
+  });
+
+  /**
+   * The other side of it, which is what makes widening the rule safe to ship: only separators and
+   * punctuation are stripped, so a token that is really something else is left alone.
+   */
+  it("does not accuse a real token whose symbol merely starts with those letters", () => {
+    for (const symbol of ["WETH", "ETH2", "ETH2x", "stETH", "cbETH", "rETH", "ETHX", "BTCB", "WBTC", "ETC", "SOLO"]) {
+      expect(inspectTokenSymbol(symbol).map((f) => f.issue), symbol).not.toContain("impersonates-native-asset");
+    }
+  });
+
+  it("shows the symbol in a form that cannot hide what is wrong with it", () => {
+    const issue = inspectTokenSymbol("ET\u{FFF0}H").find((f) => f.issue === "impersonates-native-asset");
+
+    // The message names the code point instead of embedding an invisible one.
+    expect(issue?.message).toContain("U+FFF0");
+    expect(issue?.message).not.toContain("\u{FFF0}");
+  });
+});
+
+/**
+ * Found by measuring rather than by thinking about it. Run over Uniswap's curated default list for
+ * Ethereum mainnet — 407 tokens that are what they say — the native-asset rule flagged three:
+ * MATIC, SOL and POL. Each is an ordinary, widely held ERC-20 on Ethereum; the rule had listed every
+ * chain's currency as "cannot be a token", which is only true of the chain you are on.
+ */
+describe("the native-asset rule, on the chain it is running on", () => {
+  it("does not accuse another chain's currency of being a counterfeit on this one", () => {
+    for (const symbol of ["MATIC", "POL", "SOL", "BNB", "AVAX", "BTC"]) {
+      expect(inspectTokenSymbol(symbol).map((f) => f.issue), symbol).not.toContain("impersonates-native-asset");
+    }
+  });
+
+  it("still accuses this chain's own", () => {
+    for (const symbol of ["ETH", "Ether", "ether"]) {
+      expect(inspectTokenSymbol(symbol).map((f) => f.issue), symbol).toContain("impersonates-native-asset");
+    }
+  });
+
+  it("lets a caller running on another chain say what its currency is", () => {
+    const on = (symbol: string) =>
+      inspectToken({symbol}, {nativeSymbols: ["bnb"]}).map((f) => f.issue);
+
+    expect(on("BNB")).toContain("impersonates-native-asset");
+    expect(on("ETH")).not.toContain("impersonates-native-asset");
+  });
+
+  /**
+   * `ETH+`, `USD+` and `DAI+` are real tokens. The first version of the decoration rule stripped
+   * every non-alphanumeric character and flagged `ETH+` — found the same way, on CoinGecko's list.
+   */
+  it("does not treat a plus sign as decoration, because real tokens carry one", () => {
+    expect(inspectTokenSymbol("ETH+").map((f) => f.issue)).not.toContain("impersonates-native-asset");
+  });
+});
+
+/**
+ * Whether a token that is spelled strangely is being used against the account or is merely
+ * strange. The numbers behind it: CoinGecko's list, about six thousand Ethereum tokens, flags
+ * twelve, and roughly half are legitimate tokens with a Chinese ticker or an emoji in it.
+ */
+describe("judgeToken", () => {
+  const spelling = inspectTokenSymbol("\u{A4A4}5DT");
+  const impersonation = inspectToken(
+    {symbol: "USDT", address: "0x56208f118a87a41e6f78edf6dc9d70f385e150f7"},
+    {canonical: CANONICAL},
+  );
+
+  it("calls a clean token clean", () => {
+    expect(judgeToken([], 0)).toBe("clean");
+    expect(judgeToken([], 9)).toBe("clean");
+  });
+
+  it("calls a strange spelling unusual when nothing was done to the account with it", () => {
+    expect(spelling.length).toBeGreaterThan(0);
+    expect(judgeToken(spelling, 0)).toBe("unusual");
+  });
+
+  it("calls the same spelling counterfeit once it was used against the account", () => {
+    expect(judgeToken(spelling, 1)).toBe("counterfeit");
+  });
+
+  /** A perfectly spelled USDT at the wrong contract has no odd characters and needs no history. */
+  it("calls a token that claims to be a specific real asset counterfeit however it got there", () => {
+    expect(impersonation.map((f) => f.issue)).toContain("known-symbol-wrong-contract");
+    expect(judgeToken(impersonation, 0)).toBe("counterfeit");
+  });
+
+  it("calls a fake native currency counterfeit on its own", () => {
+    expect(judgeToken(inspectTokenSymbol("Ether.."), 0)).toBe("counterfeit");
+  });
+});
+
+describe("revealSymbol", () => {
+  it("leaves an ordinary ticker exactly as it is", () => {
+    expect(revealSymbol("USDT")).toBe("USDT");
+    expect(revealSymbol("1INCH")).toBe("1INCH");
+  });
+
+  it("names every character outside printable ASCII, including the ones nobody can see", () => {
+    expect(revealSymbol("U5\u{17B4}\u{17B4}D\u{A4D4}")).toBe("U5⟨U+17B4⟩⟨U+17B4⟩D⟨U+A4D4⟩");
+  });
+
+  /** A right-to-left override reorders the text around it; printing it as a code point cannot. */
+  it("defuses a bidi override rather than passing it to whatever displays the result", () => {
+    const out = revealSymbol("ABC\u{202E}DEF");
+
+    expect(out).toBe("ABC⟨U+202E⟩DEF");
+    expect(out).not.toContain("\u{202E}");
+  });
+
+  it("names a character outside the basic plane once, not as two halves", () => {
+    expect(revealSymbol("USDT\u{1F4B0}")).toBe("USDT⟨U+1F4B0⟩");
   });
 });
 
