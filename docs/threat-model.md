@@ -72,9 +72,9 @@ quietly when they are.
 | Attacker front-runs `initialize` on a freshly delegated EOA | Only a self-call may initialize | `test_initializeCannotBeFrontRun` |
 | Guardian turns hostile and holds the account hostage | Guardian cannot move funds and cannot veto its own replacement | `test_guardianCannotBlockItsOwnReplacement`, `test_guardianCannotMoveFunds` |
 | A future delegate corrupting this one's storage | ERC-7201 namespacing, asserted against slot writes | `test_writesStayInsideTheNamespace` |
-| Fake `USDT` used to plant the address | Homoglyph, mixed-script and invisible-character checks | `tokens.test.ts` |
+| Fake `USDT` used to plant the address | The Scan screen reads `symbol()` for every token in the scanned history and judges it: outside printable ASCII, hidden characters, mixed alphabets, or a known ticker at the wrong contract. Counterfeit if it claims to be a specific real asset or was planted in the account's history | `tokens.test.ts`, `chain/test/tokens.test.ts`, `analysis/src/check-tokens.mjs` |
 | A fabricated outgoing payment planted in the history | `spoofed-outgoing-transfer`, the highest-weighted rule and the only one that is a fact rather than an inference | `risk.test.ts`, `analysis/src/evaluate-engine.mjs` |
-| A token contract impersonating the native currency | `impersonates-native-asset` | `tokens.test.ts` |
+| A token contract impersonating the native currency | `impersonates-native-asset`, tolerant of decoration (`Ether..` was live bait) and limited to the running chain's own currency | `tokens.test.ts` |
 | A recipient contract reentering during settlement | Transient-storage reentrancy guard | `test_reentrantRecipientCannotReplayATransfer` |
 | A false report in the community registry | The resolver proves a lookalike claim on chain and rejects it outright when it fails | `test_lookalikeReportIsRejectedWhenTheAddressesDoNotCollide` |
 | The registry being used to grief a legitimate address | Reports alone are capped one point below `danger`, however many reporters | `never reaches danger on reports alone` |
@@ -150,6 +150,37 @@ said:
 None of that dissolves the tension, and it should not be presented as if it does. The honest
 statement is that this project makes one delegation worth signing and cannot make the next one
 safe.
+
+### The token check runs in one place, and only on what it can judge
+
+Until 2026-09-26 the token rules were tested, documented and listed in the table above, and **called
+by nothing**: no screen, indexer or extension ever read a token's symbol, so none of them could have
+run the check. The rows above described a defence that existed in a package and not in the product.
+It is now wired into the Scan screen, and the limits of where it is wired are these.
+
+- **Only Scan reads token symbols.** Send does not check the token being sent, the indexer's risk
+  API takes no token, and the extension does not read token labels on explorer pages — a label on a
+  page may be a name and not a symbol, and applying a symbol rule to a name is the precision
+  problem below, unresolved there.
+- **The known-ticker list has three entries** — USDT, USDC and WBTC. A ticker spelled perfectly at
+  the wrong contract, the sneakiest of the fakes found in the wild, is only caught for those three.
+  A plain-ASCII fake `DAI` is not caught by the rules; it is caught, if at all, by the fabrication
+  rule on the records that plant it.
+- **A token that would not say what it is called is counted, not passed.** `symbol()` can revert or
+  return something that is not text; those are reported as unread. That is not the same as clean.
+- **Being spelled strangely is not being counterfeit, and this was measured rather than assumed.**
+  Run over CoinGecko's list of about six thousand Ethereum tokens the rules flag eight, and most are
+  meme tokens whose only fault is how they are spelled — a Chinese ticker, an emoji, lookalike
+  letters — with nothing in the list marking them as fraudulent. So a token is called
+  counterfeit when it claims to be a specific real asset or was *planted* in this account's history
+  — its transfers are records of the account sending it in a transaction it never signed, or
+  zero-value ones in — and merely `unusual` otherwise. The cost is real: a counterfeit spelled
+  strangely that has not yet been planted in this account's history is shown as unusual, not as an
+  alarm. On the one live account this was run against, every one of sixteen counterfeits had all of
+  its transfers planted, and the real USDT had none.
+- **An earlier version of the native-currency rule listed every chain's currency** and flagged
+  MATIC, SOL and POL on Ethereum, which are ordinary, widely held tokens there. Found by running the
+  rules over Uniswap's default list; fixed to the running chain's own currency.
 
 ### The fabrication rule depends on the indexer
 

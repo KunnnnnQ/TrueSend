@@ -1,6 +1,6 @@
 # Validating the detectors against real mainnet activity
 
-Seven scripts, no API key, no notebook. Each one fetches from public RPC endpoints and either
+Ten scripts, no API key, no notebook. Each one fetches from public RPC endpoints and either
 asserts its claims or fails.
 
 ```bash
@@ -11,6 +11,9 @@ node src/false-positives.mjs       # find out whether it cries wolf
 node src/authorised-movements.mjs  # find out whether it cries wolf at solvers
 node src/check-reconcile.mjs       # calibrate the instrument the last two rest on
 node src/account-kinds.mjs         # find out which senders can sign at all
+node src/check-tokens.mjs 0x…      # which tokens in an account's history are counterfeit
+node src/token-precision.mjs       # whether the token rules cry wolf on legitimate tokens
+node src/etherscan-labels.mjs      # how many planted lookalikes Etherscan already labels
 ```
 
 `evaluate-engine.mjs` imports `@truesend/engine` from its built `dist`, exactly as the web app
@@ -145,6 +148,80 @@ cover whole classes instead:
 The narrower homoglyph rules still run, because they name *which* token is being imitated. They
 are no longer what the detection rests on. All three contracts are now regression tests, with
 their real addresses, in `packages/engine/test/tokens.test.ts`.
+
+### 4. The token detector was wired to nothing
+
+The section above ends with the token rules rewritten, retested and three real counterfeits pinned as
+regression tests. What it does not say is that **nothing in the product ever called them.**
+`inspectToken` was exported from the engine and used by no screen, no indexer and no extension, because
+none of them ever read a token's symbol; `docs/threat-model.md` listed it under *Defended*, pinned by a
+test that exercised the function and not the product. It is now in the Scan screen, which reads
+`symbol()` for every token in the scanned history in one batched call (`readTokenIdentities`).
+
+Run through that path against a real account that was being poisoned when this was written
+(`node src/check-tokens.mjs 0x0bcf…8675 --blocks 100000`), 17 token contracts read in 0.4 seconds:
+
+| | |
+| --- | --- |
+| counterfeit | **16** — eleven posing as USDT in four spellings, five posing as ETH |
+| real | 1 — the actual USDT, not flagged |
+| planted | **all 16** had every one of their transfers planted: a record of the account "sending" it in a transaction it never signed, or a zero-value transfer in |
+
+Two of the four USDT spellings are the ones the rewrite was built from. **The other two, and all five of
+the ETH ones, were not** — `USD⟨U+FFF0⟩T` and `ET⟨U+FFF0⟩H` (an invisible noncharacter injected into the
+word), `U5⟨U+17B4⟩⟨U+17B4⟩D⟨U+A4D4⟩`, `E⟨U+17B4⟩⟨U+17B4⟩⟨U+A4D4⟩H`. All but one were caught anyway, which is the
+claim the rewrite made and had not until then been tested against anything unseen: asking "is this ASCII?"
+catches the next homoglyph without anyone having to know it. The exception is next.
+
+**It also missed one, and the miss is the May 2024 bait again.** `Ether..` — contract
+`0x5bc57682…afe85f8`, 18 decimals, `balanceOf` reverting for the account it named as sender, records
+of that account "sending" 1.468 of it to a lookalike, signed by someone else — got past the
+native-currency rule, which compared the symbol to `eth`/`ether` exactly. Two dots. The rule now strips
+the punctuation an attacker adds for free, and does not strip `+`, because `ETH+` is a real token.
+
+**Then the rules were run over tokens that are fine, and that found a worse problem than the miss.**
+The rules flag anything outside printable ASCII, and the honest objection to that is that plenty of real
+tokens are. `node src/token-precision.mjs`, over two published lists of legitimate Ethereum tokens:
+
+| | tokens | flagged, first version | flagged, now |
+| --- | --- | --- | --- |
+| Uniswap default list (curated) | 407 | **3** (0.74%) — MATIC, SOL, POL | **0** |
+| CoinGecko (broad, contains junk) | 6,001 | 12 (0.20%) | 8 (0.13%) |
+
+Those three were false alarms on tokens people really hold. The native-currency rule had listed *every*
+chain's currency — matic, bnb, avax, sol, pol — on the reasoning that a native currency cannot be a
+token, which is true of the chain you are on and false of every other. On Ethereum, MATIC, POL and SOL are
+ordinary, widely held ERC-20s. A red "counterfeit token" panel over a user's real MATIC is the false alarm
+that gets a tool muted; the rule is now the running chain's own currency.
+
+What CoinGecko's eight are is the other half of the same lesson. Most are meme tokens whose only fault
+is how they are spelled — a Chinese ticker, an emoji, lookalike letters — nothing in the list marks any of
+them as fraudulent; one has a symbol ending in a non-breaking space; and one is plainly called `ETH`, which
+the rule is right to flag. Being spelled strangely is not being counterfeit. So the app calls a token **counterfeit**
+when it claims to be a specific real asset, or when it was *planted* in this account's history — the
+same fact the whole project rests on — and merely **unusual** otherwise, in a line and not an alarm.
+
+What this does not establish: the live-account result is **one account**, and an unusually heavily
+poisoned one, not a typical user. The two legitimate lists are lists of tokens that get listed, which
+is not the same as tokens people hold. And a counterfeit spelled strangely that has not yet been planted
+in a given history is shown as unusual rather than as an alarm — the price of the precision, stated in
+`docs/threat-model.md`.
+
+### 5. The page scan found nothing on the pages it was written for
+
+The browser extension outlines the planted address and the one it imitates, in place, in a user's own
+transaction list. Its tests built that list out of `<td>0xabc…</td>`, with the full address as text. On
+a real Etherscan transaction list and token-transfer list, **0 of 236 addresses could be read from text**:
+Etherscan draws `0x1E227979...a6F538FD5` and keeps the address in attributes; Blockscout draws `0x79...41C0`
+and keeps it in `href` and `data-hash`. Every test was green throughout, because they tested the scan
+against the assumption it was built on. Details, and what was checked against which real page, are in
+`apps/extension/README.md`.
+
+The same page also showed that **Etherscan already warns** — a copy-time dialog for a transfer signed by a
+different address than the sender, a low-value warning, labels on known attackers — which changes what
+this project can honestly claim to be first at. That is `docs/prior-work.md` §6. Of 30 planted lookalikes
+sampled a week after they were planted, **1** carried an Etherscan label (`node src/etherscan-labels.mjs`;
+a sample that small puts the true share between roughly 0.6% and 17%).
 
 ## Does it cry wolf?
 

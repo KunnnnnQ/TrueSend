@@ -10,6 +10,13 @@ popular Ethereum wallets evaluated in 2025, 16 displayed fabricated transfers as
 outsourced the filtering to their activity provider, and **only three warned when the user went to
 pay the address** ([Guan and Li, arXiv:2508.12107](https://arxiv.org/abs/2508.12107)).
 
+Etherscan, where most victims copy the address they later pay, does warn — with a dialog at its own
+copy button when the transfer was signed by a different address than the sender, and by labelling
+attackers it already knows. Of 30 planted lookalikes sampled a week after they were planted, one
+carried a label. That protection stops at the edge of one site's copy button;
+[`docs/prior-work.md`](docs/prior-work.md) §6 says exactly how far it reaches and how it was
+checked.
+
 That is how 1155 WBTC was lost in May 2024. The victim's "cautious test transfer" 73 minutes
 before the real one was signed by somebody else, on a token contract whose symbol is `ETH`. Every
 step of that is re-derived from chain and asserted in [`analysis/`](analysis/README.md) — not
@@ -98,6 +105,15 @@ they sit, in the list, next to each other — no history, no network, no guess a
 a user to compare two 42-character strings from memory is the thing they cannot do, and the
 reason the attack works.
 
+That claim was false for a while. The scan read addresses out of page text, and real explorers do not
+print addresses — Etherscan draws `0x1E227979...a6F538FD5`, Blockscout draws `0x79...41C0`, and the
+whole address is in an attribute. On two real pages, **0 of 236 addresses were readable from text**, and
+every test had passed because every test built its transaction list out of full addresses. It now reads
+the attributes, is tested against rows copied verbatim from both explorers, and was run in a real
+browser against a live account being poisoned at the time: 20 addresses found where there had been none,
+all 23 outlines visible. It runs in web pages and nowhere else — not in a wallet's extension popup, not
+on a phone.
+
 **A hold nobody hears about is only a delay.** The watcher alerts the owner *and* the guardian
 within a poll, with a one-click cancel link that lands on the transfer. An alert is never sent
 twice and a failure is never dropped, because a user who stops watching for themselves on the
@@ -137,6 +153,14 @@ owner. That gap is real, open, and recorded in
 rule — the one that matters more, and the only reason the WBTC case is caught at all — works
 correctly for these accounts either way.
 
+**The counterfeit tokens are in the history too.** The bait in the May 2024 case was a token calling
+itself `ETH`. On a real account being poisoned on 2026-09-26, sixteen of seventeen token contracts in its
+recent history were counterfeits — eleven posing as USDT in four spellings, five posing as ETH — and
+every one of their transfers had been planted. The Scan screen now reads what each token calls itself and
+says so; before that, the token rules existed, were tested and were listed as a defence, and nothing in
+the product called them. Measured against Uniswap's curated token list they flag none of 407 legitimate
+tokens, after a first version flagged MATIC, SOL and POL.
+
 **Scores explain themselves.** Every finding carries a sentence naming the contact being imitated
 and both fingerprints. A bare number asks for trust; a reason lets the user catch what the rules
 missed.
@@ -152,11 +176,11 @@ similarity rule scored it zero. Measured: `safe` (0) before, `danger` (71) after
 | Component | State |
 | --- | --- |
 | `contracts/` — policy, 7702 delegate, vault, factory, community registry | Built. 94 tests: unit, fuzz, invariant. 100% branch coverage |
-| `packages/engine/` — fingerprints, heuristics, scoring | Built. 122 tests including property tests |
-| `packages/chain/` — history with signer resolution, policy reads | Built. 15 tests. Shared by the app and the indexer |
-| `apps/web/` — Scan, Send, Pending | Built. Scan reads mainnet directly and resolves signers; Send and Pending drive a deployed policy |
+| `packages/engine/` — fingerprints, heuristics, scoring | Built. 140 tests including property tests |
+| `packages/chain/` — history with signer resolution, token identities, policy reads | Built. 27 tests. Shared by the app and the indexer |
+| `apps/web/` — Scan, Send, Pending | Built. Scan reads mainnet directly, resolves signers and reads what every token in the history calls itself; Send and Pending drive a deployed policy |
 | `apps/indexer/` — hold watcher, alerts, risk API | Built. 17 tests on alert idempotency and resume |
-| `apps/extension/` — copy and paste guard, in-page collision scan | Built. 23 tests |
+| `apps/extension/` — copy and paste guard, in-page collision scan | Built. 41 tests, 13 of them against markup copied from real Etherscan and Blockscout pages |
 | `analysis/` — replay against real mainnet cases | Built. Verifies the 2024 WBTC case from chain, measures live poisoning volume and the false-positive rate, replays the shipped detector |
 
 Not audited.

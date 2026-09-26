@@ -1,0 +1,171 @@
+{
+  "measuredAt": "2026-09-26T00:00:00Z",
+  "plantedWindow": {
+    "fromBlock": 26013728,
+    "toBlock": 26014927
+  },
+  "sampled": 30,
+  "checked": 30,
+  "labelled": 1,
+  "share": 0.03333333333333333,
+  "interval95": [
+    0.0059084379948573795,
+    0.16670751396958874
+  ],
+  "instrumentCalibrated": {
+    "knownLabelled": "Fake_Phishing7859477",
+    "knownUnlabelled": null
+  },
+  "results": [
+    {
+      "address": "0xcb6e7ec5f2ae01a5735daae3bdaf10b96c882507",
+      "status": "ok",
+      "label": null
+    },
+    {
+      "address": "0x37a3d0379e630720a0162b5defdd6f7851b70e81",
+      "status": "ok",
+      "label": null
+    },
+    {
+      "address": "0x4007c4e0432e6c1a5a325dd3b7f51df2edd33430",
+      "status": "ok",
+      "label": null
+    },
+    {
+      "address": "0x9dc64ecc8533c7e076882fad4f747f70466294ae",
+      "status": "ok",
+      "label": null
+    },
+    {
+      "address": "0x1f8036220763e3fff9b32e9dce4efa9bedb778b8",
+      "status": "ok",
+      "label": null
+    },
+    {
+      "address": "0x28e66cd517a14f7ada7d75f8c07d10ddabd84fbe",
+      "status": "ok",
+      "label": null
+    },
+    {
+      "address": "0xc2299850a9adc6d4ff78b484249ca88424846d99",
+      "status": "ok",
+      "label": null
+    },
+    {
+      "address": "0x91511c9dc5cfb718f3cfc4b3523c86db7359d918",
+      "status": "ok",
+      "label": "Fake_Phishing1064860"
+    },
+    {
+      "address": "0xcd0c68140b72fedf7e57fadce35feb109c01f47c",
+      "status": "ok",
+      "label": null
+    },
+    {
+      "address": "0x45ca906cf0912dd93281efedc4424ac5d9d020d5",
+      "status": "ok",
+      "label": null
+    },
+    {
+      "address": "0x0c8c2145397c8a1be7318d275b38634c33104585",
+      "status": "ok",
+      "label": null
+    },
+    {
+      "address": "0x653655d57ecd55fc59842660f85af1828753c56e",
+      "status": "ok",
+      "label": null
+    },
+    {
+      "address": "0xab768e33f72ce48dea916eac06392713aabbe082",
+      "status": "ok",
+      "label": null
+    },
+    {
+      "address": "0x6536d5a8ea03eecd507afaad2777340c1a35c56e",
+      "status": "ok",
+      "label": null
+    },
+    {
+      "address": "0x400790e2f214c6f07aa56fa041432a74f52c3430",
+      "status": "ok",
+      "label": null
+    },
+    {
+      "address": "0x685ca9d264453c351f2dcb732413be567019984f",
+      "status": "ok",
+      "label": null
+    },
+    {
+      "address": "0x9aebbb926cf8433bdcab625635fe01e3b2bca6b1",
+      "status": "ok",
+      "label": null
+    },
+    {
+      "address": "0xfa2d81727f6f4ac098bd13f93b9c6fc9cbc387e3",
+      "status": "ok",
+      "label": null
+    },
+    {
+      "address": "0xd4b3036dc17468844380bf23083b2061f51a9be6",
+      "status": "ok",
+      "label": null
+    },
+    {
+      "address": "0x85cc285084fc68dea721b52e0b5cd7b21cb9b3de",
+      "status": "ok",
+      "label": null
+    },
+    {
+      "address": "0x5620666339364805d2980cb4559a20d39055e5c8",
+      "status": "ok",
+      "label": null
+    },
+    {
+      "address": "0x648481d5e9ebcf72b0af0d205b6558fce0b834c7",
+      "status": "ok",
+      "label": null
+    },
+    {
+      "address": "0x8a89d407cf44efd5d3f6fed5919c391b19f2a147",
+      "status": "ok",
+      "label": null
+    },
+    {
+      "address": "0x48d5d03763568343099462d30f2b24e8a4d5946c",
+      "status": "ok",
+      "label": null
+    },
+    {
+      "address": "0x93696d748d508949789c9dc85048178421a81e12",
+      "status": "ok",
+      "label": null
+    },
+    {
+      "address": "0xdd7ee2989b3944e2a69a5323d4da01d78004f767",
+      "status": "ok",
+      "label": null
+    },
+    {
+      "address": "0x381a24574a7164292eb0b1aa53b89dea3e364907",
+      "status": "ok",
+      "label": null
+    },
+    {
+      "address": "0x6e1ad162aba531a5a057c3162bd1d404facb145f",
+      "status": "ok",
+      "label": null
+    },
+    {
+      "address": "0x76c547fb55d65594cebc82332ffa948d8ad1590e",
+      "status": "ok",
+      "label": null
+    },
+    {
+      "address": "0x25862b4cad81c5103ea21741f233bff6d3f33dbb",
+      "status": "ok",
+      "label": null
+    }
+  ]
+}

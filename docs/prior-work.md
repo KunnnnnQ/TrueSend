@@ -206,6 +206,62 @@ here. See "Changes this suggests", below.
 
 ---
 
+## 6. What Etherscan already does
+
+Not a paper. **Observed**, on 2026-09-26, on the token-transfer page of one account that was being
+poisoned at the time (`0x0bcf1545…dc8675`), in a real browser with a real click. Nothing here is
+from documentation; if Etherscan documents it differently, the page is what I saw, and it is
+recorded because the argument this project makes in its README is wrong without it.
+
+**A copy-time confirmation.** Clicking the copy icon beside one of the attacker's addresses opened a
+dialog titled *Before You Copy*:
+
+> The transaction for this token transfer was made by a different address than the sender of the
+> token. Verify that this is the address you intend to interact with.
+
+with *Don't show this for 30 days* and *Understand, Copy Address*, and the copy did not happen
+until the second. That is this project's central insight — `tx.from` is not the log's `from` —
+implemented in the interface of the explorer where most victims copy the address they later pay.
+The markup carries a second message on other rows: *a token transfer of low value, which is a
+potential sign of an address poisoning attack*. Etherscan is the transaction-activity provider that
+paper 3 says wallets depend on, and it already does part of what paper 3 says is missing.
+
+**Labels on addresses it knows.** One of the three lookalikes on that page was displayed as
+`Fake_Phishing7859477` rather than as hex.
+
+**Counterfeit-token transfers hidden by default.** A lookalike from this repository's own committed
+data (`0x7916cdb1…41c0`) was in the same account's token transfers on Blockscout and absent from
+Etherscan's first page; the rows it sat in involve counterfeit USDT contracts. That is an
+inference from one account, not something I confirmed from documentation.
+
+### What that changes
+
+The sentence this project leaned on — that the layer where signer resolution has to happen is one
+wallets have delegated away — stays true of *wallets*. It must not be widened to explorers, and an
+earlier draft of the README's opening read as if it were.
+
+What remains, stated as narrowly as it can be:
+
+1. **The protection is at one site's copy button.** A user who selects the text by hand, or copies
+   from a wallet's history view, another explorer or a phone, goes around it. On Blockscout the same
+   account's page drew three different attacker addresses as `0x79...41C0`, unlabelled, with no
+   warning on the rows I captured. (I did not click through Blockscout's controls; a warning I did
+   not see is not proof there is none.)
+2. **It is a dialog with a thirty-day dismissal.** It says something about a row. It does not say
+   *which address you actually pay* this one imitates, and it cannot be present once the address has
+   left the page.
+3. **Labels cover what Etherscan already knows.** Of **30** planted lookalike addresses, spread
+   across the committed sample and about a week old, **1** carried a label (`analysis/src/etherscan-labels.mjs`,
+   with the instrument checked first against a labelled and an unlabelled page). With a sample
+   that small the honest range for the true share is roughly 0.6% to 17%, not 3%. It is one
+   protection, measured; Etherscan's copy dialog and its hiding of counterfeit tokens are others
+   and are not in that number.
+4. **None of it can stop a payment.** A dialog is advice.
+
+So this project is not the first to notice the signer mismatch and should not be presented as if it
+were. What is left is everything outside one site's copy button — wallets, other explorers, phones —
+and the one layer that does not depend on anybody reading a dialog: the hold on chain.
+
 ## What is prior art and what is not
 
 Stated plainly, because a hackathon judge should not have to work it out.
@@ -219,6 +275,8 @@ Stated plainly, because a hackathon judge should not have to work it out.
 - That ASCII-only is a sound restriction for identifiers, and how to compare confusables.
   (UTS #39)
 - The EIP-7702 delegation phishing class. (arXiv:2512.12174)
+- **Warning at copy time that a transfer was signed by a different address than the sender**, and
+  a low-value-transfer warning, and labels on known attackers. (Etherscan, observed 2026-09-26; §6)
 
 **What this repository adds, as far as I can tell from abstracts:**
 
