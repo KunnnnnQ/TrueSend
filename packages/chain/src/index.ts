@@ -41,6 +41,12 @@ export {
 } from "./policy.js";
 
 export {
+  MULTICALL3,
+  readTokenIdentities,
+  type TokenIdentity,
+} from "./tokens.js";
+
+export {
   EAS_DEPLOYMENTS,
   REPORT_ROLE,
   isLookalikeOnChain,

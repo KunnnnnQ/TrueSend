@@ -1,15 +1,28 @@
 "use client";
 
-import {useCallback, useMemo, useState} from "react";
+import {useCallback, useEffect, useMemo, useState} from "react";
 import {isAddress, type Address} from "viem";
 import {mainnet} from "wagmi/chains";
 import {useAccount, usePublicClient} from "wagmi";
 
-import {createChainClient, scanHistory, type ScanProgress, type ScanResult} from "@truesend/chain";
-import {assessAddress, type PoisonReport, type RiskAssessment} from "@truesend/engine";
+import {
+  createChainClient,
+  readTokenIdentities,
+  scanHistory,
+  type ScanProgress,
+  type ScanResult,
+} from "@truesend/chain";
+import {
+  assessAddress,
+  inspectToken,
+  judgeToken,
+  type PoisonReport,
+  type RiskAssessment,
+} from "@truesend/engine";
 
 import {AddressCard} from "@/components/Fingerprint";
 import {Findings, LookalikeComparison, ReportChip, ReportLine, RiskChip} from "@/components/Risk";
+import {CounterfeitTokens, type FlaggedToken, type TokenCheck} from "@/components/Tokens";
 import {HISTORY_RPC, KNOWN_TOKENS} from "@/lib/chains";
 import {registryFor, useReports} from "@/lib/registry";
 import {saveScan} from "@/lib/scanStore";
@@ -41,6 +54,7 @@ export default function ScanPage() {
   const [result, setResult] = useState<ScanResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [tokenCheck, setTokenCheck] = useState<TokenCheck>({status: "idle"});
 
   const scanChain = chainId ?? mainnet.id;
 
@@ -138,6 +152,96 @@ export default function ScanPage() {
     for (const report of reports) map.set(report.suspect, report);
     return map;
   }, [reports]);
+
+  /**
+   * What every token in the history calls itself, and whether it is what it says.
+   *
+   * Address poisoning is not only about addresses: the bait in the May 2024 case was a token
+   * contract calling itself `ETH`, and the token detector in the engine existed, tested and
+   * documented, for a long while without any screen ever reading a symbol — so none of them could
+   * have run it. This is the call that was missing.
+   *
+   * Runs after the scan rather than inside it, so a slow or refusing endpoint costs the user this
+   * one panel and not the counterparty list, which does not depend on it. Cancelled when a new scan
+   * replaces the result, so an answer for the previous account can never land on the next one.
+   */
+  useEffect(() => {
+    if (!result) {
+      setTokenCheck({status: "idle"});
+      return;
+    }
+
+    const endpoint = HISTORY_RPC[scanChain];
+    if (!endpoint || result.tokensSeen.length === 0) {
+      setTokenCheck({status: "done", checked: 0, unreadable: 0, counterfeit: [], unusual: []});
+      return;
+    }
+
+    let cancelled = false;
+    setTokenCheck({status: "checking", total: result.tokensSeen.length});
+
+    void (async () => {
+      try {
+        const identities = await readTokenIdentities(createChainClient(endpoint), result.tokensSeen);
+        const canonical = (KNOWN_TOKENS[scanChain] ?? []).map((t) => ({symbol: t.symbol, address: t.address}));
+
+        const counterfeit: FlaggedToken[] = [];
+        const unusual: FlaggedToken[] = [];
+        let unreadable = 0;
+        for (const identity of identities) {
+          // A token that would not say what it is called cannot be judged, and is counted rather
+          // than passed: reporting it as clean would be a claim nothing established.
+          if (identity.symbol === null) {
+            unreadable++;
+            continue;
+          }
+
+          const findings = inspectToken(
+            {
+              symbol: identity.symbol,
+              address: identity.address,
+              ...(identity.name ? {name: identity.name} : {}),
+            },
+            {canonical},
+          );
+          if (findings.length === 0) continue;
+
+          const own = result.transfers.filter((t) => t.token === identity.address);
+          // Planted, not merely present: the account "sending" it in a transaction it did not sign,
+          // or a zero-value transfer in. An account does not sign for, or receive nothing of, a
+          // token it chose to hold — which is what tells a counterfeit from a strange spelling.
+          const planted = own.filter(
+            (t) => (t.from === result.owner && t.signer !== result.owner) || (t.to === result.owner && t.value === 0n),
+          ).length;
+
+          const token: FlaggedToken = {
+            address: identity.address,
+            symbol: identity.symbol,
+            name: identity.name,
+            transfers: own.length,
+            planted,
+            findings,
+          };
+          (judgeToken(findings, planted) === "counterfeit" ? counterfeit : unusual).push(token);
+        }
+        const byUse = (a: FlaggedToken, b: FlaggedToken) => b.planted - a.planted || b.transfers - a.transfers;
+        counterfeit.sort(byUse);
+        unusual.sort(byUse);
+
+        if (!cancelled) {
+          setTokenCheck({status: "done", checked: identities.length, unreadable, counterfeit, unusual});
+        }
+      } catch (caught) {
+        if (!cancelled) {
+          setTokenCheck({status: "failed", message: caught instanceof Error ? caught.message : String(caught)});
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [result, scanChain]);
 
   const dangerous = assessments.filter((a) => a.level === "danger").length;
   const fabricated = result?.history.filter((e) => e.spoofedOutgoingCount > 0).length ?? 0;
@@ -245,6 +349,8 @@ export default function ScanPage() {
               </span>
             ) : null}
           </div>
+
+          <CounterfeitTokens check={tokenCheck} />
 
           <ul className="space-y-2">
             {assessments.map((assessment) => (
