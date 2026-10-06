@@ -188,27 +188,87 @@ contracts a script can call. It does **not** exercise `GuardedAccount`'s delegat
 that needs a live EOA signing an EIP-7702 authorization tuple in its own wallet — not something a
 deploy script should ever be doing on someone's behalf, scripted or not.
 
-Check it by hand, once, with a wallet that supports sending EIP-7702 authorizations (a recent
-MetaMask or Rabby) and an address holding a small amount of Sepolia ETH you don't mind tying up
-for a few minutes:
+Check it by hand, once, from your own keystore with `cast`. **There is no button for this in the
+app** — this section used to say "follow the prompt on the Send screen", and no such prompt was ever
+built; browser wallets also generally refuse to sign a 7702 authorization for a contract that is not
+their own. The deployer account from step 1 will do, since it holds a little Sepolia ETH. From
+`contracts/`, with `SEPOLIA_RPC_URL` set:
 
-1. Open the Send screen, pointed at Sepolia, connected as that address.
-2. Follow the prompt to install the delegation. Your wallet will describe it as authorizing code
-   at the `guardedAccountImplementation` address from step 1 — check that address matches before
-   signing anything, the same way you would check any other authorization.
-3. Send a small amount to an address you have never paid. It should queue, not settle.
-4. Try to force an early execution — there is no button for this in the UI on purpose, so use
-   `cast send $YOUR_ADDRESS 'executeQueued(uint256)' 0 --account truesend-deployer --rpc-url
-   sepolia` (id `0` for the first transfer from a fresh delegation) — and confirm it reverts with
-   `TransferLocked`.
-5. Cancel it from the Pending screen, or wait out the cooldown and let it execute, either one
-   confirms the mechanism is live.
+```bash
+ME=<your deployer address>
+GUARDED=<guardedAccountImplementation from deployments/11155111.json>
+```
 
-This is the step that actually matters for a demo: it is the one place a live signature meets a
-live contract, and it is the one path that genuinely cannot be scripted safely.
+1. Delegate to `GuardedAccount` and switch the policy on, in one transaction — the authorization and
+   the `initialize` self-call land together, which is what stops anyone else initialising it first:
+
+   ```bash
+   cast send $ME "initialize(uint32,uint32,address)" 300 300 0x0000000000000000000000000000000000000000 \
+     --auth $GUARDED --account truesend-deployer --rpc-url $SEPOLIA_RPC_URL
+   ```
+
+   `cast` warns that a signed authorization can be submitted by anyone once sent, and asks to
+   continue; answer `y`. Here that is safe by design: the authorization alone only installs the
+   code, and only the account itself can call `initialize`. Afterwards `cast code $ME` prints
+   `0xef0100` followed by `$GUARDED`.
+2. Queue a small payment to an address this account has never paid — the smoke test's vault is a
+   good choice, because it is yours:
+
+   ```bash
+   cast send $ME "send(address,address,uint256)" <vault address> 0x0000000000000000000000000000000000000000 100000000000000 \
+     --account truesend-deployer --rpc-url $SEPOLIA_RPC_URL
+   ```
+
+   It queues instead of settling. The first queued transfer is id **1** — ids start at 1, because
+   `send` returns 0 for a transfer that settled at once. (This section used to say id 0, and
+   `executeQueued(0)` reverts with `TransferNotQueued`: a revert, but not the one that proves
+   anything.) The live demo's Pending screen, on Sepolia with `$ME` as the protected account, shows
+   it waiting.
+3. Try to execute it early. A call, not a transaction, so it costs nothing:
+
+   ```bash
+   cast call $ME "executeQueued(uint256)" 1 --from $ME --rpc-url $SEPOLIA_RPC_URL
+   ```
+
+   It must revert with error `0x10995f9c` — `TransferLocked(uint64)`, carrying the unlock time.
+4. Cancel it:
+
+   ```bash
+   cast send $ME "cancelQueued(uint256)" 1 --account truesend-deployer --rpc-url $SEPOLIA_RPC_URL
+   ```
+
+   `cast call $ME "getTransfer(uint256)((address,address,uint256,uint64,uint64,uint8))" 1` now ends
+   in status `3`, cancelled, and Pending shows nothing waiting.
+
+Rehearsed on a fork of Sepolia on 2026-10-07 with a throwaway keystore: every step behaved as
+written, and the early execution reverted with exactly `TransferLocked(unlockAt)`. The delegated
+account still signs ordinary transactions with its key as before; delegating to
+`0x0000000000000000000000000000000000000000` removes the code again.
+
+This is the step that matters for a demo of the 7702 path: it is the one place a live signature
+meets a live contract, and it is the one path that should not be scripted on anyone's behalf.
 
 ## After deploying
 
 Update the "Deployed on Sepolia" section of [`README.md`](../README.md) with the new addresses and
 Etherscan links, so a viewer of the demo can check them independently. The deployment of
 2026-10-06 is recorded there.
+
+**Verifying the source afterwards**, if steps 1–2 ran without `--verify` (as on 2026-10-06). It
+publishes nothing that is not already public in this repository and touches no funds. With
+`ETHERSCAN_API_KEY` set, from `contracts/` — addresses from the two records, and the constructor
+arguments are the vault template's address and EAS's, ABI-encoded:
+
+```bash
+forge verify-contract <guardedAccountImplementation> src/GuardedAccount.sol:GuardedAccount --chain sepolia --watch
+forge verify-contract <safeVaultImplementation> src/SafeVault.sol:SafeVault --chain sepolia --watch
+forge verify-contract <safeVaultFactory> src/SafeVaultFactory.sol:SafeVaultFactory --chain sepolia --watch \
+  --constructor-args $(cast abi-encode "constructor(address)" <safeVaultImplementation>)
+forge verify-contract <poisonRegistry> src/PoisonRegistry.sol:PoisonRegistry --chain sepolia --watch \
+  --constructor-args $(cast abi-encode "constructor(address)" <eas>)
+```
+
+Checked before relying on it, on 2026-10-07: the runtime bytecode of all four deployed contracts is
+identical to a local build except inside their immutable slots, and the request these commands
+assemble carries the same compiler settings (0.8.28, optimizer 200, `prague`, no metadata hash).
+Smoke's vault is an EIP-1167 clone, which Etherscan recognises without verification.
