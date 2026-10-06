@@ -55,9 +55,17 @@ jobs:
       - id: pages
         uses: actions/configure-pages@v5
 
-      # PAGES_BASE_PATH turns next.config.ts into a static export under /<repository>. Nothing else
-      # needs configuring: the RPC endpoints default to public ones, called from the visitor's own
-      # browser, and nothing is deployed on chain that the demo would need an address for.
+      # The contracts the Send, Pending and Report screens talk to, read from the records
+      # Deploy.s.sol and RegisterSchema.s.sol wrote and that are committed under
+      # contracts/deployments/ - never copied by hand (tools/deployment-env.mjs). A chain with no
+      # record gets no variable, and its screens say plainly that nothing is deployed there. EAS
+      # and the schema UID need nothing: one is a constant in @truesend/chain, the other is derived
+      # from the registry's address.
+      - name: Contract addresses from the committed deployment records
+        run: node tools/deployment-env.mjs >> "$GITHUB_ENV"
+
+      # PAGES_BASE_PATH turns next.config.ts into a static export under /<repository>. The RPC
+      # endpoints default to public ones, called from the visitor's own browser.
       - name: Build the static site
         run: pnpm --filter @truesend/web build
         env:

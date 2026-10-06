@@ -1,0 +1,7 @@
+{
+  "eas": "0xC2679fBD37d54388Ce493F1DB75320D236e1815e",
+  "poisonRegistry": "0xf548e03250b28E3800b009Afa1540eDAF62D6a98",
+  "schema": "address subject,uint8 role,address imitates,bytes32 evidence",
+  "schemaRegistry": "0x0a7E2Ff54e76B8E6659aedc9103FB21c038050D0",
+  "schemaUid": "0x0acfb8acabfe36fe7a11c9254fe3ebdaec848e2f4c7225491ee3931e1efa57f1"
+}

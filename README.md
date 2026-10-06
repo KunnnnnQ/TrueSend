@@ -4,8 +4,8 @@
 
 **[Live demo](https://kunnnnnq.github.io/TrueSend/)** — the Scan screen reads real mainnet history
 from your browser, nothing to install or connect; *Load the 1155 WBTC loss* replays the verified
-May 2024 case. Send, Pending and Report need the contracts deployed on Sepolia first, which they
-are not yet ([`docs/deploy-sepolia.md`](docs/deploy-sepolia.md)).
+May 2024 case. Send, Pending and Report talk to the contracts [deployed on Sepolia](#deployed-on-sepolia):
+choose Sepolia and they read real on-chain state; sending or reporting needs a wallet with Sepolia ETH.
 
 **Everyone is told to send a small test transfer first. Attackers do not wait for yours — they
 fabricate one.**
@@ -182,7 +182,7 @@ similarity rule scored it zero. Measured: `safe` (0) before, `danger` (71) after
 
 | Component | State |
 | --- | --- |
-| `contracts/` — policy, 7702 delegate, vault, factory, community registry | Built. 94 tests: unit, fuzz, invariant. 100% branch coverage |
+| `contracts/` — policy, 7702 delegate, vault, factory, community registry | Built and [deployed on Sepolia](#deployed-on-sepolia). 94 tests: unit, fuzz, invariant. 100% branch coverage |
 | `packages/engine/` — fingerprints, heuristics, scoring | Built. 145 tests including property tests |
 | `packages/chain/` — history with signer resolution, token identities, policy reads | Built. 27 tests. Shared by the app and the indexer |
 | `apps/web/` — Scan, Send, Pending | Built. Scan reads mainnet directly, resolves signers and reads what every token in the history calls itself; that scan follows the user to Send, which also recognises a token address Scan already flagged; Send and Pending drive a deployed policy |
@@ -191,6 +191,32 @@ similarity rule scored it zero. Measured: `safe` (0) before, `danger` (71) after
 | `analysis/` — replay against real mainnet cases | Built. Verifies the 2024 WBTC case from chain, measures live poisoning volume and the false-positive rate, replays the shipped detector |
 
 Not audited.
+
+### Deployed on Sepolia
+
+Deployed on 2026-10-06 by `Deploy.s.sol` and `RegisterSchema.s.sol`. The records the live demo is
+built from are committed under [`contracts/deployments/`](contracts/deployments/), so no address in
+the app was copied by hand. Bytecode only so far: the source is not verified on Etherscan.
+
+| Contract | Address |
+| --- | --- |
+| `GuardedAccount`, the EIP-7702 delegate | [`0xA49E0f1A8d19DF34C70B6771bBa28b566BA7efA5`](https://sepolia.etherscan.io/address/0xA49E0f1A8d19DF34C70B6771bBa28b566BA7efA5) |
+| `SafeVault`, the clone template | [`0x14772F1683Dd06e49Def09E5fCd196e62Aa28E83`](https://sepolia.etherscan.io/address/0x14772F1683Dd06e49Def09E5fCd196e62Aa28E83) |
+| `SafeVaultFactory` | [`0x02B3A163045c280364B03714DeCdd3627DDCa949`](https://sepolia.etherscan.io/address/0x02B3A163045c280364B03714DeCdd3627DDCa949) |
+| `PoisonRegistry`, the EAS resolver | [`0xf548e03250b28E3800b009Afa1540eDAF62D6a98`](https://sepolia.etherscan.io/address/0xf548e03250b28E3800b009Afa1540eDAF62D6a98) |
+
+`Smoke.s.sol` then ran against those addresses and passed all eight checks. On chain, a fresh vault
+([`0x9Bb7…f940`](https://sepolia.etherscan.io/address/0x9Bb7982b04Ce2116296780380401b002A6F7f940))
+queued a payment to a never-seen recipient instead of sending it, and the payment was then
+cancelled; a true lookalike claim was attested through the real EAS and marked verified by the
+registry ([transaction](https://sepolia.etherscan.io/tx/0xc12d6af9e87b1d966555b243b3ef6cb5308ea46bceacb1d7c437c4bba09546f1)).
+The two refusals — executing before the hold ends, and a lookalike claim between unrelated
+addresses — were checked against the same deployed bytecode without being broadcast, so nothing
+that was meant to fail was sent. To see a real policy in the live demo, choose Sepolia on Send or
+Pending and enter that vault's address.
+
+Still to do by hand: the EIP-7702 path needs a live wallet signature, which no script should
+produce ([`docs/deploy-sepolia.md`](docs/deploy-sepolia.md), step 5).
 
 Branch coverage was 64.6% and called out here as the weakest number in the repo. A coverage report
 then named the eighteen untaken branches and **every one of them was an error path** — a policy
@@ -222,8 +248,9 @@ against a wallet that has never been targeted.
 corepack pnpm --filter @truesend/web dev
 ```
 
-Send and Pending need a policy to act on. Nothing is deployed on a public network yet;
-`contracts/deployments/README.md` has the two commands that give you one on a local chain.
+Send and Pending need a policy to act on. On Sepolia that is the deployment above — to point a
+local dev server at it, `node tools/deployment-env.mjs >> apps/web/.env.local`; for a local chain,
+`contracts/deployments/README.md` has the two commands.
 
 The whole Sepolia deployment can be rehearsed first, free, against a local fork of Sepolia — nothing
 is sent anywhere and nothing in the repository is written ([`docs/deploy-sepolia.md`](docs/deploy-sepolia.md)

@@ -1,0 +1,6 @@
+{
+  "chainId": 11155111,
+  "guardedAccountImplementation": "0xA49E0f1A8d19DF34C70B6771bBa28b566BA7efA5",
+  "safeVaultFactory": "0x02B3A163045c280364B03714DeCdd3627DDCa949",
+  "safeVaultImplementation": "0x14772F1683Dd06e49Def09E5fCd196e62Aa28E83"
+}
