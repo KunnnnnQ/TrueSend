@@ -7,32 +7,34 @@ so a rerun after a mistake does not mean starting over.
 
 ## Before any of this
 
-- **Sepolia ETH.** Step 0 prints the exact figure at the current gas price. Measured on 2026-10-06:
-  about 8.3 million gas for all three scripts — Deploy 5.9M, RegisterSchema 1.6M, Smoke 0.9M — or
-  about 0.01 ETH at that day's 1.1–1.2 gwei, so a few hundredths of an ETH is plenty unless Sepolia's
-  gas price spikes. The smoke test in step 3 also deposits 0.00002 ETH into a vault it creates for
-  you, where it stays — yours, and recoverable, as step 3 explains. Faucets: the one at
+- **Sepolia ETH.** The real deployment on 2026-10-06 used 8.05 million gas in all — Deploy 4.53M,
+  RegisterSchema 1.19M, Smoke 2.33M — about 0.0089 ETH at that day's 1.1 gwei, plus 0.0008 for one
+  smoke run that ran out of gas (step 3). A few hundredths of an ETH is plenty unless Sepolia's gas
+  price spikes. The smoke test also deposits 0.00002 ETH into a vault it creates for you, where it
+  stays — yours, and recoverable, as step 3 explains. Faucets, as checked on 2026-10-06: the one at
   [cloud.google.com/application/web3/faucet/ethereum/sepolia](https://cloud.google.com/application/web3/faucet/ethereum/sepolia)
-  and [sepoliafaucet.com](https://sepoliafaucet.com) both work without a mainnet balance
-  requirement as of this writing; if a faucet asks for a mainnet balance you don't have, try the
-  other.
+  gives 0.05 but may ask that the receiving address hold 0.001 ETH on mainnet, which a new address
+  does not; [sepolia-faucet.pk910.de](https://sepolia-faucet.pk910.de) asks for nothing but some
+  minutes of in-browser mining.
 - **A keystore, not a raw key.** `.env.example` already says this and it is worth repeating: this
-  repo's scripts are written to take `--account <name>`, never `--private-key`. Set one up once:
+  repo's scripts are written to take `--account <name>`, never `--private-key`. The simplest is a
+  new address used only for deploying, whose key is generated encrypted and never shown:
 
   ```bash
-  cast wallet import truesend-deployer --interactive
+  cast wallet new truesend-deployer
   ```
 
-  Paste the private key when prompted, choose a password, and it is encrypted on disk under
-  `~/.foundry/keystores/`. Every command below uses `--account truesend-deployer`.
-- **An RPC that supports Prague.** Sepolia has been on the Prague fork (and therefore EIP-7702)
-  since well before this project started; `.env.example`'s default,
-  `https://ethereum-sepolia-rpc.publicnode.com`, is one such endpoint. If a command below fails
-  with something that looks like "invalid transaction type" rather than a revert reason, the
-  endpoint is the first thing to suspect, not the contract.
-- **An Etherscan API key**, free, from [etherscan.io/apis](https://etherscan.io/apis) — the same
-  key verifies contracts on Sepolia and mainnet. Put it in `ETHERSCAN_API_KEY` in your shell
-  environment (or a local, gitignored `.env` you source — never commit one).
+  Choose a password; it prints the address to fund. (To use a key you already hold instead:
+  `cast wallet import truesend-deployer --interactive`.) Either way the key is encrypted under
+  `~/.foundry/keystores/`, and every command below uses `--account truesend-deployer`.
+- **A Sepolia RPC.** `.env.example`'s default, `https://ethereum-sepolia-rpc.publicnode.com`, works
+  but on some networks drops connections with `tls handshake eof`; on 2026-10-06 the deployment
+  finished through `https://sepolia.gateway.tenderly.co` after publicnode had dropped twice. If a
+  command fails with a connection error, rerun it or switch endpoint — it is not the contract.
+- **Optionally, an Etherscan API key**, free, from [etherscan.io/apis](https://etherscan.io/apis), to
+  publish verified source with `--verify`. Put it in `ETHERSCAN_API_KEY` in your shell environment
+  (or a local, gitignored `.env` you source — never commit one). The 2026-10-06 deployment went
+  without it, so its source is not yet verified on Etherscan.
 - From `contracts/`, with Foundry on your `PATH`:
   ```bash
   export PATH="$PWD/../.tools/foundry:$PATH"   # if using the copy vendored in this repo
@@ -48,10 +50,10 @@ From the repository root:
 node tools/rehearse-sepolia.mjs
 ```
 
-It runs steps 1–3 below against a private copy of Sepolia on your own machine, then prints `PASSED`
-and what the real deployment will cost at Sepolia's gas price right now. Nothing is sent to Sepolia,
-no key or ETH of yours is used, and nothing in this repository is written. It takes about half a
-minute. If it does not say `PASSED`, do not go on to step 1.
+It runs steps 1–3 below, with the same flags, against a private copy of Sepolia on your own
+machine, then prints `PASSED` and what the real deployment costs at Sepolia's gas price right now.
+Nothing is sent to Sepolia, no key or ETH of yours is used, and nothing in this repository is
+written. It takes about half a minute. If it does not say `PASSED`, do not go on to step 1.
 
 What it does, for anyone checking: forks Sepolia with `anvil`, runs the three scripts from a freshly
 generated keystore account funded on the fork only, in a temporary copy of `contracts/` — so the
@@ -59,15 +61,19 @@ deployment files they write, which would otherwise look exactly like a real Sepo
 never be committed — and deletes the copy and stops the fork afterwards. It needs Foundry and the
 contract libraries (`git submodule update --init`), not `pnpm install`.
 
-One difference from the real run it cannot remove: it passes the keystore password with
-`--password`, because a script cannot type into forge's password prompt. That difference hid a real
-bug once — see step 3 — and the scripts no longer depend on it.
+Two differences from the real run it cannot remove, and each has already hidden a real failure:
 
-Last run on 2026-10-06, Foundry 1.8.3, Sepolia block 11,854,109: all three passed, Smoke's eight
-checks passed, about 8.3M gas, about 0.0097 ETH at 1.16 gwei. A pass also means the EAS addresses
-hard-coded in `RegisterSchema.s.sol` are live on Sepolia: Smoke's attestation goes through them.
-What a fork cannot rehearse: Etherscan verification (`--verify` needs your API key and a real
-deployment), and anything about your own key, keystore or balance.
+- **The password.** It passes it with `--password`, because a script cannot type into forge's
+  prompt, and that changes who `msg.sender` is inside a script. The scripts no longer depend on it.
+- **The gas schedule.** The fork charges gas by the rules forge knows (`prague`), not Sepolia's
+  current ones, so it passed a smoke test that then ran out of gas on the real chain (step 3). It
+  now runs Smoke with the margin that real chain needs, and its cost figure is the real
+  deployment's measured gas, not the fork's.
+
+A pass still means the EAS addresses hard-coded in `RegisterSchema.s.sol` are live on Sepolia —
+Smoke's attestation goes through them. What a fork cannot rehearse at all: Etherscan verification
+(`--verify` needs your API key and a real deployment), and anything about your own key, keystore or
+balance.
 
 ## 1. Deploy the singletons
 
@@ -108,7 +114,7 @@ takes on faith (see the doc comment for how). Writes `deployments/registry-11155
 ```bash
 forge script script/Smoke.s.sol \
   --account truesend-deployer --rpc-url sepolia \
-  --broadcast
+  --broadcast --slow -g 1000
 ```
 
 `forge test` proves the logic once, in a controlled EVM. It does not prove that the bytecode at
@@ -116,58 +122,64 @@ forge script script/Smoke.s.sol \
 argument or a stale ABI would not show up in a test run against different bytecode. `Smoke.s.sol`
 closes that gap: it deploys a real vault through the real factory, funds it, queues a payment,
 confirms the deployed contract itself refuses to execute early, cancels, and submits both a true
-and a false lookalike claim to the real registry through the real EAS.
+and a false lookalike claim to the real registry through the real EAS. Read its doc comments before
+running it: they say exactly what spends real value (0.00002 ETH, deposited from your address into
+a vault only you control, plus gas) and what is only ever simulated, never broadcast (the claim that
+is supposed to fail).
 
-The first time this was run against a fresh local deployment, it failed with `InvalidGuardian()` —
-the script itself had passed the wrong guardian argument. That failure is the point of having a
-script that touches deployed bytecode rather than trusting that `Deploy.s.sol` finishing without
-error means everything downstream is wired correctly.
+**What success looks like:** eight `[ok]` lines and `All smoke checks passed.`, *and then* every
+transaction marked ✅ and `ONCHAIN EXECUTION COMPLETE & SUCCESSFUL`. The two are different claims.
+The `[ok]` lines come from forge's simulation, before anything is sent; the ✅ lines are the chain's
+answer. On Sepolia the first can pass while the second fails, which is what happened below. Anything
+short of both means stop before step 4. (This said "nine `[ok]` lines" until 2026-10-06; the script
+has always made eight checks, and a careful reader would have stopped a deployment that had
+succeeded.)
 
-The first real Sepolia run, on 2026-10-06, failed too, with `Unauthorized()`, after every rehearsal
-had passed. The script took `msg.sender` to be the deployer; with the password typed at forge's
-prompt, `msg.sender` in a script is forge's default address, so the test vault was created for that
-address and the deployed contract refused to let the real deployer use it. Forge simulates before it
-broadcasts, so nothing was sent and nothing was spent. The script now reads the signing account from
-inside a broadcast, and CI fails any deploy script that reads `msg.sender`. Steps 1 and 2 had already
-succeeded and did not need repeating: neither depends on who calls them. Read `contracts/script/Smoke.s.sol`'s doc
-comments before running it; it explains exactly what spends real value (0.00002 ETH, deposited from
-your address into a vault only you control, plus gas) and what is only ever simulated, never
-broadcast (the claim that is supposed to fail).
+**Why `--slow -g 1000`.** Sepolia's gas schedule has moved past the `prague` rules forge estimates
+with (`evm_version` in `contracts/foundry.toml`; its blocks now carry a `blockAccessListHash`).
+Measured on the real deployment on 2026-10-06: every transaction in steps 1 and 2 used no more than
+forge estimated, but Smoke's calls that create a vault or write new storage used 3.2 to 4.2 times
+as much — creating the vault 621,518 gas against an estimate of 148,320, queuing the payment 374,989
+against 116,268, the attestation 1,271,639 against 347,871. With forge's default 30% margin, those
+three ran out of gas on chain while the simulation printed eight `[ok]`. `-g 1000` sets each limit
+to ten times forge's estimate; you pay only for gas used, about 0.0027 ETH for the whole step that
+day. `--slow` sends each transaction only after the previous one succeeded, so a failure stops the
+run instead of sending the rest against a vault that does not exist.
 
-Expect eight `[ok]` lines and `All smoke checks passed.` at the end. Anything else means stop before
-step 4 — the addresses from steps 1–2 are not safe to wire into the app yet. (This said nine until
-2026-10-06, from the day it was written; the script has always made eight checks. A careful reader
-would have stopped a deployment that had succeeded.)
+**This step has failed three times, each one a different lesson:**
+- against a fresh local deployment, with `InvalidGuardian()`: the script passed the wrong guardian
+  argument. That failure is the point of a script that touches deployed bytecode rather than
+  trusting that `Deploy.s.sol` finishing without error means everything downstream is wired;
+- on the first real Sepolia run, with `Unauthorized()`, after every rehearsal had passed: the script
+  took `msg.sender` to be the deployer, and with the password typed at forge's prompt `msg.sender`
+  is forge's default address. Nothing was sent; forge simulates first. The script now reads the
+  signing account from inside a broadcast, and CI fails any deploy script that reads `msg.sender`;
+- on the second, out of gas, for the reason above. That one did reach the chain: five transactions,
+  about 0.0008 ETH of gas, nothing else — the failed transfer kept its value, and the vault and the
+  attestation were never created.
+
+Steps 1 and 2 never needed repeating: neither depends on its caller, and neither creates storage the
+way Smoke does.
 
 ## 4. Wire the addresses into the app
 
-```bash
-cd apps/web
-cp ../../.env.example .env.local   # if you have not already
-```
+Commit `contracts/deployments/11155111.json` and `registry-11155111.json` and push. That is the
+whole step for the live demo: its build reads the addresses from those two records
+(`tools/deployment-env.mjs`, run by `.github/workflows/pages.yml`), so nothing is copied by hand.
 
-From `contracts/deployments/11155111.json`:
-
-```
-NEXT_PUBLIC_SEPOLIA_VAULT_FACTORY=<safeVaultFactory>
-NEXT_PUBLIC_SEPOLIA_GUARDED_ACCOUNT=<guardedAccountImplementation>
-```
-
-From `contracts/deployments/registry-11155111.json`:
-
-```
-NEXT_PUBLIC_SEPOLIA_POISON_REGISTRY=<poisonRegistry>
-```
-
-(EAS's own address needs no variable — `packages/chain/src/registry.ts` already has it for
-Sepolia, confirmed on chain by `RegisterSchema.s.sol` rather than copied from documentation.)
+For a local dev server, the same script writes them into the app's environment:
 
 ```bash
-corepack pnpm --filter @truesend/web build && corepack pnpm --filter @truesend/web start
+node tools/deployment-env.mjs >> apps/web/.env.local
 ```
 
-or, for local iteration, `dev` instead of `build`+`start`. Switch your wallet to Sepolia and the
-Send screen should now read a real policy instead of saying there is none.
+(EAS's own address needs no variable — `packages/chain/src/registry.ts` already has it for Sepolia —
+and neither does the schema UID, which the app derives from the registry's address and checks
+against the chain's schema registry.)
+
+Choose Sepolia on the Send screen and enter a vault address — the smoke test's own vault will do —
+and it reads a real policy instead of saying there is none; the Report screen says "Registry live on
+this chain".
 
 ## 5. The one thing the smoke test cannot check
 
@@ -197,6 +209,6 @@ live contract, and it is the one path that genuinely cannot be scripted safely.
 
 ## After deploying
 
-Update the `Status` table in [`README.md`](../README.md) — it currently says nothing is deployed
-on a public network — and record the Sepolia contract and registry addresses somewhere a viewer of
-a demo can check them independently (an Etherscan link is enough).
+Update the "Deployed on Sepolia" section of [`README.md`](../README.md) with the new addresses and
+Etherscan links, so a viewer of the demo can check them independently. The deployment of
+2026-10-06 is recorded there.

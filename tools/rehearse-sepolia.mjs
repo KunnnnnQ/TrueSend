@@ -27,7 +27,11 @@
  * read by the app. The copy costs a few seconds. The temporary directory and the fork are both
  * removed at the end, whether the rehearsal passed or not.
  *
- * Ends by saying what the real deployment would cost at Sepolia's gas price right now.
+ * Ends by saying what the deployment costs at Sepolia's gas price right now - using the gas the
+ * real deployment measurably used, because the fork cannot tell: it charges by the `prague` rules
+ * forge knows, and Sepolia has since repriced storage creation. That is the second difference from
+ * the real run, after the password above, and it hid the second real failure: this rehearsal
+ * passed a smoke test that then ran out of gas on Sepolia (docs/deploy-sepolia.md, step 3).
  *
  * Needs Foundry (on PATH, or in .tools/foundry/) and the contract libraries checked out
  * (`git submodule update --init`), and nothing else: it imports no packages, so it runs before
@@ -49,7 +53,25 @@ const RPC = process.env.SEPOLIA_RPC_URL || "https://ethereum-sepolia-rpc.publicn
 const SEPOLIA = 11_155_111;
 /** Protects a throwaway keystore that exists for one run, inside the temporary copy. */
 const PASSWORD = "rehearsal";
-const STEPS = ["Deploy", "RegisterSchema", "Smoke"];
+/**
+ * The three scripts, with the flags docs/deploy-sepolia.md gives each - a rehearsal of a different
+ * command is a rehearsal of nothing. Smoke's `--slow -g 1000` is there because Sepolia now prices
+ * storage creation well above the `prague` rules forge estimates with; the fork prices by forge's
+ * rules, so here the margin changes nothing, but the command is the one that will run for real.
+ */
+const STEPS = [
+  ["Deploy", []],
+  ["RegisterSchema", []],
+  ["Smoke", ["--slow", "-g", "1000"]],
+];
+
+/**
+ * Gas the real deployment on Sepolia used, 2026-10-06, from its broadcast receipts: Deploy
+ * 4,525,269, RegisterSchema 1,191,927, Smoke 2,331,041. The fork cannot measure this - it charges by
+ * forge's `prague` rules, under which Smoke cost less than a third of what Sepolia charged - so the
+ * cost this prints is the measured figure at today's gas price, not the fork's.
+ */
+const REAL_DEPLOYMENT_GAS = 8_048_237;
 /** What the scripts read to build: everything else in `contracts/` is tests and build output. */
 const NEEDED = ["foundry.toml", "remappings.txt", "src", "script", "lib"];
 
@@ -117,8 +139,7 @@ async function main() {
   console.log(`Deploying from a fresh keystore account, ${deployer}.`);
   console.log("Nothing below is sent to Sepolia. The first step also compiles, so it is the slowest.\n");
 
-  let totalGas = 0;
-  for (const [index, step] of STEPS.entries()) {
+  for (const [index, [step, flags]] of STEPS.entries()) {
     const label = `[${index + 1}/${STEPS.length}] ${step}.s.sol `.padEnd(32, ".");
     const result = await run(
       FORGE,
@@ -128,6 +149,7 @@ async function main() {
         "--rpc-url",
         local,
         "--broadcast",
+        ...flags,
         "--keystore",
         join(keystores, "deployer"),
         "--password",
@@ -143,19 +165,18 @@ async function main() {
       fail(`\n${step} failed on the fork. Do not deploy for real until it passes here.`);
     }
 
-    const gas = Number(out.match(/Estimated total gas used for script: (\d+)/)?.[1] ?? 0);
-    totalGas += gas;
-    const checks = step === "Smoke" ? `, ${out.match(/\[ok\]/g)?.length ?? 0} checks passed` : "";
-    console.log(`${label} ok  (${gas.toLocaleString("en-US")} gas${checks})`);
+    const checks = step === "Smoke" ? `  (${out.match(/\[ok\]/g)?.length ?? 0} checks passed)` : "";
+    console.log(`${label} ok${checks}`);
   }
 
   const price = Number(await rpc(RPC, "eth_gasPrice"));
-  const cost = (totalGas * price) / 1e18;
+  const cost = (REAL_DEPLOYMENT_GAS * price) / 1e18;
   console.log("\nPASSED. Nothing was sent to Sepolia, and nothing in this repository changed.");
   console.log(
-    `The real deployment needs about ${(totalGas / 1e6).toFixed(1)}M gas: about ${cost.toFixed(4)} ETH ` +
-      `at Sepolia's gas price right now (${(price / 1e9).toFixed(2)} gwei).`,
+    `Cost: the real deployment of 2026-10-06 used ${(REAL_DEPLOYMENT_GAS / 1e6).toFixed(2)}M gas, ` +
+      `about ${cost.toFixed(4)} ETH at Sepolia's gas price right now (${(price / 1e9).toFixed(2)} gwei).`,
   );
+  console.log("(The fork prices gas by forge's rules, which undercount Sepolia's today; see the header.)");
   console.log("Next: docs/deploy-sepolia.md, step 1.");
 }
 
