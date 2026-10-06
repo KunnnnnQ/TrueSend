@@ -7,9 +7,13 @@ so a rerun after a mistake does not mean starting over.
 
 ## Before any of this
 
-- **Sepolia ETH.** A few hundredths of an ETH covers every step below with room to spare —
-  deployment gas on Sepolia is cheap, and the smoke test in step 3 moves a few thousandths of an
-  ETH from your own address back to itself. Faucets: the one at
+- **Sepolia ETH.** Measured, not guessed: on a fork of Sepolia on 2026-10-06 (step 0 below), the
+  three scripts used about 8.3 million gas between them — Deploy 5.9M, RegisterSchema 1.6M, Smoke
+  0.9M — which was about 0.009 ETH at that day's gas price of 1.1 gwei. A few hundredths of an ETH
+  therefore covers everything with room to spare unless Sepolia's gas price spikes past a few
+  gwei; check it with `cast gas-price --rpc-url sepolia` first if in doubt. The smoke test in step
+  3 also deposits 0.00002 ETH into a vault it creates for you, where it stays — yours, and
+  recoverable, as step 3 explains. Faucets: the one at
   [cloud.google.com/application/web3/faucet/ethereum/sepolia](https://cloud.google.com/application/web3/faucet/ethereum/sepolia)
   and [sepoliafaucet.com](https://sepoliafaucet.com) both work without a mainnet balance
   requirement as of this writing; if a faucet asks for a mainnet balance you don't have, try the
@@ -37,6 +41,39 @@ so a rerun after a mistake does not mean starting over.
   export SEPOLIA_RPC_URL=https://ethereum-sepolia-rpc.publicnode.com
   export ETHERSCAN_API_KEY=<your key>
   ```
+
+## 0. Rehearse on a fork first (free, and nothing leaves your machine)
+
+Every script below can be run against a local copy of Sepolia before any of it is run against
+Sepolia itself. `anvil --fork-url` serves Sepolia's real state — including the real EAS contracts
+step 2 registers against — from your own machine, and transactions sent to it go nowhere else. Its
+built-in test accounts are funded and unlocked, so no key of yours is involved at all.
+
+Do it in a throwaway clone. The scripts write `deployments/11155111.json` and
+`deployments/registry-11155111.json` exactly as a real run does, and a fork keeps Sepolia's chain id,
+so those files would look identical to a real deployment record — with addresses that exist nowhere
+but your machine. In a separate clone they cannot be committed by mistake.
+
+```bash
+git clone . ../truesend-rehearsal && cd ../truesend-rehearsal
+git -c core.longpaths=true submodule update --init   # long paths: Windows needs it, others ignore it
+cd contracts
+anvil --fork-url "$SEPOLIA_RPC_URL" --port 8547      # leave this running in another terminal
+```
+
+```bash
+SENDER=0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266    # anvil's first test account, funded and unlocked
+for s in Deploy RegisterSchema Smoke; do
+  forge script script/$s.s.sol --rpc-url http://127.0.0.1:8547 --broadcast --unlocked --sender $SENDER || break
+done
+```
+
+Last run on 2026-10-06 with Foundry 1.8.3, forked at Sepolia block 11,853,296: all three scripts
+succeeded, Smoke printed its eight `[ok]` lines, and the EAS and SchemaRegistry addresses
+hard-coded in `RegisterSchema.s.sol` had code on Sepolia, with `EAS.getSchemaRegistry()` returning
+exactly the registry the script uses. What a fork cannot rehearse: Etherscan verification (`--verify`
+needs your API key and a real deployment to point at), and anything about your own key, keystore or
+balance.
 
 ## 1. Deploy the singletons
 
@@ -91,12 +128,14 @@ The first time this was run against a fresh local deployment, it failed with `In
 the script itself had passed the wrong guardian argument. That failure is the point of having a
 script that touches deployed bytecode rather than trusting that `Deploy.s.sol` finishing without
 error means everything downstream is wired correctly. Read `contracts/script/Smoke.s.sol`'s doc
-comments before running it; it explains exactly what spends real value (a few thousandths of an
-ETH, sent from your address to your address) and what is only ever simulated, never broadcast (the
-claim that is supposed to fail).
+comments before running it; it explains exactly what spends real value (0.00002 ETH, deposited from
+your address into a vault only you control, plus gas) and what is only ever simulated, never
+broadcast (the claim that is supposed to fail).
 
-Expect nine `[ok]` lines and `All smoke checks passed.` at the end. Anything else means stop before
-step 4 — the addresses from steps 1–2 are not safe to wire into the app yet.
+Expect eight `[ok]` lines and `All smoke checks passed.` at the end. Anything else means stop before
+step 4 — the addresses from steps 1–2 are not safe to wire into the app yet. (This said nine until
+2026-10-06, from the day it was written; the script has always made eight checks. A careful reader
+would have stopped a deployment that had succeeded.)
 
 ## 4. Wire the addresses into the app
 
