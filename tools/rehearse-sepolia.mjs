@@ -5,8 +5,20 @@
  *
  * Runs Deploy, RegisterSchema and Smoke - steps 1 to 3 of docs/deploy-sepolia.md - against
  * `anvil --fork-url`: Sepolia's real state, including the real EAS contracts the registry step
- * registers against, served from this machine. Nothing is sent to Sepolia and no key is involved:
- * anvil's first test account is funded and unlocked on the fork, and it is the sender.
+ * registers against, served from this machine. Nothing is sent to Sepolia and no key of yours is
+ * involved.
+ *
+ * It signs as close to the real deployment as a script can: a freshly generated encrypted keystore,
+ * funded on the fork only, and no `--sender`. Not identically, and the difference has already
+ * mattered once. The real run types the password into forge's prompt, which unlocks the keystore
+ * after forge has decided who calls the script's `run()` - so `msg.sender` there is forge's default
+ * address, 0x1804c8AB..., not the deployer. A script cannot answer that prompt (on Windows it reads
+ * the console, not stdin; tried), so this passes the password with `--password`, which unlocks
+ * early and makes `msg.sender` the deployer. On 2026-10-06 that hid a real bug: Smoke.s.sol took
+ * `msg.sender` to be the deployer, passed every rehearsal, and failed with `Unauthorized()` on the
+ * first real Sepolia run. The scripts now read the broadcasting account from inside a broadcast,
+ * and CI fails any script that reads `msg.sender`, so this difference cannot matter again - but it
+ * is a difference, and it is written down here rather than assumed away.
  *
  * It works in a temporary copy of `contracts/`, never in this repository. The scripts write
  * `deployments/11155111.json` and `deployments/registry-11155111.json`, and a fork keeps Sepolia's
@@ -35,14 +47,15 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const CONTRACTS = join(ROOT, "contracts");
 const RPC = process.env.SEPOLIA_RPC_URL || "https://ethereum-sepolia-rpc.publicnode.com";
 const SEPOLIA = 11_155_111;
-/** Anvil's first test account: funded and unlocked on every anvil chain, forks included. */
-const SENDER = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
+/** Protects a throwaway keystore that exists for one run, inside the temporary copy. */
+const PASSWORD = "rehearsal";
 const STEPS = ["Deploy", "RegisterSchema", "Smoke"];
 /** What the scripts read to build: everything else in `contracts/` is tests and build output. */
 const NEEDED = ["foundry.toml", "remappings.txt", "src", "script", "lib"];
 
 const FORGE = foundry("forge");
 const ANVIL = foundry("anvil");
+const CAST = foundry("cast");
 
 let anvil;
 let work;
@@ -91,6 +104,17 @@ async function main() {
   }
   const block = Number(await rpc(local, "eth_blockNumber"));
   console.log(`Forked Sepolia at block ${block.toLocaleString("en-US")}, from ${RPC}.`);
+
+  // A deployer as close to the real one as a script can get - a new encrypted keystore, no
+  // `--sender` - with the one difference the header describes. Funded on the fork alone, and
+  // deleted with the temporary copy.
+  const keystores = join(work, "keystores");
+  mkdirSync(keystores);
+  const created = await run(CAST, ["wallet", "new", keystores, "deployer", "--unsafe-password", PASSWORD], {cwd: work});
+  const deployer = created.out.match(/Address:\s*(0x[0-9a-fA-F]{40})/)?.[1];
+  if (created.code !== 0 || !deployer) fail(`Could not create the rehearsal keystore:\n${created.out.trim()}`);
+  await rpc(local, "anvil_setBalance", [deployer, "0x56BC75E2D63100000"]);
+  console.log(`Deploying from a fresh keystore account, ${deployer}.`);
   console.log("Nothing below is sent to Sepolia. The first step also compiles, so it is the slowest.\n");
 
   let totalGas = 0;
@@ -98,7 +122,17 @@ async function main() {
     const label = `[${index + 1}/${STEPS.length}] ${step}.s.sol `.padEnd(32, ".");
     const result = await run(
       FORGE,
-      ["script", `script/${step}.s.sol`, "--rpc-url", local, "--broadcast", "--unlocked", "--sender", SENDER],
+      [
+        "script",
+        `script/${step}.s.sol`,
+        "--rpc-url",
+        local,
+        "--broadcast",
+        "--keystore",
+        join(keystores, "deployer"),
+        "--password",
+        PASSWORD,
+      ],
       {cwd: work},
     );
     const out = result.out.replace(/\x1b\[[0-9;]*m/g, "");

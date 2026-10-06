@@ -59,7 +59,7 @@ contract Smoke is Script {
     bool ok = true;
 
     function run() external {
-        address deployer = msg.sender;
+        address deployer = _broadcaster();
         string memory chainDeployment =
             _read(string.concat("deployments/", vm.toString(block.chainid), ".json"));
         string memory registryDeployment =
@@ -224,6 +224,22 @@ contract Smoke is Script {
     /*//////////////////////////////////////////////////////////////
                                  HELPERS
     //////////////////////////////////////////////////////////////*/
+
+    /// @dev The account this run actually signs with, read from inside a broadcast.
+    ///
+    ///      Not `msg.sender`. forge calls `run()` from its own default sender (0x1804c8AB...) unless
+    ///      `--sender` is passed, and a keystore whose password is typed at the prompt - the way
+    ///      docs/deploy-sepolia.md says to run this - is unlocked too late to change that. The first
+    ///      real Sepolia run took `msg.sender` as the deployer, made forge's default address the
+    ///      owner of the test vault, and was then refused with `Unauthorized()` by the deployed
+    ///      contract when the real broadcaster tried to queue a payment from it. Nothing was sent:
+    ///      forge simulates before it broadcasts. Inside a broadcast, the caller is whoever is
+    ///      signing, however they were chosen, and CI fails any script that reads `msg.sender`.
+    function _broadcaster() internal returns (address account) {
+        vm.startBroadcast();
+        (, account,) = vm.readCallers();
+        vm.stopBroadcast();
+    }
 
     function _read(string memory path) internal view returns (string memory) {
         return vm.readFile(path);

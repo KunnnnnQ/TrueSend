@@ -53,11 +53,15 @@ and what the real deployment will cost at Sepolia's gas price right now. Nothing
 no key or ETH of yours is used, and nothing in this repository is written. It takes about half a
 minute. If it does not say `PASSED`, do not go on to step 1.
 
-What it does, for anyone checking: forks Sepolia with `anvil`, runs the three scripts with anvil's
-own funded test account, in a temporary copy of `contracts/` — so the deployment files they write,
-which would otherwise look exactly like a real Sepolia record, can never be committed — and deletes
-the copy and stops the fork afterwards. It needs Foundry and the contract libraries
-(`git submodule update --init`), not `pnpm install`.
+What it does, for anyone checking: forks Sepolia with `anvil`, runs the three scripts from a freshly
+generated keystore account funded on the fork only, in a temporary copy of `contracts/` — so the
+deployment files they write, which would otherwise look exactly like a real Sepolia record, can
+never be committed — and deletes the copy and stops the fork afterwards. It needs Foundry and the
+contract libraries (`git submodule update --init`), not `pnpm install`.
+
+One difference from the real run it cannot remove: it passes the keystore password with
+`--password`, because a script cannot type into forge's password prompt. That difference hid a real
+bug once — see step 3 — and the scripts no longer depend on it.
 
 Last run on 2026-10-06, Foundry 1.8.3, Sepolia block 11,854,109: all three passed, Smoke's eight
 checks passed, about 8.3M gas, about 0.0097 ETH at 1.16 gwei. A pass also means the EAS addresses
@@ -117,7 +121,15 @@ and a false lookalike claim to the real registry through the real EAS.
 The first time this was run against a fresh local deployment, it failed with `InvalidGuardian()` —
 the script itself had passed the wrong guardian argument. That failure is the point of having a
 script that touches deployed bytecode rather than trusting that `Deploy.s.sol` finishing without
-error means everything downstream is wired correctly. Read `contracts/script/Smoke.s.sol`'s doc
+error means everything downstream is wired correctly.
+
+The first real Sepolia run, on 2026-10-06, failed too, with `Unauthorized()`, after every rehearsal
+had passed. The script took `msg.sender` to be the deployer; with the password typed at forge's
+prompt, `msg.sender` in a script is forge's default address, so the test vault was created for that
+address and the deployed contract refused to let the real deployer use it. Forge simulates before it
+broadcasts, so nothing was sent and nothing was spent. The script now reads the signing account from
+inside a broadcast, and CI fails any deploy script that reads `msg.sender`. Steps 1 and 2 had already
+succeeded and did not need repeating: neither depends on who calls them. Read `contracts/script/Smoke.s.sol`'s doc
 comments before running it; it explains exactly what spends real value (0.00002 ETH, deposited from
 your address into a vault only you control, plus gas) and what is only ever simulated, never
 broadcast (the claim that is supposed to fail).

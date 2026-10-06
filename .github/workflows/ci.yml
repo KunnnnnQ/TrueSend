@@ -44,6 +44,19 @@ jobs:
         run: forge fmt --check
         working-directory: contracts
 
+      # A deploy script must ask a broadcast who is signing (vm.readCallers) rather than read
+      # msg.sender or tx.origin: forge calls run() from its own default sender unless --sender is
+      # passed, and a keystore unlocked at the password prompt is unlocked too late to change that.
+      # Smoke.s.sol read msg.sender, passed every rehearsal, and failed the first real Sepolia run
+      # with Unauthorized(). Lines that are comments are skipped; code is not.
+      - name: Deploy scripts never trust msg.sender
+        run: |
+          if grep -nE '^[^/]*(msg\.sender|tx\.origin)' script/*.s.sol; then
+            echo "A deploy script reads msg.sender or tx.origin. Read the broadcaster with vm.readCallers() inside a broadcast." >&2
+            exit 1
+          fi
+        working-directory: contracts
+
       # `forge build` runs the linter too; `--deny warnings` makes an unreviewed warning fail the
       # build rather than scroll past. Every suppression in the tree carries a written reason.
       #
