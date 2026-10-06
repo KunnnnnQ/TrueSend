@@ -1,5 +1,7 @@
 # TrueSend
 
+[![CI](https://github.com/KunnnnnQ/TrueSend/actions/workflows/ci.yml/badge.svg)](https://github.com/KunnnnnQ/TrueSend/actions/workflows/ci.yml)
+
 **Everyone is told to send a small test transfer first. Attackers do not wait for yours — they
 fabricate one.**
 
