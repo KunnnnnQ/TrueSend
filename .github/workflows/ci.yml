@@ -18,9 +18,13 @@ jobs:
         with:
           submodules: recursive
 
+      # Pinned, for the same reason Slither is below: `forge fmt --check` and `--deny warnings` are
+      # statements about one formatter and one set of lints, and `stable` would make them
+      # statements about whatever Foundry shipped last. v1.8.3 is the version every check in this
+      # file was last run against, end to end, on a fresh clone.
       - uses: foundry-rs/foundry-toolchain@v1
         with:
-          version: stable
+          version: v1.8.3
 
       # Slither needs a solc. The toolchain above already downloaded the 0.8.28 the project pins,
       # and crytic-compile finds it — so there is no solc-select step here on purpose: a second
@@ -91,13 +95,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # 24, not the 20 this said until 2026-10-06 — which could never have passed: the indexer's
+      # store imports `node:sqlite`, which Node 20 does not have at all (it arrived unflagged in
+      # 22.13), and the indexer's tests load it. 24 is also what this pipeline was last run against,
+      # step for step, on a fresh clone.
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
 
       - name: Enable pnpm
         run: corepack enable
 
+      # Install also builds `@truesend/engine` and `@truesend/chain` (the root `prepare` script,
+      # tools/build-libs.mjs): every other package resolves them through `dist/`, which is not
+      # committed, so without it the typecheck below fails on a fresh checkout — as it did, the
+      # first time this was tried on one.
       - name: Install
         run: pnpm install --frozen-lockfile
         env:

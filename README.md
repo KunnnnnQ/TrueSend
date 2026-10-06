@@ -194,8 +194,10 @@ in `contracts/test/PolicyGuards.t.sol`, and branch coverage is 100%.
 
 ## Running it
 
-Contracts need [Foundry](https://getfoundry.sh); everything else needs Node 20+ and pnpm via
-corepack.
+Contracts need [Foundry](https://getfoundry.sh) (CI pins 1.8.3); everything else needs Node 22.13 or
+later and pnpm via corepack. The floor is the indexer's: it stores state in Node's built-in
+`node:sqlite`, which older versions do not have. CI runs on Node 24. `pnpm install` also builds the
+two shared libraries, `@truesend/engine` and `@truesend/chain`, that every other package imports.
 
 ```bash
 cd contracts && forge test

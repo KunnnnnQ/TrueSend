@@ -6,9 +6,10 @@
   "license": "MIT",
   "packageManager": "pnpm@10.18.2",
   "engines": {
-    "node": ">=20"
+    "node": ">=22.13"
   },
   "scripts": {
+    "prepare": "node tools/build-libs.mjs",
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
