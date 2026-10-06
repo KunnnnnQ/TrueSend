@@ -16,7 +16,10 @@ const TABS = [
 ];
 
 export function Nav() {
-  const pathname = usePathname();
+  // Without its trailing slash: the GitHub Pages build exports every page as a directory
+  // (`trailingSlash` in next.config.ts), so there this reads `/send/`, and comparing it to `/send`
+  // as it was left no tab marked as the current page.
+  const pathname = usePathname().replace(/(.)\/+$/, "$1");
   const {address, isConnected} = useAccount();
   const {connect, connectors, isPending} = useConnect();
   const {disconnect} = useDisconnect();

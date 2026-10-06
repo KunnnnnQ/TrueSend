@@ -1,0 +1,79 @@
+name: Pages
+
+# Publishes the web app as a static site at https://<owner>.github.io/<repository>/.
+#
+# It runs after CI rather than beside it, and only when CI passed: the live demo of a security tool
+# should never be a build whose tests failed. It checks out the exact commit CI tested, not whatever
+# main points at by the time this starts.
+#
+# Only for CI runs triggered by a push to this repository. `workflow_run` also fires for pull
+# requests, including ones from forks whose branch happens to be called `main`; without the guard
+# below, such a run would check out the fork's commit and publish it as this project's site.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# A deployment in progress is allowed to finish; the next one waits for it.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_repository.full_name == github.repository)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Enable pnpm
+        run: corepack enable
+
+      # Also builds @truesend/engine and @truesend/chain (tools/build-libs.mjs), as in CI.
+      - name: Install
+        run: pnpm install --frozen-lockfile
+        env:
+          NODE_ENV: development
+
+      - id: pages
+        uses: actions/configure-pages@v5
+
+      # PAGES_BASE_PATH turns next.config.ts into a static export under /<repository>. Nothing else
+      # needs configuring: the RPC endpoints default to public ones, called from the visitor's own
+      # browser, and nothing is deployed on chain that the demo would need an address for.
+      - name: Build the static site
+        run: pnpm --filter @truesend/web build
+        env:
+          PAGES_BASE_PATH: ${{ steps.pages.outputs.base_path }}
+          NEXT_TELEMETRY_DISABLED: "1"
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/web/out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

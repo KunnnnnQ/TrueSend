@@ -11,6 +11,8 @@ build/
 .turbo/
 coverage/
 .output/
+# The static export pages.yml publishes, when built locally to check it first.
+apps/web/out/
 
 # ---- foundry ----
 contracts/out/
