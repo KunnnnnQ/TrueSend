@@ -2,6 +2,11 @@
 
 [![CI](https://github.com/KunnnnnQ/TrueSend/actions/workflows/ci.yml/badge.svg)](https://github.com/KunnnnnQ/TrueSend/actions/workflows/ci.yml)
 
+**[Live demo](https://kunnnnnq.github.io/TrueSend/)** — the Scan screen reads real mainnet history
+from your browser, nothing to install or connect; *Load the 1155 WBTC loss* replays the verified
+May 2024 case. Send, Pending and Report need the contracts deployed on Sepolia first, which they
+are not yet ([`docs/deploy-sepolia.md`](docs/deploy-sepolia.md)).
+
 **Everyone is told to send a small test transfer first. Attackers do not wait for yours — they
 fabricate one.**
 
