@@ -4,7 +4,7 @@ import {useMemo, useState} from "react";
 import {parseUnits, type Address} from "viem";
 import {useAccount, useReadContract, useWaitForTransactionReceipt, useWriteContract} from "wagmi";
 
-import {assessAddress, checkAddressFormat} from "@truesend/engine";
+import {assessAddress, checkAddressFormat, matchFlaggedToken, revealSymbol} from "@truesend/engine";
 
 import {Findings, LookalikeComparison, ReportLine, RiskChip} from "@/components/Risk";
 import {PolicyBar} from "@/components/PolicyBar";
@@ -64,6 +64,26 @@ export default function SendPage() {
    * from the screen that found it to the screen that spends.
    */
   const lastScan = useLastScan();
+
+  /**
+   * Does the pasted token contract match one the last scan already flagged?
+   *
+   * The counterfeit tokens shown on Scan are not only a reason to avoid a counterparty — one of
+   * them is also a contract address, and that address can end up here, pasted from the very
+   * transfer that planted it. `matchFlaggedToken` is the same lookup Scan's own panel is built on,
+   * asked about one address instead of a whole history.
+   *
+   * Silent whenever there is nothing to check against: no scan yet, a token field left as ETH, or
+   * a scan whose token check has not finished (or never ran — a contract that would not say what
+   * it is called, an endpoint that refused, or a range this account's tokens were not inside).
+   * None of those is "this token is fine" and the UI below says so rather than staying quiet.
+   */
+  const tokenAddress =
+    token !== NATIVE && checkAddressFormat(token.trim()) === "valid" ? (token.trim() as Address) : undefined;
+  const flaggedToken = useMemo(
+    () => (tokenAddress && lastScan?.tokenCheck ? matchFlaggedToken(lastScan.tokenCheck, tokenAddress) : undefined),
+    [tokenAddress, lastScan],
+  );
 
   /**
    * Community reports for this one recipient.
@@ -160,8 +180,11 @@ export default function SendPage() {
                 onChange={(e) => setToken(e.target.value.trim() || NATIVE)}
                 placeholder="ETH"
                 spellCheck={false}
-                className="tabular w-full rounded-md border border-line bg-ink px-3 py-2 text-sm outline-none focus:border-accent"
+                className={`tabular w-full rounded-md border bg-ink px-3 py-2 text-sm outline-none focus:border-accent ${
+                  flaggedToken?.verdict === "counterfeit" ? "border-danger" : "border-line"
+                }`}
               />
+              {flaggedToken ? <FlaggedTokenWarning match={flaggedToken} /> : null}
             </label>
             <label className="block">
               <span className="mb-1.5 block text-xs uppercase tracking-wide text-faint">
@@ -279,4 +302,37 @@ export default function SendPage() {
 /** Wallet errors arrive as paragraphs; the first line is the part that helps. */
 function shortenError(message: string): string {
   return message.split("\n")[0] ?? message;
+}
+
+/**
+ * What to say about a token contract the last scan already had an opinion of.
+ *
+ * `revealSymbol` rather than the symbol itself for the same reason the scan panel uses it: two of
+ * the real fakes in `packages/engine/test/tokens.test.ts` render as ordinary letters but contain
+ * invisible characters or a right-to-left override, and a warning is not the place to let the
+ * contract's own string decide how it displays.
+ */
+function FlaggedTokenWarning({match}: {match: NonNullable<ReturnType<typeof matchFlaggedToken>>}) {
+  const {token, verdict} = match;
+  const symbol = <code className="tabular">{revealSymbol(token.symbol)}</code>;
+
+  if (verdict === "counterfeit") {
+    return (
+      <p className="mt-1.5 text-xs leading-relaxed text-danger">
+        This contract was flagged as counterfeit in your last scan — it calls itself {symbol}
+        {token.planted > 0 ? (
+          <> and {token.planted} of its transfers to that account were planted by someone else</>
+        ) : null}
+        . Make sure this is the contract you mean to use, not one copied from a transfer you never
+        made.
+      </p>
+    );
+  }
+
+  return (
+    <p className="mt-1.5 text-xs leading-relaxed text-caution">
+      This contract&rsquo;s symbol ({symbol}) was flagged as unusual, not counterfeit, in your last
+      scan — nothing about how it was used there looked planted.
+    </p>
+  );
 }

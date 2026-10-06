@@ -176,9 +176,9 @@ similarity rule scored it zero. Measured: `safe` (0) before, `danger` (71) after
 | Component | State |
 | --- | --- |
 | `contracts/` — policy, 7702 delegate, vault, factory, community registry | Built. 94 tests: unit, fuzz, invariant. 100% branch coverage |
-| `packages/engine/` — fingerprints, heuristics, scoring | Built. 140 tests including property tests |
+| `packages/engine/` — fingerprints, heuristics, scoring | Built. 145 tests including property tests |
 | `packages/chain/` — history with signer resolution, token identities, policy reads | Built. 27 tests. Shared by the app and the indexer |
-| `apps/web/` — Scan, Send, Pending | Built. Scan reads mainnet directly, resolves signers and reads what every token in the history calls itself; Send and Pending drive a deployed policy |
+| `apps/web/` — Scan, Send, Pending | Built. Scan reads mainnet directly, resolves signers and reads what every token in the history calls itself; that scan follows the user to Send, which also recognises a token address Scan already flagged; Send and Pending drive a deployed policy |
 | `apps/indexer/` — hold watcher, alerts, risk API | Built. 17 tests on alert idempotency and resume |
 | `apps/extension/` — copy and paste guard, in-page collision scan | Built. 41 tests, 13 of them against markup copied from real Etherscan and Blockscout pages |
 | `analysis/` — replay against real mainnet cases | Built. Verifies the 2024 WBTC case from chain, measures live poisoning volume and the false-positive rate, replays the shipped detector |

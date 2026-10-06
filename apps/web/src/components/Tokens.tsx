@@ -1,24 +1,8 @@
 "use client";
 
-import {revealSymbol, type TokenSymbolFinding} from "@truesend/engine";
-import type {Address} from "viem";
+import {revealSymbol, type FlaggedToken} from "@truesend/engine";
 
-/** A token contract in the scanned history whose symbol is not what it looks like. */
-export interface FlaggedToken {
-  address: Address;
-  symbol: string;
-  name: string | null;
-  /** How many of the account's transfers in the scanned range involve it. */
-  transfers: number;
-  /**
-   * How many of those were planted: a record of the account *sending* it in a transaction the
-   * account never signed, or a zero-value transfer *to* it. These are what separate a counterfeit
-   * from a token that is merely spelled oddly — an account does not sign for, or receive nothing
-   * of, the tokens it chose to hold.
-   */
-  planted: number;
-  findings: TokenSymbolFinding[];
-}
+export type {FlaggedToken} from "@truesend/engine";
 
 export type TokenCheck =
   | {status: "idle"}

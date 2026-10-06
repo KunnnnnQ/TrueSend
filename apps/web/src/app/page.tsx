@@ -16,16 +16,17 @@ import {
   assessAddress,
   inspectToken,
   judgeToken,
+  type FlaggedToken,
   type PoisonReport,
   type RiskAssessment,
 } from "@truesend/engine";
 
 import {AddressCard} from "@/components/Fingerprint";
 import {Findings, LookalikeComparison, ReportChip, ReportLine, RiskChip} from "@/components/Risk";
-import {CounterfeitTokens, type FlaggedToken, type TokenCheck} from "@/components/Tokens";
+import {CounterfeitTokens, type TokenCheck} from "@/components/Tokens";
 import {HISTORY_RPC, KNOWN_TOKENS} from "@/lib/chains";
 import {registryFor, useReports} from "@/lib/registry";
-import {saveScan} from "@/lib/scanStore";
+import {attachTokenCheck, saveScan} from "@/lib/scanStore";
 
 /**
  * The verified case from `analysis/`, preloaded.
@@ -164,6 +165,9 @@ export default function ScanPage() {
    * Runs after the scan rather than inside it, so a slow or refusing endpoint costs the user this
    * one panel and not the counterparty list, which does not depend on it. Cancelled when a new scan
    * replaces the result, so an answer for the previous account can never land on the next one.
+   *
+   * Also attached to the stored scan once it finishes (`attachTokenCheck`), so Send can recognise
+   * a contract this account already had flagged, instead of knowing only the address history.
    */
   useEffect(() => {
     if (!result) {
@@ -174,6 +178,7 @@ export default function ScanPage() {
     const endpoint = HISTORY_RPC[scanChain];
     if (!endpoint || result.tokensSeen.length === 0) {
       setTokenCheck({status: "done", checked: 0, unreadable: 0, counterfeit: [], unusual: []});
+      attachTokenCheck(result.owner, {checked: 0, unreadable: 0, counterfeit: [], unusual: []});
       return;
     }
 
@@ -230,6 +235,7 @@ export default function ScanPage() {
 
         if (!cancelled) {
           setTokenCheck({status: "done", checked: identities.length, unreadable, counterfeit, unusual});
+          attachTokenCheck(result.owner, {checked: identities.length, unreadable, counterfeit, unusual});
         }
       } catch (caught) {
         if (!cancelled) {

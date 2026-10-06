@@ -1,4 +1,4 @@
-import {normalizeAddress, type Address} from "./address.js";
+import {addressesEqual, normalizeAddress, type Address} from "./address.js";
 
 /**
  * Fake-token detection.
@@ -483,4 +483,55 @@ export function judgeToken(findings: readonly TokenSymbolFinding[], plantedTrans
   if (findings.length === 0) return "clean";
   if (findings.some((finding) => IMPERSONATION.has(finding.issue))) return "counterfeit";
   return plantedTransfers > 0 ? "counterfeit" : "unusual";
+}
+
+/** A token contract a scan judged, with what it was judged on. */
+export interface FlaggedToken {
+  address: Address;
+  symbol: string;
+  name: string | null;
+  /** How many of the account's transfers in the scanned range involve it. */
+  transfers: number;
+  /** How many of those were planted — see `judgeToken`. */
+  planted: number;
+  findings: readonly TokenSymbolFinding[];
+}
+
+/** What a token check came to: every token it judged worth a second look, in two tiers. */
+export interface FlaggedTokens {
+  counterfeit: readonly FlaggedToken[];
+  unusual: readonly FlaggedToken[];
+}
+
+/**
+ * Whether a contract address is one a scan already judged — and if so, what it decided.
+ *
+ * This exists because of where the two halves of a payment happen. A scan reads a token's symbol
+ * once, against the RPC, at the only moment this project has `judgeToken`'s two ingredients: the
+ * identity and the history to check it against. Sending money happens later and offers only a
+ * contract address, with nothing of its own to judge it by. Asking the chain again at send time
+ * would answer a narrower question than the scan already did — a fresh `symbol()` call cannot see
+ * whether *this account's* history shows the token being planted on it, which is half of what
+ * `judgeToken` weighs. So the send screen is handed the scan's own answer instead of a smaller one
+ * it would have to compute itself.
+ *
+ * This module has no opinion on how `flagged` reaches here, or for how long it stays good — this
+ * package is pure functions with no clock, no network and no storage of its own (see
+ * `index.ts`), and whatever carries a scan's answer from one screen to another is exactly that
+ * kind of question. The caller is the only one who knows whether the answer is still good for
+ * anything: whether it came from a scan of the account actually paying, and from a block range
+ * recent enough to matter. This function only ever answers "did a scan already flag this address",
+ * never "is it safe" — silence here is the absence of a finding, not a finding of cleanliness.
+ */
+export function matchFlaggedToken(
+  flagged: FlaggedTokens,
+  tokenAddress: Address,
+): {token: FlaggedToken; verdict: "counterfeit" | "unusual"} | undefined {
+  const counterfeit = flagged.counterfeit.find((candidate) => addressesEqual(candidate.address, tokenAddress));
+  if (counterfeit) return {token: counterfeit, verdict: "counterfeit"};
+
+  const unusual = flagged.unusual.find((candidate) => addressesEqual(candidate.address, tokenAddress));
+  if (unusual) return {token: unusual, verdict: "unusual"};
+
+  return undefined;
 }

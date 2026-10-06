@@ -3,9 +3,22 @@
 import {useEffect, useState} from "react";
 import type {Address} from "viem";
 
-import type {AddressSighting} from "@truesend/engine";
+import {addressesEqual, type AddressSighting, type FlaggedToken} from "@truesend/engine";
 
 const KEY = "truesend.last-scan";
+
+/**
+ * What a scan's token check came to, in the shape `matchFlaggedToken` reads back on Send.
+ *
+ * `checked` and `unreadable` are carried along only to show "N tokens checked" if Send ever wants
+ * to; the two lists are the part that answers a question.
+ */
+export interface StoredTokenCheck {
+  checked: number;
+  unreadable: number;
+  counterfeit: FlaggedToken[];
+  unusual: FlaggedToken[];
+}
 
 export interface StoredScan {
   owner: Address;
@@ -13,6 +26,14 @@ export interface StoredScan {
   scannedAt: number;
   fromBlock: string;
   toBlock: string;
+  /**
+   * The token check for this same scan, attached once it finishes.
+   *
+   * Absent, not empty, until then — see `attachTokenCheck`. A caller that needs to tell "not
+   * checked yet" from "checked and clean" has to look at this field rather than treat a missing
+   * one as a clean bill.
+   */
+  tokenCheck?: StoredTokenCheck;
 }
 
 /**
@@ -43,6 +64,22 @@ export function loadScan(): StoredScan | undefined {
   } catch {
     return undefined;
   }
+}
+
+/**
+ * Attach a token check to the scan already stored for this owner.
+ *
+ * Why this is not just another field on `saveScan`'s argument: reading token identities is its
+ * own round trip, slower than the scan and run after it, so by the time it resolves `saveScan` has
+ * usually already run and Send may already have read what it wrote. Written on afterward instead,
+ * and only when `owner` still matches the stored scan — if a newer scan has replaced it, this
+ * result belongs to an account nobody is looking at any more, and attaching it to the wrong one
+ * would be the exact bug this file exists to avoid.
+ */
+export function attachTokenCheck(owner: Address, tokenCheck: StoredTokenCheck): void {
+  const current = loadScan();
+  if (!current || !addressesEqual(current.owner, owner)) return;
+  saveScan({...current, tokenCheck});
 }
 
 /** Reads once on mount, because session storage does not exist during server rendering. */

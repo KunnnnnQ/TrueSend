@@ -7,9 +7,11 @@ import {
   inspectTokenSymbol,
   isPlainSymbol,
   judgeToken,
+  matchFlaggedToken,
   restrictionLevel,
   revealSymbol,
   type CanonicalToken,
+  type FlaggedToken,
 } from "../src/tokens.js";
 import type {Address} from "../src/address.js";
 
@@ -261,6 +263,55 @@ describe("judgeToken", () => {
 
   it("calls a fake native currency counterfeit on its own", () => {
     expect(judgeToken(inspectTokenSymbol("Ether.."), 0)).toBe("counterfeit");
+  });
+});
+
+describe("matchFlaggedToken", () => {
+  const fakeUsdt: FlaggedToken = {
+    address: REAL_FAKES.rightNameWrongContract.address as Address,
+    symbol: "USDT",
+    name: null,
+    transfers: 2,
+    planted: 2,
+    findings: inspectToken(REAL_FAKES.rightNameWrongContract, {canonical: CANONICAL}),
+  };
+  const memeCoin: FlaggedToken = {
+    address: "0x952583c189e79f41c7f65509188bce39ebad4510" as Address,
+    symbol: "BTC.ℏ",
+    name: "Some meme coin",
+    transfers: 1,
+    planted: 0,
+    findings: inspectTokenSymbol("BTC.ℏ"),
+  };
+  const flagged = {counterfeit: [fakeUsdt], unusual: [memeCoin]};
+
+  it("finds a counterfeit by address and says which tier it was", () => {
+    expect(matchFlaggedToken(flagged, fakeUsdt.address)).toEqual({
+      token: fakeUsdt,
+      verdict: "counterfeit",
+    });
+  });
+
+  it("finds an unusual token too, distinguished from a counterfeit", () => {
+    expect(matchFlaggedToken(flagged, memeCoin.address)).toEqual({
+      token: memeCoin,
+      verdict: "unusual",
+    });
+  });
+
+  it("matches regardless of checksum casing, like every other address comparison here", () => {
+    expect(matchFlaggedToken(flagged, fakeUsdt.address.toUpperCase().replace("0X", "0x") as Address)).toEqual({
+      token: fakeUsdt,
+      verdict: "counterfeit",
+    });
+  });
+
+  it("finds nothing for an address no scan ever judged", () => {
+    expect(matchFlaggedToken(flagged, REAL_USDT)).toBeUndefined();
+  });
+
+  it("finds nothing when nothing was ever flagged", () => {
+    expect(matchFlaggedToken({counterfeit: [], unusual: []}, fakeUsdt.address)).toBeUndefined();
   });
 });
 

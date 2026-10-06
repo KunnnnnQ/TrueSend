@@ -158,10 +158,22 @@ by nothing**: no screen, indexer or extension ever read a token's symbol, so non
 run the check. The rows above described a defence that existed in a package and not in the product.
 It is now wired into the Scan screen, and the limits of where it is wired are these.
 
-- **Only Scan reads token symbols.** Send does not check the token being sent, the indexer's risk
-  API takes no token, and the extension does not read token labels on explorer pages — a label on a
-  page may be a name and not a symbol, and applying a symbol rule to a name is the precision
-  problem below, unresolved there.
+- **Only Scan reads token symbols — Send only remembers what Scan already found.** Scan's token
+  check is a second RPC round trip, so until 2026-10-06 its answer went no further than the panel
+  it rendered: the one screen that spends never saw it, which is the same gap `scanStore.ts` was
+  already written to close for address history (`saveScan`'s own doc comment names it directly —
+  "the shape of the attack"). A contract flagged on Scan is exactly the kind of address that can
+  end up pasted into Send's token field next, copied from the very transfer that planted it, so the
+  same hand-off now carries the token check too: Send compares a pasted token address against the
+  last scan's counterfeit and unusual lists (`matchFlaggedToken`) and says so if it matches. This is
+  a lookup against a cached answer, not a second check — Send makes no RPC call of its own, so it
+  only knows what Scan already found, in this tab, before the token field was filled in. It says
+  nothing whenever that is not true: no scan has run yet, the scan's token check has not finished or
+  never ran, the token was outside the scanned block range, or a newer scan for a different address
+  has since replaced it in session storage. The indexer's risk API still takes no token, and the
+  extension still does not read token labels on explorer pages at all — a label on a page may be a
+  name and not a symbol, and applying a symbol rule to a name is the precision problem below,
+  unresolved there.
 - **The known-ticker list has three entries** — USDT, USDC and WBTC. A ticker spelled perfectly at
   the wrong contract, the sneakiest of the fakes found in the wild, is only caught for those three.
   A plain-ASCII fake `DAI` is not caught by the rules; it is caught, if at all, by the fabrication
