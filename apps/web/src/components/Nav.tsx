@@ -28,9 +28,14 @@ export function Nav() {
   const wallet = connectors[0];
 
   return (
-    <header className="border-b border-line">
+    <header className="sticky top-0 z-20 border-b border-line bg-ink/70 backdrop-blur-md">
       <div className="mx-auto flex max-w-5xl items-center gap-6 px-5 py-3.5">
-        <Link href="/" className="text-sm font-semibold tracking-tight">
+        <Link href="/" className="flex items-center gap-2 text-sm font-semibold tracking-tight">
+          {/* A filled square beside an outlined one: the address you meant, and the one beside it. */}
+          <span aria-hidden className="flex gap-0.5">
+            <span className="h-2.5 w-2.5 bg-text" />
+            <span className="h-2.5 w-2.5 border border-text" />
+          </span>
           TrueSend
         </Link>
 
@@ -42,11 +47,17 @@ export function Nav() {
                 key={tab.href}
                 href={tab.href}
                 aria-current={active ? "page" : undefined}
-                className={`rounded-md px-2.5 py-1.5 text-sm transition-colors ${
-                  active ? "bg-raised text-text" : "text-muted hover:text-text"
+                className={`relative rounded-md px-2.5 py-1.5 text-sm transition-colors ${
+                  active ? "text-text" : "text-muted hover:text-text"
                 }`}
               >
                 {tab.label}
+                {active ? (
+                  <span
+                    aria-hidden
+                    className="underline-draw absolute inset-x-2.5 -bottom-[15px] h-px bg-text"
+                  />
+                ) : null}
               </Link>
             );
           })}

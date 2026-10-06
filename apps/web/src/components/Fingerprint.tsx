@@ -2,6 +2,8 @@
 
 import {fingerprint, type AddressFingerprint} from "@truesend/engine";
 
+import {useScramble} from "@/lib/motion";
+
 /**
  * The glyph, drawn from the cells the engine derived.
  *
@@ -60,12 +62,15 @@ export function AddressCard({
   label,
   emphasis = "normal",
   highlightWords,
+  delay = 0,
 }: {
   address: string;
   label?: string;
   emphasis?: "normal" | "strong";
   /** Word positions to mark as differing from a comparison address. */
   highlightWords?: readonly number[];
+  /** Milliseconds before the phrase starts resolving, to follow a list's order. */
+  delay?: number;
 }) {
   const print = fingerprint(address);
 
@@ -83,20 +88,32 @@ export function AddressCard({
           {print.short}
         </div>
         <div className="tabular mt-0.5 text-sm">
+          {/* The true phrase for assistive technology; the resolving letters are only for the eye. */}
+          <span className="sr-only">{print.phrase}</span>
           {print.words.map((word, i) => (
-            <span
+            <Word
               key={i}
+              word={word}
+              delay={delay + i * 70}
               className={
                 highlightWords?.includes(i)
                   ? "mr-1.5 rounded bg-danger/15 px-1 text-danger"
                   : "mr-1.5 text-faint"
               }
-            >
-              {word}
-            </span>
+            />
           ))}
         </div>
       </div>
     </div>
+  );
+}
+
+/** One fingerprint word, resolving out of noise into itself. Always ends exact; see useScramble. */
+function Word({word, delay, className}: {word: string; delay: number; className: string}) {
+  const shown = useScramble(word, {delay, duration: 420});
+  return (
+    <span aria-hidden className={className}>
+      {shown}
+    </span>
   );
 }

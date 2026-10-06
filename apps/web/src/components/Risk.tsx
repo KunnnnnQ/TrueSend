@@ -7,12 +7,15 @@ import {
   type RiskLevel,
 } from "@truesend/engine";
 
+import {useCountUp} from "@/lib/motion";
+
 import {AddressCard} from "./Fingerprint";
 
+/** Danger is the only verdict that keeps moving, so it is the one the eye finds first. */
 const LEVEL_STYLE: Record<RiskLevel, {chip: string; label: string}> = {
-  safe: {chip: "bg-safe/12 text-safe border-safe/25", label: "Looks fine"},
-  caution: {chip: "bg-caution/12 text-caution border-caution/25", label: "Worth a look"},
-  danger: {chip: "bg-danger/12 text-danger border-danger/30", label: "Do not send"},
+  safe: {chip: "bg-safe/8 text-safe border-safe/20", label: "Looks fine"},
+  caution: {chip: "bg-caution/12 text-caution border-caution/30", label: "Worth a look"},
+  danger: {chip: "alarm bg-danger/15 text-danger border-danger/40", label: "Do not send"},
 };
 
 export function RiskChip({level, score}: {level: RiskLevel; score?: number}) {
@@ -22,7 +25,16 @@ export function RiskChip({level, score}: {level: RiskLevel; score?: number}) {
       className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium ${style.chip}`}
     >
       {style.label}
-      {score === undefined ? null : <span className="tabular opacity-60">{score}</span>}
+      {score === undefined ? null : <Score value={score} />}
+    </span>
+  );
+}
+
+function Score({value}: {value: number}) {
+  const shown = useCountUp(value);
+  return (
+    <span className="tabular opacity-60" aria-label={String(value)}>
+      {shown}
     </span>
   );
 }
@@ -132,7 +144,7 @@ export function LookalikeComparison({assessment}: {assessment: RiskAssessment}) 
   const comparison = compareFingerprints(resembles.address, assessment.address);
 
   return (
-    <div className="rounded-lg border border-line bg-surface p-4">
+    <div className="rise rounded-lg border border-line bg-surface p-4">
       <div className="mb-3 text-xs uppercase tracking-wide text-faint">
         Shares the first {resembles.sharedPrefix} and last {resembles.sharedSuffix} characters with
       </div>

@@ -126,9 +126,9 @@ export default function SendPage() {
 
   return (
     <div className="space-y-8">
-      <section>
-        <h1 className="text-2xl font-semibold tracking-tight">Send</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
+      <section className="rise">
+        <h1 className="headline text-4xl font-semibold sm:text-5xl">Send</h1>
+        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted">
           A recipient the account has not trusted does not settle. It goes into a hold you can
           cancel. You are told which it will be before you sign.
         </p>
@@ -144,7 +144,7 @@ export default function SendPage() {
       />
 
       <section className="grid gap-6 lg:grid-cols-[1fr_20rem]">
-        <div className="space-y-4 rounded-lg border border-line bg-surface p-4">
+        <div className="rise space-y-4 rounded-lg border border-line bg-surface p-4 [--i:2]">
           <label className="block">
             <span className="mb-1.5 block text-xs uppercase tracking-wide text-faint">To</span>
             <input
@@ -152,8 +152,8 @@ export default function SendPage() {
               onChange={(e) => setTo(e.target.value)}
               placeholder="0x…"
               spellCheck={false}
-              className={`tabular w-full rounded-md border bg-ink px-3 py-2 text-sm outline-none focus:border-accent ${
-                to.trim() && !recipientValid ? "border-danger" : "border-line"
+              className={`tabular w-full rounded-md border bg-ink px-3 py-2 text-sm outline-none ${
+                to.trim() && !recipientValid ? "border-danger" : "border-line focus:border-accent"
               }`}
             />
             {format === "not-an-address" ? (
@@ -180,8 +180,8 @@ export default function SendPage() {
                 onChange={(e) => setToken(e.target.value.trim() || NATIVE)}
                 placeholder="ETH"
                 spellCheck={false}
-                className={`tabular w-full rounded-md border bg-ink px-3 py-2 text-sm outline-none focus:border-accent ${
-                  flaggedToken?.verdict === "counterfeit" ? "border-danger" : "border-line"
+                className={`tabular w-full rounded-md border bg-ink px-3 py-2 text-sm outline-none ${
+                  flaggedToken?.verdict === "counterfeit" ? "border-danger" : "border-line focus:border-accent"
                 }`}
               />
               {flaggedToken ? <FlaggedTokenWarning match={flaggedToken} /> : null}
@@ -206,8 +206,8 @@ export default function SendPage() {
               onChange={(e) => setAmount(e.target.value)}
               placeholder="0.0"
               spellCheck={false}
-              className={`tabular w-full rounded-md border bg-ink px-3 py-2 text-sm outline-none focus:border-accent ${
-                amount.trim() && parsedAmount === undefined ? "border-danger" : "border-line"
+              className={`tabular w-full rounded-md border bg-ink px-3 py-2 text-sm outline-none ${
+                amount.trim() && parsedAmount === undefined ? "border-danger" : "border-line focus:border-accent"
               }`}
             />
           </label>
@@ -248,7 +248,7 @@ export default function SendPage() {
                 args: [recipient!, token as Address, parsedAmount!],
               })
             }
-            className="w-full rounded-md bg-accent px-4 py-2.5 text-sm font-medium text-ink transition-opacity hover:opacity-90 disabled:opacity-40"
+            className="w-full rounded-md border border-accent bg-accent px-4 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-transparent hover:text-text disabled:opacity-40 disabled:hover:bg-accent disabled:hover:text-ink"
           >
             {isPending ? "Confirm in your wallet…" : instant === false ? "Queue transfer" : "Send"}
           </button>
@@ -265,7 +265,7 @@ export default function SendPage() {
 
         <aside className="space-y-4">
           {assessment ? (
-            <div className="space-y-3 rounded-lg border border-line bg-surface p-4">
+            <div className="rise space-y-3 rounded-lg border border-line bg-surface p-4 [--i:3]">
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-medium">This recipient</h2>
                 <RiskChip level={assessment.level} score={assessment.score} />

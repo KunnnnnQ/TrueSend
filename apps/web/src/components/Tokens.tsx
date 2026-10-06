@@ -63,7 +63,7 @@ export function CounterfeitTokens({check}: {check: TokenCheck}) {
   return (
     <div className="space-y-3">
       {counterfeit.length > 0 ? (
-        <section className="rounded-lg border border-danger/30 bg-surface p-4">
+        <section className="rise rounded-lg border border-danger/30 bg-surface p-4">
           <h2 className="text-sm font-medium text-danger">
             <span className="tabular">{counterfeit.length}</span> counterfeit{" "}
             {plural(counterfeit.length, "token")} in this history
@@ -83,7 +83,7 @@ export function CounterfeitTokens({check}: {check: TokenCheck}) {
       ) : null}
 
       {unusual.length > 0 ? (
-        <section className="rounded-lg border border-line bg-surface p-4">
+        <section className="rise rounded-lg border border-line bg-surface p-4">
           <h2 className="text-sm font-medium text-caution">
             <span className="tabular">{unusual.length}</span> {plural(unusual.length, "token")} with{" "}
             {unusual.length === 1 ? "a symbol that is" : "symbols that are"} not ordinary text

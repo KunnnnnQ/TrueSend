@@ -1,40 +1,61 @@
 @import "tailwindcss";
 
 /*
- * Two ideas carry the whole visual language.
+ * Black and white, with colour only where it means something.
  *
- * Verdicts get colour and nothing else does, so a red row means one thing and cannot be confused
- * with decoration. And addresses are always rendered in the same three-part shape — glyph, short
- * hex, fingerprint phrase — so the eye learns one comparison and reuses it on every screen.
+ * Everything decorative is black, white or grey, so the only colour left on a screen is a verdict:
+ * red means do not send, amber means look again. A safe verdict needs no colour - it is the
+ * absence of an alarm - so it is white like everything else. The one other colour is in the
+ * address glyphs, and that is data, not decoration: it is part of the fingerprint the engine
+ * derived, and greying it out would throw away a difference the eye can use.
+ *
+ * Addresses are always rendered in the same three-part shape - glyph, short hex, fingerprint
+ * phrase - so the eye learns one comparison and reuses it on every screen.
+ *
+ * Motion follows one rule: things that were computed arrive, and nothing loops except what is
+ * waiting or what is dangerous. Results rise into place in order, a fingerprint resolves from noise
+ * into its words, a score counts up to itself. All of it is off for anyone who asks the system for
+ * reduced motion.
  */
 @theme {
-  --color-ink: #05070c;
-  --color-surface: #0b0f18;
-  --color-raised: #121826;
-  --color-line: #1e2636;
-  --color-line-strong: #2b3549;
+  --color-ink: #000000;
+  --color-surface: #0a0a0a;
+  --color-raised: #161616;
+  --color-line: #1f1f1f;
+  --color-line-strong: #3a3a3a;
 
-  --color-text: #e8ecf4;
-  --color-muted: #8b97ad;
-  --color-faint: #5b6679;
+  --color-text: #f2f2f2;
+  --color-muted: #a1a1a1;
+  --color-faint: #686868;
 
-  --color-safe: #35c88a;
-  --color-caution: #e8a838;
-  --color-danger: #f2555a;
-  --color-accent: #6ea8fe;
+  --color-safe: #ededed;
+  --color-caution: #e3a93b;
+  --color-danger: #ff3b30;
+  --color-accent: #ffffff;
 
-  --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Menlo, monospace;
+  --font-sans: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", "Cascadia Mono", Menlo, monospace;
+}
+
+/* The colour on `html` only: a background on `body` would paint over the backdrop below, which
+   sits at z-index -1 between the two. */
+html {
+  background: var(--color-ink);
 }
 
 html,
 body {
-  background: var(--color-ink);
   color: var(--color-text);
   -webkit-font-smoothing: antialiased;
 }
 
 body {
-  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: var(--font-sans);
+}
+
+::selection {
+  background: #ffffff;
+  color: #000000;
 }
 
 /* Addresses, phrases and amounts are all compared character by character. */
@@ -43,11 +64,131 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/*
+ * The backdrop: a dot grid that fades out below the header, and a soft light that follows the
+ * pointer (its position comes from <Spotlight />). Both sit behind everything and take no input.
+ */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: radial-gradient(circle at 1px 1px, rgb(255 255 255 / 0.07) 1px, transparent 0);
+  background-size: 22px 22px;
+  mask-image: radial-gradient(ellipse 90% 60% at 50% 0%, #000 30%, transparent 100%);
+}
+
+.backdrop::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    520px circle at var(--spot-x, 50%) var(--spot-y, -10%),
+    rgb(255 255 255 / 0.06),
+    transparent 65%
+  );
+  transition: background 0.2s;
+}
+
+/* Headings in white fading to grey, like light falling on a plate. */
+.headline {
+  background: linear-gradient(180deg, #ffffff 30%, #8f8f8f 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: -0.02em;
+}
+
+/*
+ * Arrival. Anything with `.rise` fades up into place; give it `--i` (its position in a list) and
+ * items arrive in order rather than all at once.
+ */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+/* `backwards`, not `both`: hidden while it waits its turn, then handed back to the element's own
+   styles, so a finished arrival does not pin `transform` and block `.lift` on hover. */
+.rise {
+  animation: rise 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+  animation-delay: calc(min(var(--i, 0), 16) * 45ms);
+}
+
+/* A progress bar that is visibly still working, not stuck. */
+@keyframes sheen {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.working {
+  background-image: linear-gradient(90deg, #ffffff 0%, #ffffff 35%, #7a7a7a 50%, #ffffff 65%, #ffffff 100%);
+  background-size: 200% 100%;
+  animation: sheen 1.6s linear infinite;
+}
+
+/* The one thing that keeps moving on its own: a verdict that says do not send. */
+@keyframes alarm {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(255 59 48 / 0);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgb(255 59 48 / 0.18);
+  }
+}
+
+.alarm {
+  animation: alarm 2.4s ease-in-out infinite;
+}
+
+/* A hairline that draws itself under the current page's tab. */
+@keyframes draw {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.underline-draw {
+  transform-origin: left;
+  animation: draw 0.35s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+/* Cards lift a little under the pointer, so a list reads as things you can open. */
+.lift {
+  transition:
+    transform 0.2s cubic-bezier(0.2, 0.7, 0.2, 1),
+    border-color 0.2s,
+    background-color 0.2s;
+}
+
+.lift:hover {
+  transform: translateY(-1px);
+  border-color: var(--color-line-strong);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
 }

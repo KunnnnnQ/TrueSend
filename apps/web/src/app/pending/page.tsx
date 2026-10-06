@@ -43,9 +43,9 @@ export default function PendingPage() {
  */
 function Heading() {
   return (
-    <section>
-      <h1 className="text-2xl font-semibold tracking-tight">Pending</h1>
-      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
+    <section className="rise">
+      <h1 className="headline text-4xl font-semibold sm:text-5xl">Pending</h1>
+      <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted">
         Transfers waiting out their hold. Cancelling stays available right up until one is
         executed — the hold is the earliest a transfer <em>may</em> settle, not a window after
         which it becomes unstoppable.

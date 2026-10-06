@@ -1,6 +1,6 @@
 "use client";
 
-import {useCallback, useEffect, useMemo, useState} from "react";
+import {useCallback, useEffect, useMemo, useState, type CSSProperties} from "react";
 import {isAddress, type Address} from "viem";
 import {mainnet} from "wagmi/chains";
 import {useAccount, usePublicClient} from "wagmi";
@@ -254,16 +254,16 @@ export default function ScanPage() {
 
   return (
     <div className="space-y-8">
-      <section>
-        <h1 className="text-2xl font-semibold tracking-tight">Scan a history</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
+      <section className="rise">
+        <h1 className="headline text-4xl font-semibold sm:text-5xl">Scan a history</h1>
+        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted">
           Reads every transfer touching an address, then checks <em>who signed</em> each one. A
           transfer log naming you as the sender is not proof you sent anything — anyone can emit
           one, and almost everyone doing so is planting an address in your history.
         </p>
       </section>
 
-      <section className="rounded-lg border border-line bg-surface p-4">
+      <section className="rise rounded-lg border border-line bg-surface p-4" style={{"--i": 1} as CSSProperties}>
         <div className="flex flex-wrap items-end gap-3">
           <label className="min-w-64 flex-1">
             <span className="mb-1.5 block text-xs uppercase tracking-wide text-faint">Address</span>
@@ -299,7 +299,7 @@ export default function ScanPage() {
             type="button"
             onClick={() => void onScan()}
             disabled={progress !== null}
-            className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-ink transition-opacity hover:opacity-90 disabled:opacity-50"
+            className="rounded-md border border-accent bg-accent px-4 py-2 text-sm font-medium text-ink transition-colors hover:bg-transparent hover:text-text disabled:opacity-50 disabled:hover:bg-accent disabled:hover:text-ink"
           >
             {progress ? "Scanning…" : "Scan"}
           </button>
@@ -318,7 +318,7 @@ export default function ScanPage() {
           <div className="mt-4">
             <div className="h-1 overflow-hidden rounded-full bg-line">
               <div
-                className="h-full bg-accent transition-[width] duration-300"
+                className="working h-full bg-accent transition-[width] duration-300"
                 style={{width: `${Math.round(progress.fraction * 100)}%`}}
               />
             </div>
@@ -331,7 +331,7 @@ export default function ScanPage() {
 
       {result && assessments.length > 0 ? (
         <section className="space-y-4">
-          <div className="flex flex-wrap items-baseline gap-x-6 gap-y-1 text-sm text-muted">
+          <div className="rise flex flex-wrap items-baseline gap-x-6 gap-y-1 text-sm text-muted">
             <span>
               <span className="tabular text-text">{result.transfers.length}</span> transfers ·{" "}
               <span className="tabular text-text">{assessments.length}</span> counterparties
@@ -359,9 +359,10 @@ export default function ScanPage() {
           <CounterfeitTokens check={tokenCheck} />
 
           <ul className="space-y-2">
-            {assessments.map((assessment) => (
+            {assessments.map((assessment, index) => (
               <Row
                 key={assessment.address}
+                index={index}
                 assessment={assessment}
                 {...(reportsByAddress.get(assessment.address.toLowerCase())
                   ? {report: reportsByAddress.get(assessment.address.toLowerCase())!}
@@ -382,11 +383,14 @@ export default function ScanPage() {
 }
 
 function Row({
+  index,
   assessment,
   report,
   open,
   onToggle,
 }: {
+  /** Position in the list: rows arrive in order, and each phrase resolves after its row lands. */
+  index: number;
   assessment: RiskAssessment;
   report?: PoisonReport;
   open: boolean;
@@ -400,14 +404,14 @@ function Row({
         : "border-line";
 
   return (
-    <li className={`rounded-lg border bg-surface ${border}`}>
+    <li className={`rise lift rounded-lg border bg-surface ${border}`} style={{"--i": index} as CSSProperties}>
       <button
         type="button"
         onClick={onToggle}
         aria-expanded={open}
         className="flex w-full items-center gap-4 p-4 text-left"
       >
-        <AddressCard address={assessment.address} />
+        <AddressCard address={assessment.address} delay={Math.min(index, 16) * 45 + 150} />
         <div className="ml-auto flex items-center gap-3">
           {report ? <ReportChip report={report} /> : null}
           <RiskChip level={assessment.level} score={assessment.score} />

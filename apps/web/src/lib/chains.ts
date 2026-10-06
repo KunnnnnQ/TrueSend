@@ -13,11 +13,11 @@ export interface Deployment {
 /**
  * Addresses come from the environment rather than from a checked-in table.
  *
- * Nothing is deployed yet, and a placeholder file full of zero addresses would read like a
- * deployment that exists. `forge script script/Deploy.s.sol --broadcast` writes
- * `contracts/deployments/<chainid>.json`; copy the two addresses into `.env.local` and the app
- * picks them up. Until then `deploymentFor` returns undefined and the screens that need a policy
- * say so plainly.
+ * A placeholder table full of zero addresses would read like a deployment that exists.
+ * `forge script script/Deploy.s.sol --broadcast` writes `contracts/deployments/<chainid>.json`, and
+ * `tools/deployment-env.mjs` turns the committed records into these variables - the live demo's
+ * build runs it, and so can a local `.env.local`. Sepolia has had a record since 2026-10-06. Where
+ * a chain has none, `deploymentFor` returns undefined and the screens that need a policy say so.
  */
 function fromEnv(chainId: number, factory?: string, account?: string): Deployment | undefined {
   if (!factory || !account || !isAddress(factory) || !isAddress(account)) return undefined;

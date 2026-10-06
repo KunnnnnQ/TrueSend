@@ -30,7 +30,7 @@ export function PolicyBar({
   loading: boolean;
 }) {
   return (
-    <section className="rounded-lg border border-line bg-surface p-4">
+    <section className="rise rounded-lg border border-line bg-surface p-4 [--i:1]">
       <div className="flex flex-wrap items-end gap-3">
         <label className="min-w-72 flex-1">
           <span className="mb-1.5 block text-xs uppercase tracking-wide text-faint">
@@ -95,9 +95,14 @@ function NoPolicy() {
     <div className="max-w-md text-sm leading-relaxed text-muted">
       <p className="text-caution">No TrueSend policy at this address.</p>
       <p className="mt-1.5">
-        Nothing is deployed on a public network yet. To try it, run a local chain and deploy —{" "}
+        A policy lives at a vault from the factory, or at an address delegated to GuardedAccount. To
+        see a real one, choose Sepolia and paste the smoke test&rsquo;s vault:{" "}
+        <code className="tabular break-all text-xs text-text">
+          0x9Bb7982b04Ce2116296780380401b002A6F7f940
+        </code>
+        . For a local chain,{" "}
         <code className="tabular text-xs text-text">contracts/deployments/README.md</code> has the
-        two commands — then paste the vault address here.
+        two commands.
       </p>
       <p className="mt-1.5">
         <Link href="/" className="text-accent underline-offset-2 hover:underline">

@@ -166,9 +166,9 @@ export default function ReportPage() {
 
   return (
     <div className="space-y-8">
-      <section>
-        <h1 className="text-2xl font-semibold tracking-tight">Report an address</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
+      <section className="rise">
+        <h1 className="headline text-4xl font-semibold sm:text-5xl">Report an address</h1>
+        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted">
           A community registry held on chain. Attesting is permissionless, which it has to be for
           the registry to be worth having — so it cannot be trusted, only weighted. Nothing here
           decides whether a transfer is allowed: the scoring holds any number of reports below the
@@ -176,7 +176,7 @@ export default function ReportPage() {
         </p>
       </section>
 
-      <section className="rounded-lg border border-line bg-surface p-4">
+      <section className="rise rounded-lg border border-line bg-surface p-4 [--i:1]">
         <label className="block w-56">
           <span className="mb-1.5 block text-xs uppercase tracking-wide text-faint">
             Network
@@ -204,7 +204,7 @@ export default function ReportPage() {
         </div>
       </section>
 
-      <section className="rounded-lg border border-line bg-surface p-4">
+      <section className="rise rounded-lg border border-line bg-surface p-4 [--i:2]">
         <div>
           <div className="text-xs uppercase tracking-wide text-faint">What are you reporting</div>
 
@@ -344,7 +344,7 @@ export default function ReportPage() {
                   args: attestArgs(payload, registry),
                 });
               }}
-              className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-ink transition-opacity hover:opacity-90 disabled:opacity-40"
+              className="rounded-md border border-accent bg-accent px-4 py-2 text-sm font-medium text-ink transition-colors hover:bg-transparent hover:text-text disabled:opacity-40 disabled:hover:bg-accent disabled:hover:text-ink"
             >
               {isPending ? "Confirm in your wallet…" : "Attest"}
             </button>
@@ -440,9 +440,9 @@ function LookalikeCheck({
 /**
  * Whether reporting is possible here, said plainly.
  *
- * Modelled on `PolicyBar`'s "no policy at this address": the honest state of a project that has
- * not deployed to a public network is that this screen cannot do its job yet, and the useful thing
- * is to say so and point at the commands that fix it. A form that looks like it works and reverts
+ * Modelled on `PolicyBar`'s "no policy at this address": on a chain with no registry this screen
+ * cannot do its job, and the useful thing is to say so and point at where it can - Sepolia, since
+ * 2026-10-06 - and at the commands that stand one up locally. A form that looks like it works and reverts
  * on submit would be worse than one that explains itself.
  */
 function NetworkState({
@@ -501,9 +501,9 @@ function NetworkState({
     <div className="rounded-md border border-line bg-ink p-3 text-sm leading-relaxed text-muted">
       <p className="text-caution">{reason}</p>
       <p className="mt-1.5">
-        Nothing is deployed on a public network yet. EAS is already on mainnet and Sepolia, so only
-        the resolver and its schema need standing up — a local chain has no EAS at all, so this
-        brings the whole stack up at once:
+        The live registry is on Sepolia — choose it above. (A local dev server finds it after{" "}
+        <code className="tabular text-xs text-text">node tools/deployment-env.mjs &gt;&gt; apps/web/.env.local</code>.)
+        A local chain has no EAS at all, so this brings the whole stack up there at once:
       </p>
       <pre className="tabular mt-2 overflow-x-auto rounded-md border border-line bg-surface p-3 text-xs text-text">
 {`anvil
