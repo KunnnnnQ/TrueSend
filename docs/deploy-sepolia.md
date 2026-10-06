@@ -7,13 +7,11 @@ so a rerun after a mistake does not mean starting over.
 
 ## Before any of this
 
-- **Sepolia ETH.** Measured, not guessed: on a fork of Sepolia on 2026-10-06 (step 0 below), the
-  three scripts used about 8.3 million gas between them — Deploy 5.9M, RegisterSchema 1.6M, Smoke
-  0.9M — which was about 0.009 ETH at that day's gas price of 1.1 gwei. A few hundredths of an ETH
-  therefore covers everything with room to spare unless Sepolia's gas price spikes past a few
-  gwei; check it with `cast gas-price --rpc-url sepolia` first if in doubt. The smoke test in step
-  3 also deposits 0.00002 ETH into a vault it creates for you, where it stays — yours, and
-  recoverable, as step 3 explains. Faucets: the one at
+- **Sepolia ETH.** Step 0 prints the exact figure at the current gas price. Measured on 2026-10-06:
+  about 8.3 million gas for all three scripts — Deploy 5.9M, RegisterSchema 1.6M, Smoke 0.9M — or
+  about 0.01 ETH at that day's 1.1–1.2 gwei, so a few hundredths of an ETH is plenty unless Sepolia's
+  gas price spikes. The smoke test in step 3 also deposits 0.00002 ETH into a vault it creates for
+  you, where it stays — yours, and recoverable, as step 3 explains. Faucets: the one at
   [cloud.google.com/application/web3/faucet/ethereum/sepolia](https://cloud.google.com/application/web3/faucet/ethereum/sepolia)
   and [sepoliafaucet.com](https://sepoliafaucet.com) both work without a mainnet balance
   requirement as of this writing; if a faucet asks for a mainnet balance you don't have, try the
@@ -42,38 +40,30 @@ so a rerun after a mistake does not mean starting over.
   export ETHERSCAN_API_KEY=<your key>
   ```
 
-## 0. Rehearse on a fork first (free, and nothing leaves your machine)
+## 0. Rehearse it first: one command, free
 
-Every script below can be run against a local copy of Sepolia before any of it is run against
-Sepolia itself. `anvil --fork-url` serves Sepolia's real state — including the real EAS contracts
-step 2 registers against — from your own machine, and transactions sent to it go nowhere else. Its
-built-in test accounts are funded and unlocked, so no key of yours is involved at all.
-
-Do it in a throwaway clone. The scripts write `deployments/11155111.json` and
-`deployments/registry-11155111.json` exactly as a real run does, and a fork keeps Sepolia's chain id,
-so those files would look identical to a real deployment record — with addresses that exist nowhere
-but your machine. In a separate clone they cannot be committed by mistake.
+From the repository root:
 
 ```bash
-git clone . ../truesend-rehearsal && cd ../truesend-rehearsal
-git -c core.longpaths=true submodule update --init   # long paths: Windows needs it, others ignore it
-cd contracts
-anvil --fork-url "$SEPOLIA_RPC_URL" --port 8547      # leave this running in another terminal
+node tools/rehearse-sepolia.mjs
 ```
 
-```bash
-SENDER=0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266    # anvil's first test account, funded and unlocked
-for s in Deploy RegisterSchema Smoke; do
-  forge script script/$s.s.sol --rpc-url http://127.0.0.1:8547 --broadcast --unlocked --sender $SENDER || break
-done
-```
+It runs steps 1–3 below against a private copy of Sepolia on your own machine, then prints `PASSED`
+and what the real deployment will cost at Sepolia's gas price right now. Nothing is sent to Sepolia,
+no key or ETH of yours is used, and nothing in this repository is written. It takes about half a
+minute. If it does not say `PASSED`, do not go on to step 1.
 
-Last run on 2026-10-06 with Foundry 1.8.3, forked at Sepolia block 11,853,296: all three scripts
-succeeded, Smoke printed its eight `[ok]` lines, and the EAS and SchemaRegistry addresses
-hard-coded in `RegisterSchema.s.sol` had code on Sepolia, with `EAS.getSchemaRegistry()` returning
-exactly the registry the script uses. What a fork cannot rehearse: Etherscan verification (`--verify`
-needs your API key and a real deployment to point at), and anything about your own key, keystore or
-balance.
+What it does, for anyone checking: forks Sepolia with `anvil`, runs the three scripts with anvil's
+own funded test account, in a temporary copy of `contracts/` — so the deployment files they write,
+which would otherwise look exactly like a real Sepolia record, can never be committed — and deletes
+the copy and stops the fork afterwards. It needs Foundry and the contract libraries
+(`git submodule update --init`), not `pnpm install`.
+
+Last run on 2026-10-06, Foundry 1.8.3, Sepolia block 11,854,109: all three passed, Smoke's eight
+checks passed, about 8.3M gas, about 0.0097 ETH at 1.16 gwei. A pass also means the EAS addresses
+hard-coded in `RegisterSchema.s.sol` are live on Sepolia: Smoke's attestation goes through them.
+What a fork cannot rehearse: Etherscan verification (`--verify` needs your API key and a real
+deployment), and anything about your own key, keystore or balance.
 
 ## 1. Deploy the singletons
 

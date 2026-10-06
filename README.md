@@ -218,6 +218,14 @@ corepack pnpm --filter @truesend/web dev
 Send and Pending need a policy to act on. Nothing is deployed on a public network yet;
 `contracts/deployments/README.md` has the two commands that give you one on a local chain.
 
+The whole Sepolia deployment can be rehearsed first, free, against a local fork of Sepolia — nothing
+is sent anywhere and nothing in the repository is written ([`docs/deploy-sepolia.md`](docs/deploy-sepolia.md)
+has the full sequence):
+
+```bash
+node tools/rehearse-sepolia.mjs
+```
+
 Deploying uses a keystore rather than a raw key, and writes an address book the app reads
 directly so no address is ever transcribed by hand:
 
