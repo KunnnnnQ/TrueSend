@@ -200,7 +200,8 @@ Not audited.
 
 Deployed on 2026-10-06 by `Deploy.s.sol` and `RegisterSchema.s.sol`. The records the live demo is
 built from are committed under [`contracts/deployments/`](contracts/deployments/), so no address in
-the app was copied by hand. Bytecode only so far: the source is not verified on Etherscan.
+the app was copied by hand. The source of all four is verified — an exact match on Etherscan and a
+match on Sourcify, since 2026-10-07 — so each link below opens the code itself.
 
 | Contract | Address |
 | --- | --- |

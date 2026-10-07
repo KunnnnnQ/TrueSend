@@ -34,7 +34,8 @@ so a rerun after a mistake does not mean starting over.
 - **Optionally, an Etherscan API key**, free, from [etherscan.io/apis](https://etherscan.io/apis), to
   publish verified source with `--verify`. Put it in `ETHERSCAN_API_KEY` in your shell environment
   (or a local, gitignored `.env` you source — never commit one). The 2026-10-06 deployment went
-  without it, so its source is not yet verified on Etherscan.
+  without it and was verified the next day instead, with the commands under "After deploying". The
+  key is needed only for that: revoke it on Etherscan once the contracts are verified.
 - From `contracts/`, with Foundry on your `PATH`:
   ```bash
   export PATH="$PWD/../.tools/foundry:$PATH"   # if using the copy vendored in this repo
@@ -285,3 +286,9 @@ Checked before relying on it, on 2026-10-07: the runtime bytecode of all four de
 identical to a local build except inside their immutable slots, and the request these commands
 assemble carries the same compiler settings (0.8.28, optimizer 200, `prague`, no metadata hash).
 Smoke's vault is an EIP-1167 clone, which Etherscan recognises without verification.
+
+Run the same day: all four passed (`Pass - Verified`), and forge submitted each to Sourcify as well.
+Checked afterwards from the public pages, with no key: Etherscan shows "Source Code Verified" with
+an exact match for every one; Sourcify reports `match` — not `exact_match`, because these contracts
+are compiled without the metadata hash a Sourcify exact match is built on. Etherscan's "License"
+field reads -NA-, although every source file carries an MIT SPDX header.
