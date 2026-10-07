@@ -1,6 +1,6 @@
 # Validating the detectors against real mainnet activity
 
-Twelve scripts, no API key, no notebook. Each one fetches from public RPC endpoints and either
+Thirteen scripts, no API key, no notebook. Each one fetches from public RPC endpoints and either
 asserts its claims or fails.
 
 ```bash
@@ -16,6 +16,7 @@ node src/token-precision.mjs       # whether the token rules cry wolf on legitim
 node src/etherscan-labels.mjs      # how many planted lookalikes Etherscan already labels
 node src/poison-hunter.mjs         # replay cases somebody else found: Poison-Hunter's sample
 node src/suffix-rule.mjs           # check the end-only lookalike rule on fresh data
+node src/live-accounts.mjs         # the whole Scan screen on accounts being poisoned now
 ```
 
 `evaluate-engine.mjs` imports `@truesend/engine` from its built `dist`, exactly as the web app
@@ -286,6 +287,63 @@ It shows in the app, too. Loaded in Scan with its 2022 history, one of the repla
 read `caution` at 18, from the dust rule alone. It now reads "Do not send" at 83, and its first reason
 names the payee it imitates by "the last 7 characters".
 
+## On accounts being poisoned right now
+
+`live-accounts.mjs` draws accounts that had a payment record fabricated in the last 300 blocks of
+USDT and USDC — people being targeted that hour — and runs on each exactly what the Scan screen
+runs: `scanHistory` over the app's look-back, every counterparty through `assessAddress`, every token
+through the engine's `checkTokens`. What counts as right comes from the account's own signatures,
+not from the rules under test: a counterparty it signed a payment to is a contact it chose, and a
+token it signed a transfer of is one it holds.
+
+| | first run | after the two fixes below |
+| --- | --- | --- |
+| accounts scanned (skipped as too active) | 25 (1) | 25 (2) |
+| counterparties scored | 1,407 | 501 |
+| contacts the accounts paid themselves, warned about | **1** of 789 | **0** of 62 |
+| tokens the accounts moved themselves, flagged | 0 of 64 | 0 of 30 |
+| counterfeit tokens named | 502 | 674 |
+| tokens with every transfer planted, called clean | 4 | 1 |
+
+The second run is a fresh draw from a later window — blocks 26,139,487–26,139,786; the first drew
+from 26,139,303–26,139,602, so a few accounts may be in both. Neither fix has a threshold that could
+have been tuned on the first. Both runs' files are kept: `data/live-accounts-before-fixes.json` and
+`data/live-accounts.json`.
+
+### 7. A copied payment made a real contact "do not send"
+
+The one contact warned about in the first run — and one more in a two-account trial before it — had
+been paid by the account with its own signature, in one case 195,825 USDT. Thirty-five to forty
+blocks later a planter, the same address both times, published a counterfeit-token "transfer" of exactly the same
+amount from the account to the same real recipient. The fabrication rule exists because a fake
+record makes an address look like one already paid; this address really had been paid, but the rule
+still scored it 65, and the real recipient read "Do not send".
+
+On an address the user has signed a payment to, the record is now `spoofed-copy-of-payment`: shown,
+weighing nothing. An attacker cannot buy the exemption, which needs the user's own signature on a
+payment to that exact address. The one case it weakens is a user who has already paid an attacker
+by mistake; for them the lookalike and timing rules still fire, and a test pins that case at
+`danger`. In the second run the pattern turned up twice more, and both were shown and not held
+against the contact.
+
+### 8. Fakes with ordinary names, or none, were called clean
+
+Of the four tokens in the first run whose every transfer was planted but which the check called
+clean, one was the real USDC — zero-value poisoning runs on real tokens, so passing it is right. The
+other three were fakes: a `cbBTC` that is not Coinbase's, and two contracts with empty names, each of
+which forged three hundred transfers in a single transaction. The rules read names, and the canonical
+list knows three assets, so there was nothing for them to object to. The records those fakes planted
+were caught all along — their recipients scored `danger` — but the token panel never named the
+contract.
+
+A token is now also counterfeit on its own records: the account "sending" a nonzero amount it never
+held, in a transaction somebody else signed (`forgedTransfersByToken`, the test the fold already
+applies to call such a record a fabrication). A real token cannot record that, with one exception the
+fold already has: a token received before the scanned window and moved by an approved spender looks
+forged. In the second run, five tokens were convicted on their records alone; all five had no name,
+and none is on CoinGecko's Ethereum token list. The one token still passed with every transfer
+planted was the real BUSD, used for zero-value poisoning.
+
 ## Does it cry wolf?
 
 Everything above measures whether the detector *catches* things. This measures whether it is
@@ -497,6 +555,10 @@ the second one is the reason the product exists.
   earlier, on another token, or in native ETH is invisible to this scan. The true volume is
   higher than measured; nothing here estimates how much. The recall figure is the Poison-Hunter
   replay, which has limits of its own:
+- **The live-account runs are 25 accounts each, drawn in one hour.** Active payers are the ones
+  targeted, so these are the people the product is for, not a cross-section. Accounts too active to
+  scan in the time a user would wait (2,000 transfers in the look-back) are counted and skipped, so an
+  exchange's hot wallet is not measured at all.
 - **The Poison-Hunter sample is 150 rows its authors chose,** from November 2022 to August 2023,
   50 of each kind; the repository does not say how they were chosen. The replay says what the
   detector does on those, not what share of all poisoning it would catch. The end-only rule was

@@ -201,7 +201,12 @@ recent history were counterfeits — eleven posing as USDT in four spellings, fi
 every one of their transfers had been planted. The Scan screen now reads what each token calls itself and
 says so; before that, the token rules existed, were tested and were listed as a defence, and nothing in
 the product called them. Measured against Uniswap's curated token list they flag none of 407 legitimate
-tokens, after a first version flagged MATIC, SOL and POL.
+tokens, after a first version flagged MATIC, SOL and POL. Names were not enough, though: on accounts
+being poisoned this hour, a "cbBTC" that is not Coinbase's, and contracts with no name at all, passed
+every name rule. A token is now also counterfeit on its own records — the account "sending" an amount
+it never held, in a transaction somebody else signed — and in two runs of 25 such accounts, no token
+the accounts had moved themselves was flagged.
+[`analysis/README.md`](analysis/README.md#on-accounts-being-poisoned-right-now).
 
 **Scores explain themselves.** Every finding carries a sentence naming the contact being imitated
 and both fingerprints. A bare number asks for trust; a reason lets the user catch what the rules
@@ -211,19 +216,23 @@ missed.
 you did not sign, is a record of a payment that did not happen. It is the highest-weighted rule,
 it needs no lookalike to compare against, and it is the only reason the WBTC case is caught at
 all — the victim's history contained nothing resembling the attacker's address, so every
-similarity rule scored it zero. Measured: `safe` (0) before, `danger` (71) after.
+similarity rule scored it zero. Measured: `safe` (0) before, `danger` (71) after. One exception,
+found on accounts being poisoned right now: planters also copy real payments — same amount, same
+real recipient, minutes later — and the rule used to tell users "do not send" to their own contacts.
+On an address the user has paid with their own signature, the copy is now shown and not held against
+it; in a fresh run of 25 accounts, none of 62 such contacts was warned about.
 
 ## Status
 
 | Component | State |
 | --- | --- |
 | `contracts/` — policy, 7702 delegate, vault, factory, community registry | Built and [deployed on Sepolia](#deployed-on-sepolia). 94 tests: unit, fuzz, invariant. 100% branch coverage |
-| `packages/engine/` — fingerprints, heuristics, scoring | Built. 158 tests including property tests |
+| `packages/engine/` — fingerprints, heuristics, scoring | Built. 166 tests including property tests |
 | `packages/chain/` — history with signer resolution, token identities, policy reads | Built. 27 tests. Shared by the app and the indexer |
 | `apps/web/` — Scan, Send, Pending | Built. Scan reads mainnet directly, resolves signers and reads what every token in the history calls itself; that scan follows the user to Send, which also recognises a token address Scan already flagged; Send and Pending drive a deployed policy |
 | `apps/indexer/` — hold watcher, alerts, risk API | Built. 17 tests on alert idempotency and resume |
 | `apps/extension/` — copy and paste guard, in-page collision scan | Built and [released](https://github.com/KunnnnnQ/TrueSend/releases/latest). 41 tests, 13 of them against markup copied from real Etherscan and Blockscout pages |
-| `analysis/` — replay against real mainnet cases | Built. Verifies the 2024 WBTC case from chain, measures live poisoning volume and the false-positive rate, replays the shipped detector — including over 144 poisoning cases somebody else published |
+| `analysis/` — replay against real mainnet cases | Built. Verifies the 2024 WBTC case from chain, measures live poisoning volume and the false-positive rate, replays the shipped detector — including over 144 poisoning cases somebody else published, and the whole Scan screen on accounts being poisoned right now |
 
 Not audited.
 

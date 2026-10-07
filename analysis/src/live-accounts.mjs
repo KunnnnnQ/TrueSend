@@ -20,6 +20,16 @@
  *    "from" the account in a transaction it did not sign, or a zero-value transfer in — and that the
  *    check calls clean is listed, with what it calls itself, for a reader to judge.
  *
+ * The first run found one of each kind of mistake, and both are fixed in the engine:
+ *
+ *  - a planter copying a real payment with a counterfeit token, to the real recipient, which made
+ *    the recipient "do not send". It is now shown (`spoofed-copy-of-payment`) and not scored, and
+ *    counted here as contacts with a copy shown;
+ *  - fakes with ordinary or empty names, called clean. A token now also counts as counterfeit on its
+ *    own records — the account sending an amount it never held (`forgedTransfersByToken`). Every
+ *    token convicted that way alone is listed and checked against CoinGecko's list, since a real
+ *    token held before the look-back would be its false alarm.
+ *
  * Accounts too active to scan in the time a user would wait (`--max-transfers`) are counted and
  * skipped, never silently dropped. Account addresses are left out of the output; every listed finding
  * carries a transaction hash, which is enough to check it on an explorer.
@@ -32,7 +42,7 @@ import {dirname, join} from "node:path";
 import {fileURLToPath} from "node:url";
 
 import {createChainClient, readTokenIdentities, scanHistory} from "@truesend/chain";
-import {MIN_AFFIX_MATCH, assessAddress, inspectToken, judgeToken} from "@truesend/engine";
+import {MIN_AFFIX_MATCH, assessAddress, checkTokens} from "@truesend/engine";
 
 import {
   ARCHIVE_ENDPOINTS,
@@ -68,6 +78,16 @@ const dataDir = join(here, "..", "data");
 const rpc = createClient([...ARCHIVE_ENDPOINTS, ...RECENT_ENDPOINTS]);
 const client = createChainClient(ARCHIVE_ENDPOINTS[0]);
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * Legitimate tokens, by somebody else's account: CoinGecko's Ethereum list, the broad one
+ * `token-precision.mjs` reads. Only used to second-guess the forgery rule, never to judge.
+ */
+const coingecko = new Set(
+  (await (await fetch("https://tokens.coingecko.com/uniswap/all.json")).json()).tokens
+    .filter((t) => t.chainId === 1)
+    .map((t) => t.address.toLowerCase()),
+);
 
 // ---------------------------------------------------------------------------
 // 1. Accounts somebody fabricated a payment record for, in the last few hundred blocks.
@@ -170,34 +190,61 @@ for (const account of targeted) {
       }
     }
 
-    // Every token, as the Scan screen judges it.
+    // Every token, as the Scan screen judges it: the same engine call, not a copy of it.
     const identities = await readTokenIdentities(client, scan.tokensSeen);
-    const tokens = {counterfeit: 0, unusual: 0, clean: 0, unread: 0};
-    const alarmsOnHeldTokens = [];
-    const plantedButClean = [];
-    for (const identity of identities) {
-      const address = identity.address.toLowerCase();
-      const own = scan.transfers.filter((t) => t.token === address);
-      const planted = own.filter(isPlanted).length;
+    const check = checkTokens(owner, scan.transfers, identities, {canonical: CANONICAL});
+    const flagged = new Map([
+      ...check.counterfeit.map((t) => [t.address, "counterfeit"]),
+      ...check.unusual.map((t) => [t.address, "unusual"]),
+    ]);
+    const tokens = {
+      counterfeit: check.counterfeit.length,
+      unusual: check.unusual.length,
+      clean: check.checked - check.unreadable - flagged.size,
+      unread: check.unreadable,
+    };
 
-      if (identity.symbol === null) {
-        tokens.unread++;
-        continue;
-      }
-      const findings = inspectToken(
-        {symbol: identity.symbol, address: identity.address, ...(identity.name ? {name: identity.name} : {})},
-        {canonical: CANONICAL},
-      );
-      const verdict = findings.length === 0 ? "clean" : judgeToken(findings, planted);
-      tokens[verdict]++;
+    const alarmsOnHeldTokens = [...check.counterfeit, ...check.unusual]
+      .filter((t) => choseTokens.has(t.address))
+      .map((t) => ({
+        token: t.address,
+        symbol: t.symbol,
+        verdict: flagged.get(t.address),
+        issues: t.findings.map((f) => f.issue),
+        forged: t.forged ?? 0,
+        tx: scan.transfers.find((x) => x.token === t.address && x.from === owner && x.signer === owner)?.txHash,
+      }));
 
-      if (verdict !== "clean" && choseTokens.has(address)) {
-        alarmsOnHeldTokens.push({token: address, symbol: identity.symbol, verdict, issues: findings.map((f) => f.issue), tx: own.find((t) => t.from === owner && t.signer === owner)?.txHash});
-      }
-      if (verdict === "clean" && own.length > 0 && planted === own.length) {
-        plantedButClean.push({token: address, symbol: identity.symbol, name: identity.name, transfers: own.length, tx: own[0].txHash});
-      }
-    }
+    // Convicted by their own records alone, with nothing wrong with the name. Each is checked
+    // against CoinGecko's list, because a real token wrongly caught here is the false alarm the
+    // forgery rule could cost: one received before the look-back, then moved by an approved spender.
+    const forgedOnly = check.counterfeit
+      .filter((t) => t.forged && t.findings.length === 0)
+      .map((t) => ({
+        token: t.address,
+        symbol: t.symbol,
+        name: t.name,
+        forged: t.forged,
+        onCoinGecko: coingecko.has(t.address),
+        tx: scan.transfers.find((x) => x.token === t.address && x.from === owner && x.signer !== owner && x.value > 0n)?.txHash,
+      }));
+
+    const plantedButClean = identities
+      .filter((identity) => identity.symbol !== null && !flagged.has(identity.address.toLowerCase()))
+      .map((identity) => {
+        const own = scan.transfers.filter((t) => t.token === identity.address.toLowerCase());
+        return {identity, own, planted: own.filter(isPlanted).length};
+      })
+      .filter(({own, planted}) => own.length > 0 && planted === own.length)
+      .map(({identity, own}) => ({
+        token: identity.address.toLowerCase(),
+        symbol: identity.symbol,
+        name: identity.name,
+        transfers: own.length,
+        tx: own[0].txHash,
+      }));
+
+    const copiedPayments = verdicts.filter((v) => v.findings.some((f) => f.code === "spoofed-copy-of-payment")).length;
 
     results.push({
       transfers: scan.transfers.length,
@@ -207,15 +254,18 @@ for (const account of targeted) {
       lookalikesOnTheEndAlone: endOnly,
       contactsTheAccountPaid: chosePayees.size,
       alarmsOnContacts,
+      copiedPayments,
       tokens,
       tokensTheAccountMoved: choseTokens.size,
       alarmsOnHeldTokens,
+      forgedOnly,
       plantedButClean,
     });
     console.log(`${label} ${String(scan.transfers.length).padStart(5)} transfers  ` +
       `danger ${levels.danger} caution ${levels.caution} safe ${levels.safe}  ` +
       `tokens: ${tokens.counterfeit} counterfeit, ${tokens.unusual} unusual, ${tokens.clean} clean, ${tokens.unread} unread  ` +
-      `| contacts warned ${alarmsOnContacts.length}/${chosePayees.size}, held tokens flagged ${alarmsOnHeldTokens.length}, planted-but-clean ${plantedButClean.length}`);
+      `| contacts warned ${alarmsOnContacts.length}/${chosePayees.size} (copies shown ${copiedPayments}), ` +
+      `held tokens flagged ${alarmsOnHeldTokens.length}, forged-only ${forgedOnly.length}, planted-but-clean ${plantedButClean.length}`);
   } catch (error) {
     failed++;
     console.log(`${label} failed: ${String(error?.shortMessage ?? error?.message ?? error).slice(0, 120)}`);
@@ -239,6 +289,7 @@ const summary = {
   lookalikesOnTheEndAlone: sum((r) => r.lookalikesOnTheEndAlone),
   contactsTheAccountsPaid: sum((r) => r.contactsTheAccountPaid),
   contactsWarnedAbout: sum((r) => r.alarmsOnContacts.length),
+  contactsWithACopiedPaymentShown: sum((r) => r.copiedPayments ?? 0),
   tokens: {
     counterfeit: sum((r) => r.tokens.counterfeit),
     unusual: sum((r) => r.tokens.unusual),
@@ -247,6 +298,8 @@ const summary = {
   },
   tokensTheAccountsMoved: sum((r) => r.tokensTheAccountMoved),
   heldTokensFlagged: sum((r) => r.alarmsOnHeldTokens.length),
+  counterfeitOnTheirRecordsAlone: sum((r) => (r.forgedOnly ?? []).length),
+  ofThoseOnCoinGecko: sum((r) => (r.forgedOnly ?? []).filter((t) => t.onCoinGecko).length),
   plantedTokensCalledClean: sum((r) => r.plantedButClean.length),
 };
 
@@ -256,11 +309,16 @@ console.log(`  lookalike findings ${summary.lookalikes}, of which on the end alo
 console.log(`  contacts the accounts signed payments to: ${summary.contactsTheAccountsPaid}, warned about: ${summary.contactsWarnedAbout}`);
 console.log(`  tokens: counterfeit ${summary.tokens.counterfeit}, unusual ${summary.tokens.unusual}, clean ${summary.tokens.clean}, unread ${summary.tokens.unread}`);
 console.log(`  tokens the accounts moved themselves: ${summary.tokensTheAccountsMoved}, flagged: ${summary.heldTokensFlagged}`);
+console.log(`  contacts with a copied payment shown but not held against them: ${summary.contactsWithACopiedPaymentShown}`);
+console.log(`  counterfeit on their own records alone: ${summary.counterfeitOnTheirRecordsAlone}, of which on CoinGecko's list: ${summary.ofThoseOnCoinGecko}`);
 console.log(`  tokens with every transfer planted that the check called clean: ${summary.plantedTokensCalledClean}`);
 
 for (const r of results) {
   for (const a of r.alarmsOnContacts) console.log(`    contact warned: ${a.level} ${a.score} ${a.codes.join(", ")}  paid in ${a.signedPaymentTx}`);
   for (const a of r.alarmsOnHeldTokens) console.log(`    held token flagged: ${a.verdict} ${JSON.stringify(a.symbol)} ${a.issues.join(", ")}  moved in ${a.tx}`);
+  for (const f of r.forgedOnly ?? []) {
+    console.log(`    forged-only: ${JSON.stringify(f.symbol)} ${JSON.stringify(f.name)} ${f.forged} forged${f.onCoinGecko ? "  ON COINGECKO" : ""}  e.g. ${f.tx}`);
+  }
   for (const p of r.plantedButClean) console.log(`    planted but clean: ${JSON.stringify(p.symbol)} ${JSON.stringify(p.name)} ${p.transfers} transfers  e.g. ${p.tx}`);
 }
 
