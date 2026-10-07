@@ -6,6 +6,7 @@ import {mainnet} from "wagmi/chains";
 import {useAccount, usePublicClient} from "wagmi";
 
 import {
+  LISTED_TOKENS,
   createChainClient,
   readTokenIdentities,
   scanHistory,
@@ -190,7 +191,10 @@ export default function ScanPage() {
         const canonical = (KNOWN_TOKENS[scanChain] ?? []).map((t) => ({symbol: t.symbol, address: t.address}));
         // The same check `analysis/` measures: names against the canonical list, and each token's
         // records in this history — planted, or forged outright — against what the account signed.
-        const check = checkTokens(result.owner, result.transfers, identities, {canonical});
+        const check = checkTokens(result.owner, result.transfers, identities, {
+          canonical,
+          listed: LISTED_TOKENS[scanChain] ?? [],
+        });
 
         if (!cancelled) {
           setTokenCheck({status: "done", ...check});

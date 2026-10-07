@@ -61,6 +61,7 @@ import {forgedTransfersByToken, type TransferRecord} from "./history.js";
 export type TokenSymbolIssue =
   | "non-ascii-symbol"
   | "known-symbol-wrong-contract"
+  | "listed-symbol-wrong-contract"
   | "impersonates-native-asset"
   | "invisible-characters"
   | "mixed-scripts"
@@ -284,6 +285,14 @@ export function inspectToken(
   token: TokenToInspect,
   options: {
     canonical?: readonly CanonicalToken[];
+    /**
+     * A longer, weaker list: tokens somebody else curated (`LISTED_TOKENS` in @truesend/chain).
+     * A name matching one of these at another contract is a question rather than a verdict —
+     * `listed-symbol-wrong-contract` — because tickers are not unique and a list of hundreds will
+     * share one with a legitimate project. `judgeToken` calls it counterfeit only once the token
+     * has been used against the account.
+     */
+    listed?: readonly CanonicalToken[];
     knownSymbols?: readonly string[];
     /** The chain's own currency, lower case. Defaults to Ethereum's; see `ETHEREUM_NATIVE`. */
     nativeSymbols?: readonly string[];
@@ -291,9 +300,23 @@ export function inspectToken(
 ): TokenSymbolFinding[] {
   const {symbol} = token;
   const canonical = options.canonical ?? [];
+  const listed = options.listed ?? [];
   const knownSymbols = options.knownSymbols ?? canonical.map((entry) => entry.symbol);
   const nativeSymbols = new Set(options.nativeSymbols ?? ETHEREUM_NATIVE);
   const findings: TokenSymbolFinding[] = [];
+
+  /**
+   * Entries in `list` with this symbol's shape, unless this very contract is one of them. A list
+   * may hold the same ticker twice — Uniswap's has two `LIT`s — so matching the first entry by
+   * name and comparing only its address would call the second real one a fake.
+   */
+  const imitated = (list: readonly CanonicalToken[]): CanonicalToken | undefined => {
+    if (!token.address || list.length === 0) return undefined;
+    const skeleton = confusableSkeleton(symbol).toLowerCase();
+    const sameName = list.filter((entry) => confusableSkeleton(entry.symbol).toLowerCase() === skeleton);
+    const address = normalizeAddress(token.address);
+    return sameName.some((entry) => normalizeAddress(entry.address) === address) ? undefined : sameName[0];
+  };
 
   // ---- the two rules that carry the detection -----------------------------
 
@@ -315,22 +338,28 @@ export function inspectToken(
     });
   }
 
-  if (token.address && canonical.length > 0) {
-    const skeleton = confusableSkeleton(symbol).toLowerCase();
-    const impersonated = canonical.find(
-      (entry) => confusableSkeleton(entry.symbol).toLowerCase() === skeleton,
-    );
+  const impersonated = imitated(canonical);
+  if (impersonated) {
+    findings.push({
+      issue: "known-symbol-wrong-contract",
+      message:
+        `This calls itself ${impersonated.symbol}, but the real ${impersonated.symbol} is a ` +
+        `different contract. Anyone can deploy a token and give it any name; the address is ` +
+        `the only part that cannot be copied.`,
+      evidence: {symbol, address: token.address, realAddress: impersonated.address},
+    });
+  }
 
-    if (impersonated && normalizeAddress(token.address) !== normalizeAddress(impersonated.address)) {
-      findings.push({
-        issue: "known-symbol-wrong-contract",
-        message:
-          `This calls itself ${impersonated.symbol}, but the real ${impersonated.symbol} is a ` +
-          `different contract. Anyone can deploy a token and give it any name; the address is ` +
-          `the only part that cannot be copied.`,
-        evidence: {symbol, address: token.address, realAddress: impersonated.address},
-      });
-    }
+  const namesake = impersonated ? undefined : imitated(listed);
+  if (namesake) {
+    findings.push({
+      issue: "listed-symbol-wrong-contract",
+      message:
+        `This calls itself ${namesake.symbol}, and the widely listed ${namesake.symbol} is a ` +
+        `different contract. Tickers are not unique, so on its own this is a question rather than ` +
+        `a verdict — check the contract, not the name.`,
+      evidence: {symbol, address: token.address, listedAddress: namesake.address},
+    });
   }
 
   // ---- rules that add detail ----------------------------------------------
@@ -479,8 +508,11 @@ const IMPERSONATION: ReadonlySet<TokenSymbolIssue> = new Set([
  *    contracts with empty names, each forging three hundred transfers at a time;
  *  - **claiming to be a specific real asset** — the wrong contract for a known ticker, a fake
  *    native currency, a lookalike of one — is counterfeit however the token got there;
- *  - **spelled strangely and used against the account** is counterfeit;
- *  - **spelled strangely and otherwise ordinary** is `unusual`: worth a sentence, not an alarm.
+ *  - **spelled strangely, or named like a widely listed token at another contract, and used
+ *    against the account** is counterfeit;
+ *  - **spelled strangely, or sharing a listed name, and otherwise ordinary** is `unusual`: worth a
+ *    sentence, not an alarm. Tickers are not unique, and a list of four hundred will share one with
+ *    a legitimate project.
  *
  * @param plantedTransfers transfers of this token that name the account as sender without its
  *   signature, plus zero-value ones sent to it. Counted by the caller from the history.
@@ -545,15 +577,22 @@ export interface TokenCheckResult extends FlaggedTokens {
  *
  * A token that would not say what it is called cannot be judged by its name, and is counted rather
  * than passed — unless its own records already convict it, which needs no name at all.
+ *
+ * A contract on either list is exempt from that conviction. A real token cannot forge a transfer,
+ * so its "forged" records can only be the one known blind spot of `forgedTransfersByToken`: a
+ * balance from before the scanned window, moved by a spender the account approved.
  */
 export function checkTokens(
   owner: string,
   transfers: readonly TransferRecord[],
   identities: readonly TokenIdentityInput[],
-  options: {canonical?: readonly CanonicalToken[]} = {},
+  options: {canonical?: readonly CanonicalToken[]; listed?: readonly CanonicalToken[]} = {},
 ): TokenCheckResult {
   const me = normalizeAddress(owner);
   const forgedBy = forgedTransfersByToken(me, transfers);
+  const known = new Set(
+    [...(options.canonical ?? []), ...(options.listed ?? [])].map((entry) => normalizeAddress(entry.address)),
+  );
   const counterfeit: FlaggedToken[] = [];
   const unusual: FlaggedToken[] = [];
   let unreadable = 0;
@@ -569,7 +608,7 @@ export function checkTokens(
         (normalizeAddress(t.from) === me && normalizeAddress(t.signer) !== me) ||
         (normalizeAddress(t.to) === me && t.value === 0n),
     ).length;
-    const forged = forgedBy.get(address) ?? 0;
+    const forged = known.has(address) ? 0 : (forgedBy.get(address) ?? 0);
 
     if (identity.symbol === null && forged === 0) {
       unreadable++;
@@ -581,7 +620,7 @@ export function checkTokens(
         ? []
         : inspectToken(
             {symbol: identity.symbol, address, ...(identity.name ? {name: identity.name} : {})},
-            {canonical: options.canonical ?? []},
+            {canonical: options.canonical ?? [], listed: options.listed ?? []},
           );
     const verdict = judgeToken(findings, planted, forged);
     if (verdict === "clean") continue;

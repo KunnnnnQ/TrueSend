@@ -46,6 +46,9 @@ export {
   type TokenIdentity,
 } from "./tokens.js";
 
+/** Data rather than fetching: a pinned copy of somebody else's token list, per chain. */
+export {LISTED_TOKENS, LISTED_TOKENS_SOURCE} from "./token-list.js";
+
 export {
   EAS_DEPLOYMENTS,
   REPORT_ROLE,

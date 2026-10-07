@@ -343,6 +343,66 @@ describe("checkTokens: a contract that forges its own transfers", () => {
   });
 });
 
+/**
+ * The second tier: about four hundred tokens from Uniswap's default list (`LISTED_TOKENS` in
+ * @truesend/chain). A name match there is a question, not a verdict, because tickers are not
+ * unique — that list itself holds two different `LIT`s.
+ */
+describe("checkTokens: the listed tier", () => {
+  const OWNER = "0x1111111111111111111111111111111111111111" as Address;
+  const PLANTER = "0x2222222222222222222222222222222222222222" as Address;
+  const REAL_DAI = "0x6b175474e89094c44da98b954eedeac495271d0f" as Address;
+  const FAKE_DAI = "0x5555555555555555555555555555555555555555" as Address;
+  const LISTED: CanonicalToken[] = [
+    {symbol: "DAI", address: REAL_DAI},
+    {symbol: "LIT", address: "0x232ce3bd40fcd6f80f3d55a522d03f25df784ee2" as Address},
+    {symbol: "LIT", address: "0xb59490ab09a0f526cc7305822ac65f2ab12f9723" as Address},
+    {symbol: "USDT", address: REAL_USDT},
+  ];
+  /** Zero-value poisoning, which needs no forged balance and runs on any contract. */
+  const zeroValueIn = (token: Address): TransferRecord => ({token, from: PLANTER, to: OWNER, value: 0n, at: 1, signer: PLANTER});
+  const dai = (address: Address) => [{address, symbol: "DAI", name: "Dai Stablecoin"}];
+
+  it("questions a listed name at another contract, without calling it counterfeit", () => {
+    const check = checkTokens(OWNER, [], dai(FAKE_DAI), {canonical: CANONICAL, listed: LISTED});
+
+    expect(check.counterfeit).toEqual([]);
+    expect(check.unusual.map((t) => t.findings.map((f) => f.issue))).toEqual([["listed-symbol-wrong-contract"]]);
+  });
+
+  /** The fake that only ever plants zero-value records: invisible to the forgery rule, not to this. */
+  it("calls it counterfeit once it has been used against the account", () => {
+    const check = checkTokens(OWNER, [zeroValueIn(FAKE_DAI)], dai(FAKE_DAI), {canonical: CANONICAL, listed: LISTED});
+    expect(check.counterfeit.map((t) => t.address)).toEqual([FAKE_DAI]);
+  });
+
+  it("leaves the real one alone", () => {
+    const check = checkTokens(OWNER, [zeroValueIn(REAL_DAI)], dai(REAL_DAI), {canonical: CANONICAL, listed: LISTED});
+    expect(check).toMatchObject({counterfeit: [], unusual: []});
+  });
+
+  it("leaves both of two real tokens that share a ticker alone", () => {
+    for (const lit of LISTED.filter((t) => t.symbol === "LIT")) {
+      expect(inspectToken({symbol: "LIT", address: lit.address}, {listed: LISTED})).toEqual([]);
+    }
+  });
+
+  it("does not repeat what the stronger tier already said", () => {
+    const issues = inspectToken(REAL_FAKES.rightNameWrongContract, {canonical: CANONICAL, listed: LISTED}).map(
+      (f) => f.issue,
+    );
+    expect(issues).toContain("known-symbol-wrong-contract");
+    expect(issues).not.toContain("listed-symbol-wrong-contract");
+  });
+
+  /** A DAI balance from before the scanned window, moved by a spender the account approved. */
+  it("never convicts a listed token on forged records, which a real token cannot make", () => {
+    const moved: TransferRecord = {token: REAL_DAI, from: OWNER, to: PLANTER, value: 5_000n, at: 1, signer: PLANTER};
+    const check = checkTokens(OWNER, [moved], dai(REAL_DAI), {canonical: CANONICAL, listed: LISTED});
+    expect(check).toMatchObject({counterfeit: [], unusual: []});
+  });
+});
+
 describe("matchFlaggedToken", () => {
   const fakeUsdt: FlaggedToken = {
     address: REAL_FAKES.rightNameWrongContract.address as Address,

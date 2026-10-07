@@ -85,13 +85,14 @@ export function CounterfeitTokens({check}: {check: TokenCheck}) {
       {unusual.length > 0 ? (
         <section className="rise rounded-lg border border-line bg-surface p-4">
           <h2 className="text-sm font-medium text-caution">
-            <span className="tabular">{unusual.length}</span> {plural(unusual.length, "token")} with{" "}
-            {unusual.length === 1 ? "a symbol that is" : "symbols that are"} not ordinary text
+            <span className="tabular">{unusual.length}</span> {plural(unusual.length, "token")} worth a
+            second look
           </h2>
           <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-muted">
-            Usually a meme coin or a project written in another alphabet; occasionally something
-            worse. Nothing here was planted in this history, so it is not called counterfeit — check
-            the contract, not the name.
+            A symbol that is not ordinary text, or a well-known name at a different contract. Usually a
+            meme coin, a project in another alphabet or one that shares a ticker; occasionally
+            something worse. Nothing here was planted in this history, so it is not called
+            counterfeit — check the contract, not the name.
           </p>
           <ul className="mt-3 space-y-2.5">
             {unusual.map((token) => (
