@@ -7,6 +7,10 @@ from your browser, nothing to install or connect; *Load the 1155 WBTC loss* repl
 May 2024 case. Send, Pending and Report talk to the contracts [deployed on Sepolia](#deployed-on-sepolia):
 choose Sepolia and they read real on-chain state; sending or reporting needs a wallet with Sepolia ETH.
 
+**[Browser extension](https://github.com/KunnnnnQ/TrueSend/releases/latest)** — download the zip
+from the latest release, unzip it, and in `chrome://extensions` turn on Developer mode and choose
+*Load unpacked*. Built and tested by CI from the release's tag; not on the Chrome Web Store.
+
 **Everyone is told to send a small test transfer first. Attackers do not wait for yours — they
 fabricate one.**
 
@@ -187,7 +191,7 @@ similarity rule scored it zero. Measured: `safe` (0) before, `danger` (71) after
 | `packages/chain/` — history with signer resolution, token identities, policy reads | Built. 27 tests. Shared by the app and the indexer |
 | `apps/web/` — Scan, Send, Pending | Built. Scan reads mainnet directly, resolves signers and reads what every token in the history calls itself; that scan follows the user to Send, which also recognises a token address Scan already flagged; Send and Pending drive a deployed policy |
 | `apps/indexer/` — hold watcher, alerts, risk API | Built. 17 tests on alert idempotency and resume |
-| `apps/extension/` — copy and paste guard, in-page collision scan | Built. 41 tests, 13 of them against markup copied from real Etherscan and Blockscout pages |
+| `apps/extension/` — copy and paste guard, in-page collision scan | Built and [released](https://github.com/KunnnnnQ/TrueSend/releases/latest). 41 tests, 13 of them against markup copied from real Etherscan and Blockscout pages |
 | `analysis/` — replay against real mainnet cases | Built. Verifies the 2024 WBTC case from chain, measures live poisoning volume and the false-positive rate, replays the shipped detector |
 
 Not audited.
