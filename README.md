@@ -215,8 +215,17 @@ addresses — were checked against the same deployed bytecode without being broa
 that was meant to fail was sent. To see a real policy in the live demo, choose Sepolia on Send or
 Pending and enter that vault's address.
 
-Still to do by hand: the EIP-7702 path needs a live wallet signature, which no script should
-produce ([`docs/deploy-sepolia.md`](docs/deploy-sepolia.md), step 5).
+The EIP-7702 path was then checked by hand on 2026-10-07, with a live signature from the deployer's
+own key ([`docs/deploy-sepolia.md`](docs/deploy-sepolia.md), step 5). One type-4 transaction
+delegated the account to `GuardedAccount` and switched its policy on
+([transaction](https://sepolia.etherscan.io/tx/0xe92c3fd33ef9ed4fbe7cb2239fbfb177b1243fe6cceab0bb1ef24acf9b350b00));
+a payment to a never-paid address was queued instead of sent
+([transaction](https://sepolia.etherscan.io/tx/0xb485be4e629e91959a9f24ea62ead21efeccbe4e35e2c6b40274a910904f87a3));
+executing it early reverted with `TransferLocked`; and it was cancelled
+([transaction](https://sepolia.etherscan.io/tx/0xc7d9556438b36c4f8ea80192cb8037470a0283044d1c6f50ae9f6ee86bbd96ac)).
+Read back afterwards: the account carries the `0xef0100` designator for `GuardedAccount`, and
+transfer 1 is cancelled. The live demo shows that account's policy on Sepolia:
+`0x816C8ecE6D775a1E8FA4540c57cB0A6b80B463C0`.
 
 Branch coverage was 64.6% and called out here as the weakest number in the repo. A coverage report
 then named the eighteen untaken branches and **every one of them was an error path** — a policy

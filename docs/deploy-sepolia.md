@@ -245,6 +245,19 @@ written, and the early execution reverted with exactly `TransferLocked(unlockAt)
 account still signs ordinary transactions with its key as before; delegating to
 `0x0000000000000000000000000000000000000000` removes the code again.
 
+**Done on Sepolia the same day**, from the deployer account
+`0x816C8ecE6D775a1E8FA4540c57cB0A6b80B463C0`, with its password typed at the prompt: delegation and
+`initialize` in one type-4 transaction (281,731 gas,
+`0xe92c3fd33ef9ed4fbe7cb2239fbfb177b1243fe6cceab0bb1ef24acf9b350b00`, emitting `PolicyInitialized`
+with a 300-second hold); transfer 1 queued (369,723 gas,
+`0xb485be4e629e91959a9f24ea62ead21efeccbe4e35e2c6b40274a910904f87a3`); the early execution refused
+with `TransferLocked(1791347256)`, that transfer's unlock time; cancelled (31,756 gas,
+`0xc7d9556438b36c4f8ea80192cb8037470a0283044d1c6f50ae9f6ee86bbd96ac`). Read back from the chain
+afterwards rather than taken from the terminal: the account's code is `0xef0100` followed by the
+`GuardedAccount` address, `mode()` answers `GuardedAccount/7702`, and transfer 1 has status 3. Unlike
+`forge script`, `cast send` takes its gas limit from the node's own estimate, so Sepolia's newer gas
+schedule needed no margin here.
+
 This is the step that matters for a demo of the 7702 path: it is the one place a live signature
 meets a live contract, and it is the one path that should not be scripted on anyone's behalf.
 
