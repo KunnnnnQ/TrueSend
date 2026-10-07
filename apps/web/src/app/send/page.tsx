@@ -278,6 +278,14 @@ export default function SendPage() {
                     {lastScan.owner.slice(0, 8)}…{lastScan.owner.slice(-4)}
                   </span>
                   , {lastScan.history.length} counterparties.
+                  {lastScan.unchecked ? (
+                    <span className="text-caution">
+                      {" "}
+                      That scan was incomplete: {lastScan.unchecked} transfer
+                      {lastScan.unchecked === 1 ? "" : "s"} could not be checked. Scan again before
+                      relying on this.
+                    </span>
+                  ) : null}
                 </p>
               ) : (
                 <p className="text-xs text-caution">

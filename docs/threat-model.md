@@ -74,6 +74,7 @@ quietly when they are.
 | A future delegate corrupting this one's storage | ERC-7201 namespacing, asserted against slot writes | `test_writesStayInsideTheNamespace` |
 | Fake `USDT` used to plant the address | The Scan screen reads `symbol()` for every token in the scanned history and judges it: outside printable ASCII, hidden characters, mixed alphabets, or a known ticker at the wrong contract. Counterfeit if it claims to be a specific real asset, was planted in the account's history, or forged transfers the account could not have made — whatever it is called | `tokens.test.ts`, `chain/test/tokens.test.ts`, `analysis/src/check-tokens.mjs`, `analysis/src/live-accounts.mjs` |
 | A fabricated outgoing payment planted in the history | `spoofed-outgoing-transfer`, the highest-weighted rule and the only one that is a fact rather than an inference. When the user had already paid the address themselves before the fake appeared, the same record is `spoofed-copy-of-payment`, shown and not scored: planters copy real payments to real recipients. The fake first and a payment after is the attack working, and stays `danger` | `risk.test.ts`, `analysis/src/evaluate-engine.mjs`, `analysis/src/live-accounts.mjs` |
+| An endpoint refusing the one lookup that would expose a fabrication | Asked again, one at a time; what never comes back is returned as `unchecked`, the scan says it is incomplete on Scan and on Send, and every address it names is at least `caution` — never dropped, never "Looks fine" | `does not call the attacker fine when the bait's lookup is refused every time` |
 | A token contract impersonating the native currency | `impersonates-native-asset`, tolerant of decoration (`Ether..` was live bait) and limited to the running chain's own currency | `tokens.test.ts` |
 | A recipient contract reentering during settlement | Transient-storage reentrancy guard | `test_reentrantRecipientCannotReplayATransfer` |
 | A false report in the community registry | The resolver proves a lookalike claim on chain and rejects it outright when it fails | `test_lookalikeReportIsRejectedWhenTheAddressesDoNotCollide` |
@@ -207,6 +208,16 @@ fact. An indexer that believes logs reports the fabrication as a genuine payment
 then has nothing to go on: replayed against the WBTC case, it scores `safe` with no findings at
 all. `AddressSighting.spoofedOutgoingCount` is a required field precisely so that this cannot be
 skipped by accident, but a wrong value silently disarms the strongest rule in the set.
+
+It also depends on the endpoint answering. Resolving `tx.from` is one request per transaction, and
+a public endpoint under load refuses some of them. Until 2026-10-07 a refused lookup dropped its
+transfer without a trace — on the May 2024 case, refusing the bait's alone made the attacker
+"Looks fine" — and the replay of somebody else's cases had been guarding against that for the
+measurement while the product went on doing it. A refusal is now asked again, and what never comes
+back is reported rather than dropped (the row above). An endpoint that *lies* is another matter
+and is not defended: one that named the user as the signer of a record they never signed would turn
+a fabrication into a payment, and the app believes the endpoint it reads from, as every wallet does.
+Anyone worried about that can build the app with `NEXT_PUBLIC_MAINNET_RPC` set to a node they run.
 
 ### Telling a fabrication from an authorised movement is not exact
 

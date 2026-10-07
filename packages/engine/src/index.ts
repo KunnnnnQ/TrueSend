@@ -38,6 +38,7 @@ export {
   foldHistory,
   forgedTransfersByToken,
   type TransferRecord,
+  type UncheckedTransfer,
 } from "./history.js";
 
 export {

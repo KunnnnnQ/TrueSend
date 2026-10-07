@@ -135,6 +135,13 @@ export const WEIGHTS = {
   communityUnverified: 14,
   /** Added per reporter beyond the first, up to `COMMUNITY_CAP`. */
   communityPerExtraReporter: 4,
+  /**
+   * Transfers the scan could not check (`uncheckedCount`). Enough for `caution` on its own and
+   * never more, because it says the endpoint did not answer, not that anything is wrong with the
+   * address. What it rules out is the reverse: an address coming out as "looks fine" because the
+   * one record that would have condemned it was the lookup the endpoint refused.
+   */
+  unchecked: 20,
   neverPaidBefore: 6,
   noHistoryAtAll: 4,
 } as const;
@@ -283,7 +290,7 @@ export function assessAddress(input: RiskInput): RiskAssessment {
     // The timing tell. Only meaningful when we know both when they paid and when this address
     // turned up, so an incomplete history degrades to silence rather than to a false accusation.
     const paidAt = nearest.entry.lastOutgoingAt;
-    if (self && paidAt !== undefined) {
+    if (self?.firstSeenAt !== undefined && paidAt !== undefined) {
       const gap = self.firstSeenAt - paidAt;
       if (gap >= 0 && gap <= RECENT_PAYMENT_WINDOW_SECONDS) {
         findings.push({
@@ -356,6 +363,32 @@ export function assessAddress(input: RiskInput): RiskAssessment {
     });
   }
 
+  // An address seen only in records the scan could not check has no history to speak of in either
+  // direction, and "you have never paid it" would be a claim about records nobody read.
+  const onlyUnchecked =
+    self !== undefined &&
+    (self.uncheckedCount ?? 0) > 0 &&
+    self.outgoingCount + self.incomingCount + self.zeroValueIncoming + self.dustIncoming +
+      self.spoofedOutgoingCount + (self.authorisedOutgoingCount ?? 0) === 0;
+
+  if (self && (self.uncheckedCount ?? 0) > 0) {
+    const n = self.uncheckedCount ?? 0;
+    const them = n === 1 ? "it" : "them";
+    findings.push({
+      code: "unchecked-records",
+      weight: WEIGHTS.unchecked,
+      message: !onlyUnchecked
+        ? `${plural(n, "more transfer")} between you and this address could not be checked: the ` +
+          `endpoint would not say who signed ${them}, or when. This verdict leaves ${them} out, and ` +
+          `${n === 1 ? "it" : "one of them"} may be the record that matters. Scan again before you ` +
+          `pay this address.`
+        : `${plural(n, "transfer")} between you and this address could not be checked: the endpoint ` +
+          `would not say who signed ${them}, or when. ${n === 1 ? "It" : "Each"} may be genuine or made ` +
+          `up, and nothing here can tell which. Scan again before you pay this address.`,
+      evidence: {uncheckedCount: n},
+    });
+  }
+
   if (!self) {
     findings.push({
       code: "no-history-at-all",
@@ -365,11 +398,14 @@ export function assessAddress(input: RiskInput): RiskAssessment {
         `check the fingerprint against what the recipient told you.`,
       evidence: {},
     });
-  } else if (self.outgoingCount === 0) {
+  } else if (self.outgoingCount === 0 && !onlyUnchecked) {
     findings.push({
       code: "never-paid-before",
       weight: WEIGHTS.neverPaidBefore,
-      message: `You have never paid this address before, only received from it.`,
+      message:
+        self.incomingCount > 0
+          ? `You have never paid this address before, only received from it.`
+          : `You have never paid this address before.`,
       evidence: {incomingCount: self.incomingCount},
     });
   }
@@ -406,9 +442,11 @@ export function assessAddress(input: RiskInput): RiskAssessment {
 /**
  * Findings that describe the absence of information rather than the presence of a problem.
  *
- * Every address a user has not paid before carries one, so they are the floor, not a signal.
+ * Every address a user has not paid before carries one of the first two, so they are the floor,
+ * not a signal. The third says a scan could not read something, which is no more a signal about
+ * the address, so it can no more lift the cap on community reports than "never seen" can.
  */
-const BASELINE_CODES = new Set<FindingCode>(["no-history-at-all", "never-paid-before"]);
+const BASELINE_CODES = new Set<FindingCode>(["no-history-at-all", "never-paid-before", "unchecked-records"]);
 
 /**
  * Sum the findings, holding the community cap over the *combination* rather than one finding.

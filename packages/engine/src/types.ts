@@ -78,9 +78,29 @@ export interface AddressSighting {
    * can only lose information, never invent trust.
    */
   authorisedOutgoingCount?: number;
-  /** Unix seconds this address first appeared anywhere in the user's history. */
-  firstSeenAt: number;
-  lastSeenAt: number;
+  /**
+   * Transfers between the user and this address that the scan could not check: the endpoint never
+   * said who signed the transaction, or when its block was, even when asked again.
+   *
+   * None of them reaches any count above. A record nobody has seen the user's signature on is not
+   * a payment, and one nobody has seen anyone else's signature on is not provably a fabrication
+   * either. They are counted here instead of being dropped, which is what an earlier version did,
+   * without a trace: on the May 2024 case, one refused lookup — the bait's — was enough to turn
+   * the attacker from "do not send" into "looks fine". `assessAddress` makes any number of these
+   * at least a caution.
+   *
+   * Optional, like `authorisedOutgoingCount`: a history folded before this existed simply has none.
+   */
+  uncheckedCount?: number;
+  /**
+   * Unix seconds this address first and last appeared in the user's history, read from the
+   * records that were checked.
+   *
+   * Absent only for an address that appears in nothing else but unchecked records, whose times
+   * are not used: a time the scan could not confirm is a time it would be making up.
+   */
+  firstSeenAt?: number;
+  lastSeenAt?: number;
 }
 
 /**
@@ -128,6 +148,8 @@ export type FindingCode =
   | "zero-value-inbound"
   | "dust-inbound"
   | "community-reported"
+  /** Records the scan could not check. A statement about the scan rather than the address. */
+  | "unchecked-records"
   | "never-paid-before"
   | "no-history-at-all";
 

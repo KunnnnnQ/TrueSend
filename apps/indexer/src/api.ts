@@ -168,6 +168,9 @@ export function createApi(options: ApiOptions): Server {
           fromBlock: result.range.fromBlock,
           toBlock: result.range.toBlock,
           signersResolved: result.signersResolved,
+          // Transfers the endpoint would not let the scan check. Nonzero means the history below is
+          // incomplete; the addresses involved carry `uncheckedCount`.
+          unchecked: result.unchecked.length,
           counterparties: result.history.length,
           fabricated: result.history.filter((entry) => entry.spoofedOutgoingCount > 0).length,
           history: result.history,

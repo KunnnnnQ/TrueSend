@@ -1,6 +1,6 @@
 import {describe, expect, it} from "vitest";
 
-import {counterparties, foldHistory, type TransferRecord} from "../src/history.js";
+import {counterparties, foldHistory, type TransferRecord, type UncheckedTransfer} from "../src/history.js";
 import {assessAddress} from "../src/risk.js";
 import type {Address} from "../src/address.js";
 
@@ -416,5 +416,127 @@ describe("a fabricated record next to a real payment", () => {
 
     expect(verdict.level).toBe("safe");
     expect(verdict.findings.map((f) => f.code)).toEqual(["spoofed-copy-of-payment"]);
+  });
+});
+
+/**
+ * Records the scan could not check: the endpoint never said who signed them, or when.
+ *
+ * An earlier `scanHistory` dropped them without a trace, and on the May 2024 case one refused
+ * lookup — the bait's — was enough to make the attacker "looks fine". They are folded in now as
+ * nothing more than the fact that they exist.
+ */
+describe("records the scan could not check", () => {
+  const WBTC = "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599" as Address;
+  const unchecked = (over: Partial<UncheckedTransfer> & Pick<UncheckedTransfer, "from" | "to">): UncheckedTransfer => ({
+    token: USDT,
+    value: 0n,
+    ...over,
+  });
+
+  it("counts one against the address it names, and as nothing else", () => {
+    const [entry] = foldHistory(ME, [], [unchecked({from: ME, to: ATTACKER, token: BAIT, value: 50_000n})]);
+
+    expect(entry?.address).toBe(ATTACKER);
+    expect(entry?.uncheckedCount).toBe(1);
+    expect(entry?.outgoingCount).toBe(0);
+    expect(entry?.spoofedOutgoingCount).toBe(0);
+    expect(entry?.authorisedOutgoingCount).toBeUndefined();
+    expect(entry?.incomingCount).toBe(0);
+  });
+
+  it("leaves the times to the records that were checked", () => {
+    const [paid] = foldHistory(
+      ME,
+      [transfer({from: ME, to: REAL_PAYEE, signer: ME, at: 100})],
+      [unchecked({from: REAL_PAYEE, to: ME})],
+    );
+    const [undated] = foldHistory(ME, [], [unchecked({from: ME, to: ATTACKER})]);
+
+    expect(paid?.firstSeenAt).toBe(100);
+    expect(paid?.lastSeenAt).toBe(100);
+    expect(paid?.uncheckedCount).toBe(1);
+    expect(undated?.firstSeenAt).toBeUndefined();
+    expect(undated?.lastSeenAt).toBeUndefined();
+  });
+
+  it("lists an address it could not put a time on first", () => {
+    const history = foldHistory(
+      ME,
+      [transfer({from: ME, to: REAL_PAYEE, signer: ME, at: 900})],
+      [unchecked({from: ME, to: ATTACKER})],
+    );
+
+    expect(counterparties(history)).toEqual([ATTACKER, REAL_PAYEE]);
+  });
+
+  it("skips what a checked record would: self-transfers, mints, burns and other people's transfers", () => {
+    const ZERO = "0x0000000000000000000000000000000000000000" as Address;
+
+    expect(
+      foldHistory(ME, [], [
+        unchecked({from: ME, to: ME}),
+        unchecked({from: ZERO, to: ME}),
+        unchecked({from: ME, to: ZERO}),
+        unchecked({from: ATTACKER, to: REAL_PAYEE}),
+      ]),
+    ).toEqual([]);
+  });
+
+  /**
+   * What keeping them apart costs. A receipt shows the owner held a token whoever signed it, so an
+   * unchecked one would in principle still show it — but it is not used, and a third party then
+   * moving that token reads as a fabrication. A false alarm while the scan is incomplete, never a
+   * miss, and the screen already says the scan is incomplete.
+   */
+  it("does not let an unchecked receipt show that the owner held a token", () => {
+    const USDC = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" as Address;
+    const SOLVER = BOT;
+    const movedBySolver = transfer({from: ME, to: SOLVER, signer: SOLVER, token: USDC, value: 5_000_000n, at: 200});
+    const receipt = {from: EXCHANGE_PAYER, to: ME, token: USDC, value: 10_000_000n};
+
+    const checkedReceipt = foldHistory(ME, [transfer({...receipt, at: 100}), movedBySolver]);
+    const uncheckedReceipt = foldHistory(ME, [movedBySolver], [unchecked(receipt)]);
+
+    expect(checkedReceipt.find((e) => e.address === SOLVER)?.authorisedOutgoingCount).toBe(1);
+    expect(uncheckedReceipt.find((e) => e.address === SOLVER)?.spoofedOutgoingCount).toBe(1);
+  });
+
+  it("makes an address seen only in unchecked records a caution, not a first payment", () => {
+    const history = foldHistory(ME, [], [unchecked({from: ME, to: ATTACKER})]);
+    const verdict = assessAddress({to: ATTACKER, history, now: 300});
+
+    expect(verdict.level).toBe("caution");
+    expect(verdict.findings.map((f) => f.code)).toEqual(["unchecked-records"]);
+    expect(verdict.findings[0]?.message).toMatch(/genuine or made up/);
+  });
+
+  /**
+   * The May 2024 case with the bait's lookup refused: the loss is a payment the victim really
+   * signed, and the record that would have condemned the address is the one nobody could check.
+   */
+  it("keeps an address the owner has paid from looking fine while one of its records is unchecked", () => {
+    const history = foldHistory(
+      ME,
+      [transfer({from: ME, to: ATTACKER, signer: ME, token: WBTC, value: 115_528_802_767n, at: 200})],
+      [unchecked({from: ME, to: ATTACKER, token: BAIT, value: 50_000n})],
+    );
+    const verdict = assessAddress({to: ATTACKER, history, now: 300});
+
+    expect(verdict.level).toBe("caution");
+    expect(verdict.findings.map((f) => f.code)).toEqual(["unchecked-records"]);
+    expect(verdict.findings[0]?.message).toMatch(/^1 more transfer/);
+  });
+
+  it("does not soften what the checked records already show", () => {
+    const history = foldHistory(
+      ME,
+      [transfer({from: ME, to: ATTACKER, signer: BOT, token: BAIT, value: 50_000n, at: 100})],
+      [unchecked({from: ME, to: ATTACKER})],
+    );
+    const verdict = assessAddress({to: ATTACKER, history, now: 300});
+
+    expect(verdict.level).toBe("danger");
+    expect(verdict.findings[0]?.code).toBe("spoofed-outgoing-transfer");
   });
 });

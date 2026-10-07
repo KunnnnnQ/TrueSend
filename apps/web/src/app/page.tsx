@@ -6,6 +6,7 @@ import {mainnet} from "wagmi/chains";
 import {useAccount, usePublicClient} from "wagmi";
 
 import {
+  KNOWN_TOKENS,
   LISTED_TOKENS,
   createChainClient,
   readTokenIdentities,
@@ -14,7 +15,7 @@ import {
   type ScanResult,
 } from "@truesend/chain";
 import {
-  assessAddress,
+  assessMany,
   checkTokens,
   type PoisonReport,
   type RiskAssessment,
@@ -23,7 +24,7 @@ import {
 import {AddressCard} from "@/components/Fingerprint";
 import {Findings, LookalikeComparison, ReportChip, ReportLine, RiskChip} from "@/components/Risk";
 import {CounterfeitTokens, type TokenCheck} from "@/components/Tokens";
-import {HISTORY_RPC, KNOWN_TOKENS} from "@/lib/chains";
+import {HISTORY_RPC} from "@/lib/chains";
 import {registryFor, useReports} from "@/lib/registry";
 import {attachTokenCheck, saveScan} from "@/lib/scanStore";
 
@@ -82,8 +83,9 @@ export default function ScanPage() {
           scannedAt: Date.now(),
           fromBlock: fromBlock.toString(),
           toBlock: toBlock.toString(),
+          unchecked: scanned.unchecked.length,
         });
-        if (scanned.transfers.length === 0) {
+        if (scanned.transfers.length === 0 && scanned.unchecked.length === 0) {
           setError("No transfers for that address in that block range.");
         }
       } catch (caught) {
@@ -122,12 +124,19 @@ export default function ScanPage() {
     void run(WBTC_CASE.address, WBTC_CASE.fromBlock, WBTC_CASE.toBlock);
   }, [run]);
 
+  /**
+   * Every counterparty, riskiest first — the same three steps the replay of the May 2024 case in
+   * `packages/chain/test/` runs on every push, so what it checks is what this screen does.
+   */
   const assessments = useMemo(() => {
     if (!result) return [];
-    const now = Math.max(...result.transfers.map((t) => t.at), 0);
-    return result.history
-      .map((entry) => assessAddress({to: entry.address, history: result.history, now}))
-      .sort((a, b) => b.score - a.score);
+    // Reduced rather than spread into `Math.max`, which throws past about a hundred thousand
+    // arguments, and a busy account can have that many transfers.
+    const now = result.transfers.reduce((latest, t) => Math.max(latest, t.at), 0);
+    return assessMany(
+      result.history.map((entry) => entry.address),
+      {history: result.history, now},
+    );
   }, [result]);
 
   /**
@@ -302,6 +311,11 @@ export default function ScanPage() {
             <span>
               <span className="tabular text-text">{result.signersResolved}</span> signers resolved
             </span>
+            {result.unchecked.length > 0 ? (
+              <span className="text-caution">
+                <span className="tabular">{result.unchecked.length}</span> could not be checked
+              </span>
+            ) : null}
             {fabricated > 0 ? (
               <span className="text-danger">
                 <span className="tabular">{fabricated}</span> with a fabricated payment record
@@ -318,6 +332,8 @@ export default function ScanPage() {
               </span>
             ) : null}
           </div>
+
+          {result.unchecked.length > 0 ? <Incomplete count={result.unchecked.length} /> : null}
 
           <CounterfeitTokens check={tokenCheck} />
 
@@ -342,6 +358,29 @@ export default function ScanPage() {
         </section>
       ) : null}
     </div>
+  );
+}
+
+/**
+ * Said ahead of the verdicts, because every one of them may be missing something.
+ *
+ * The endpoint would not say who signed some transactions, or when, even when asked again. Those
+ * records count for and against nobody, and the addresses they name carry a finding that says so
+ * — but a verdict built without them can be wrong in either direction, and this screen used to
+ * show one without a word: one refused lookup made the attacker in the May 2024 case "Looks fine".
+ */
+function Incomplete({count}: {count: number}) {
+  const it = count === 1 ? "it" : "them";
+  return (
+    <p
+      role="status"
+      className="rise rounded-lg border border-caution/30 bg-caution/5 px-4 py-3 text-sm leading-relaxed text-text/90"
+    >
+      <span className="font-medium text-caution">This scan is incomplete.</span>{" "}
+      {count === 1 ? "One transfer" : `${count} transfers`} could not be checked: the endpoint would
+      not say who signed {it}, or when, even when asked again. The addresses involved are marked,
+      but any verdict below may be wrong without {it}. Scan again in a minute.
+    </p>
   );
 }
 

@@ -13,7 +13,7 @@
  * answers archive queries for anything older than a few days.
  */
 
-import {createChainClient, readTokenIdentities, scanHistory} from "@truesend/chain";
+import {KNOWN_TOKENS, LISTED_TOKENS, createChainClient, readTokenIdentities, scanHistory} from "@truesend/chain";
 import {checkTokens, revealSymbol} from "@truesend/engine";
 
 import {ARCHIVE_ENDPOINTS} from "./rpc.mjs";
@@ -27,12 +27,9 @@ if (!owner) {
   process.exit(2);
 }
 
-/** What the real ones are, on mainnet. Same list as the web app's `KNOWN_TOKENS`. */
-const CANONICAL = [
-  {symbol: "USDT", address: "0xdac17f958d2ee523a2206206994597c13d831ec7"},
-  {symbol: "USDC", address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"},
-  {symbol: "WBTC", address: "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599"},
-];
+/** What the real ones are, on mainnet: the two tiers the web app passes, from the same package. */
+const CANONICAL = (KNOWN_TOKENS[1] ?? []).map(({symbol, address}) => ({symbol, address}));
+const LISTED = LISTED_TOKENS[1] ?? [];
 
 const client = createChainClient(ARCHIVE_ENDPOINTS[0]);
 const head = await client.getBlockNumber();
@@ -41,13 +38,22 @@ const fromBlock = head > BLOCKS ? head - BLOCKS : 0n;
 console.log(`Account ${owner}\nblocks ${fromBlock}..${head}\n`);
 const scan = await scanHistory(client, owner, {fromBlock, toBlock: head});
 console.log(`${scan.transfers.length} transfers, ${scan.tokensSeen.length} distinct token contracts touched it\n`);
+if (scan.unchecked.length > 0) {
+  console.log(
+    `${scan.unchecked.length} transfers could not be checked — the endpoint would not say who signed them, or when.\n` +
+      `The planted and forged counts below leave them out; run it again for a complete answer.\n`,
+  );
+}
 
 const started = Date.now();
 const identities = await readTokenIdentities(client, scan.tokensSeen);
 const seconds = ((Date.now() - started) / 1000).toFixed(1);
 
 // The web app's own check, from the engine — not a copy of it.
-const {counterfeit, unusual, unreadable} = checkTokens(scan.owner, scan.transfers, identities, {canonical: CANONICAL});
+const {counterfeit, unusual, unreadable} = checkTokens(scan.owner, scan.transfers, identities, {
+  canonical: CANONICAL,
+  listed: LISTED,
+});
 
 console.log(`read ${identities.length - unreadable} of ${identities.length} token identities in ${seconds}s (${unreadable} would not say)`);
 console.log(`counterfeit ${counterfeit.length}, unusual-but-not-planted ${unusual.length}

@@ -135,6 +135,14 @@ signal, it inverts one, because a fabricated outgoing record makes an attacker l
 the user already trusts. Resolving `tx.from` is therefore a requirement of this layer rather than
 an optimisation, and `analysis/` measures what it costs to get it wrong.
 
+**And it must say when it could not.** Resolving a signer is a request per transaction, and public
+endpoints refuse some of them under load. A transfer whose signer or block time never comes back,
+even when asked again one at a time, is returned as `unchecked` and folded in as `uncheckedCount`:
+neither a payment nor a fabrication, but enough to make its address a caution and the whole scan
+"incomplete". Dropping it instead, as this layer once did, let one refused lookup turn the May 2024
+attacker into "Looks fine". Where an endpoint puts each block's time on its logs, the scan does not
+ask for blocks at all.
+
 The alerting path is what turns a cooldown from a delay into a defence. A queued transfer is only
 useful if someone learns about it while it is still queued, and the person may not be at their
 computer — so a queued transfer notifies the owner and the guardian with a one-click cancel link
@@ -159,5 +167,5 @@ the frontend.
 
 ## What is built
 
-See the status table in the [README](../README.md). Contracts and engine are complete and tested;
-the app, indexer and extension are not yet started.
+See the status table in the [README](../README.md): every layer above is built and tested, and none
+of it is audited.

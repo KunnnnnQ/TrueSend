@@ -41,7 +41,7 @@ import {mkdir, writeFile} from "node:fs/promises";
 import {dirname, join} from "node:path";
 import {fileURLToPath} from "node:url";
 
-import {LISTED_TOKENS, createChainClient, readTokenIdentities, scanHistory} from "@truesend/chain";
+import {KNOWN_TOKENS, LISTED_TOKENS, createChainClient, readTokenIdentities, scanHistory} from "@truesend/chain";
 import {MIN_AFFIX_MATCH, assessAddress, checkTokens} from "@truesend/engine";
 
 import {
@@ -67,13 +67,9 @@ const OUT = args.get("out") ?? "live-accounts.json";
 /** Where the accounts are drawn from: recent enough that they are being poisoned now. */
 const SAMPLE_BLOCKS = 300;
 
-/** Mirrors mainnet's `KNOWN_TOKENS` in apps/web/src/lib/chains.ts, as `poison-hunter.mjs` does. */
-const KNOWN_TOKENS = [
-  {address: TOKENS.USDT, symbol: "USDT", decimals: 6, dustBelow: 1},
-  {address: TOKENS.USDC, symbol: "USDC", decimals: 6, dustBelow: 1},
-  {address: TOKENS.WBTC, symbol: "WBTC", decimals: 8, dustBelow: 0.0001},
-];
-const CANONICAL = KNOWN_TOKENS.map((t) => ({symbol: t.symbol, address: t.address}));
+/** The tokens the Scan screen knows for certain: the same list, not a copy of it. */
+const KNOWN = KNOWN_TOKENS[1] ?? [];
+const CANONICAL = KNOWN.map((t) => ({symbol: t.symbol, address: t.address}));
 /** The app's second tier, from the same pinned list the Scan screen passes. */
 const LISTED = LISTED_TOKENS[1] ?? [];
 
@@ -166,7 +162,10 @@ for (const account of targeted) {
       continue;
     }
 
-    const scan = await scanHistory(client, account, range, {knownTokens: KNOWN_TOKENS});
+    const scan = await scanHistory(client, account, range, {knownTokens: KNOWN});
+    // The app shows an incomplete scan as incomplete; a measurement cannot use one at all. Until
+    // 2026-10-07 the scan dropped such transfers without a trace, here as on the screen.
+    if (scan.unchecked.length > 0) throw new Error(`${scan.unchecked.length} transfers could not be checked`);
     const now = Math.max(...scan.transfers.map((t) => t.at), 0);
     const owner = scan.owner;
 

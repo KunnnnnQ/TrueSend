@@ -21,18 +21,14 @@ import {writeFile, mkdir} from "node:fs/promises";
 import {fileURLToPath} from "node:url";
 import {dirname, join} from "node:path";
 
-import {LISTED_TOKENS, LISTED_TOKENS_SOURCE} from "@truesend/chain";
+import {KNOWN_TOKENS, LISTED_TOKENS, LISTED_TOKENS_SOURCE} from "@truesend/chain";
 import {inspectToken, revealSymbol} from "@truesend/engine";
 
 const CHECK = process.argv.includes("--check");
 const here = dirname(fileURLToPath(import.meta.url));
 
-/** The same list the app checks against; see `KNOWN_TOKENS` in `apps/web/src/lib/chains.ts`. */
-const CANONICAL = [
-  {symbol: "USDT", address: "0xdac17f958d2ee523a2206206994597c13d831ec7"},
-  {symbol: "USDC", address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"},
-  {symbol: "WBTC", address: "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599"},
-];
+/** The list the app checks against — imported, not copied. */
+const CANONICAL = (KNOWN_TOKENS[1] ?? []).map(({symbol, address}) => ({symbol, address}));
 
 // curl rather than fetch: Node's fetch could not reach these hosts from this machine when curl could.
 function download(url) {

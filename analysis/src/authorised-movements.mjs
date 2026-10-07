@@ -208,6 +208,8 @@ for (const record of sample) {
   let scan;
   try {
     scan = await scanHistory(viemClient, record.from, {fromBlock: historyFrom, toBlock: historyTo});
+    // A measurement cannot use a scan with holes in it; until 2026-10-07 it could not even see them.
+    if (scan.unchecked.length > 0) throw new Error(`${scan.unchecked.length} transfers could not be checked`);
   } catch (error) {
     console.log(`  ${record.from}  scan failed (${error.message.slice(0, 40)}) — skipped`);
     continue;

@@ -27,6 +27,12 @@ export interface StoredScan {
   fromBlock: string;
   toBlock: string;
   /**
+   * How many transfers the scan could not check, so Send can say its verdict rests on an
+   * incomplete history. The addresses involved already carry it in `history`; this is the total.
+   * Absent in a scan stored before it existed, which Send reads as none.
+   */
+  unchecked?: number;
+  /**
    * The token check for this same scan, attached once it finishes.
    *
    * Absent, not empty, until then — see `attachTokenCheck`. A caller that needs to tell "not

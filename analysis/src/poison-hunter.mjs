@@ -31,7 +31,7 @@ import {mkdir, readFile, rm, writeFile} from "node:fs/promises";
 import {dirname, join} from "node:path";
 import {fileURLToPath} from "node:url";
 
-import {createChainClient, readTokenIdentities, scanHistory, splitOnRefusal} from "@truesend/chain";
+import {KNOWN_TOKENS, createChainClient, readTokenIdentities, scanHistory, splitOnRefusal} from "@truesend/chain";
 import {
   MIN_AFFIX_MATCH,
   assessAddress,
@@ -41,7 +41,7 @@ import {
   sharedSuffixLength,
 } from "@truesend/engine";
 
-import {ARCHIVE_ENDPOINTS, TOKENS, TRANSFER_TOPIC, addressFromTopic, topicFor} from "./rpc.mjs";
+import {ARCHIVE_ENDPOINTS, TRANSFER_TOPIC, addressFromTopic, topicFor} from "./rpc.mjs";
 
 const DATASET = {
   source: "https://github.com/DS2L/Poison-Hunter",
@@ -66,14 +66,10 @@ const CONCURRENCY = Number(args.get("concurrency") ?? 2);
 const ATTEMPTS = 4;
 
 /**
- * Mirrors mainnet's `KNOWN_TOKENS` in apps/web/src/lib/chains.ts exactly, so "dust" means here
- * what it means in the product. If the two drift, this stops measuring the thing that ships.
+ * The product's own list, so "dust" means here what it means in the product. This used to be a
+ * copy kept in step by hand, and a copy that drifts stops measuring the thing that ships.
  */
-const KNOWN_TOKENS = [
-  {address: TOKENS.USDT, symbol: "USDT", decimals: 6, dustBelow: 1},
-  {address: TOKENS.USDC, symbol: "USDC", decimals: 6, dustBelow: 1},
-  {address: TOKENS.WBTC, symbol: "WBTC", decimals: 8, dustBelow: 0.0001},
-];
+const KNOWN = KNOWN_TOKENS[1] ?? [];
 
 const LEVELS = ["danger", "caution", "safe"];
 
@@ -136,7 +132,9 @@ async function scanVictim(c) {
   if (existsSync(file)) return JSON.parse(await readFile(file, "utf8"));
 
   const range = {fromBlock: c.block - LOOKBACK, toBlock: c.block};
-  const result = await scanHistory(client, c.victim, range, {knownTokens: KNOWN_TOKENS});
+  const result = await scanHistory(client, c.victim, range, {knownTokens: KNOWN});
+  // Refused before it is cached or scored; `runCase` scans the case again.
+  if (result.unchecked.length > 0) throw new Error(`${result.unchecked.length} transfers could not be checked`);
   const baitBlock = await client.getBlock({blockNumber: c.block, includeTransactions: false});
 
   const scan = {
@@ -317,10 +315,12 @@ const describe = (error) =>
 /**
  * One case, retried.
  *
- * `scanHistory` drops a transfer whose signer it could not look up rather than failing the whole
- * screen — right for a user, wrong for a measurement, where a flaky connection would quietly read
- * as a miss. A bait that the chain shows as an ordinary indexed `Transfer` but that is absent from
- * the scan can only have been dropped that way, so the case is scanned again rather than scored.
+ * This was written when `scanHistory` dropped a transfer whose signer it could not look up, and
+ * the comment here called that "right for a user, wrong for a measurement". Only the second half
+ * was true: for a user, the dropped transfer could be the bait, and the screen then called the
+ * attacker fine without a word. The scan now returns what it could not check (`unchecked`), and
+ * `scanVictim` refuses an incomplete scan outright. A bait that the chain shows as an ordinary
+ * indexed `Transfer` but that is still absent is scanned again rather than scored, as before.
  */
 async function runCase(c) {
   let lastError;
@@ -410,7 +410,7 @@ for (const row of [...results, ...failures]) delete row.index;
  * planted. Names are read now, not at the bait's block — a contract's name is set once, but a
  * contract that has since self-destructed answers nothing and is counted as unread, not as clean.
  */
-const CANONICAL = KNOWN_TOKENS.map((t) => ({symbol: t.symbol, address: t.address}));
+const CANONICAL = KNOWN.map((t) => ({symbol: t.symbol, address: t.address}));
 const fakeTokens = [...new Set(results.filter((r) => r.type === "fake").map((r) => r.token))];
 const identities = new Map(
   (await readTokenIdentities(client, fakeTokens)).map((identity) => [identity.address.toLowerCase(), identity]),

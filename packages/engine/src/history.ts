@@ -30,6 +30,23 @@ export interface TransferRecord {
   txHash?: string;
 }
 
+/**
+ * A `Transfer` log the scan could not check: who signed its transaction, or when its block was,
+ * never came back from the endpoint.
+ *
+ * Folded in as nothing more than the fact that it exists. It cannot be a payment, since nobody has
+ * seen the owner's signature on it, and it cannot be called a fabrication, since nobody has seen
+ * anyone else's. What it can still do is keep the address involved from looking settled — see
+ * `AddressSighting.uncheckedCount`.
+ */
+export interface UncheckedTransfer {
+  token: Address;
+  from: Address;
+  to: Address;
+  value: bigint;
+  txHash?: string;
+}
+
 /** Mints and burns name this address; it is not an account anyone can be paid at. */
 const ZERO = "0x0000000000000000000000000000000000000000" as Address;
 
@@ -70,16 +87,20 @@ const ZERO = "0x0000000000000000000000000000000000000000" as Address;
  * The fabrication rule (`spoofedOutgoingCount`) is unaffected and is the one that matters more: it
  * needs no payee, and it is what would have caught the May 2024 case regardless of account kind.
  * `docs/threat-model.md` records the lookalike gap as an open limitation rather than a closed one.
+ *
+ * `unchecked` is what the scan could not check, and it only ever reaches `uncheckedCount`: not the
+ * payments, not the fabrications, not the tokens the owner is taken to hold, not the times.
  */
 export function foldHistory(
   owner: string,
   transfers: readonly TransferRecord[],
+  unchecked: readonly UncheckedTransfer[] = [],
 ): AddressSighting[] {
   const me = normalizeAddress(owner);
   const byCounterparty = new Map<Address, AddressSighting>();
   const held = tokensTheOwnerHasHeld(me, transfers);
 
-  const entryFor = (address: Address, at: number): AddressSighting => {
+  const entryFor = (address: Address, at?: number): AddressSighting => {
     let entry = byCounterparty.get(address);
     if (!entry) {
       entry = {
@@ -89,25 +110,20 @@ export function foldHistory(
         zeroValueIncoming: 0,
         dustIncoming: 0,
         spoofedOutgoingCount: 0,
-        firstSeenAt: at,
-        lastSeenAt: at,
       };
       byCounterparty.set(address, entry);
     }
-    entry.firstSeenAt = Math.min(entry.firstSeenAt, at);
-    entry.lastSeenAt = Math.max(entry.lastSeenAt, at);
+    if (at !== undefined) {
+      entry.firstSeenAt = Math.min(entry.firstSeenAt ?? at, at);
+      entry.lastSeenAt = Math.max(entry.lastSeenAt ?? at, at);
+    }
     return entry;
   };
 
   for (const transfer of transfers) {
     const from = normalizeAddress(transfer.from);
     const to = normalizeAddress(transfer.to);
-
-    // Self-transfers tell us nothing about a counterparty.
-    if (from === to) continue;
-    // A transfer to or from the zero address is a mint or a burn. Listing it as a counterparty
-    // puts a row in the user's address book for something that is not an account.
-    if (from === ZERO || to === ZERO) continue;
+    if (!aCounterparty(from, to)) continue;
 
     if (from === me) {
       const entry = entryFor(to, transfer.at);
@@ -138,7 +154,35 @@ export function foldHistory(
     }
   }
 
-  return [...byCounterparty.values()].sort((a, b) => b.lastSeenAt - a.lastSeenAt);
+  for (const record of unchecked) {
+    const from = normalizeAddress(record.from);
+    const to = normalizeAddress(record.to);
+    if (!aCounterparty(from, to)) continue;
+
+    const other = from === me ? to : to === me ? from : undefined;
+    if (other === undefined) continue;
+    const entry = entryFor(other);
+    entry.uncheckedCount = (entry.uncheckedCount ?? 0) + 1;
+  }
+
+  // An address the scan could not put a time on goes first, where it is hardest to miss.
+  return [...byCounterparty.values()].sort((a, b) => {
+    if (a.lastSeenAt === undefined || b.lastSeenAt === undefined) {
+      return (a.lastSeenAt === undefined ? 0 : 1) - (b.lastSeenAt === undefined ? 0 : 1);
+    }
+    return b.lastSeenAt - a.lastSeenAt;
+  });
+}
+
+/**
+ * Whether a transfer names a counterparty at all.
+ *
+ * A self-transfer tells us nothing about one. A transfer to or from the zero address is a mint or
+ * a burn, and listing it would put a row in the user's address book for something that is not an
+ * account. Transfers between two other parties pass here and are skipped by the caller.
+ */
+function aCounterparty(from: Address, to: Address): boolean {
+  return from !== to && from !== ZERO && to !== ZERO;
 }
 
 /**

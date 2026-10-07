@@ -530,4 +530,70 @@ describe("community reports", () => {
     const result = assessAddress({to: BOB, reports: [report({reporters: 0})], now: NOW});
     expect(result.findings.map((f) => f.code)).not.toContain("community-reported");
   });
+
+  /** "The endpoint did not answer" is no more evidence against an address than "never seen" is. */
+  it("is not tipped into danger by records the scan could not check", () => {
+    const result = assessAddress({
+      to: BOB,
+      history: [sighting({address: BOB, uncheckedCount: 3})],
+      reports: [report({reporters: 6, verified: true, role: "lookalike"})],
+      now: NOW,
+    });
+
+    expect(result.findings.map((f) => f.code)).toContain("unchecked-records");
+    expect(result.score).toBeLessThanOrEqual(COMMUNITY_CAP);
+    expect(result.level).toBe("caution");
+  });
+});
+
+/**
+ * Records the scan could not check, because the endpoint never said who signed them or when.
+ *
+ * They used to vanish. One refused lookup — the bait's — turned the attacker in the May 2024 case
+ * from "do not send" into "looks fine", and the screen showed nothing missing. These hold the two
+ * properties that make that impossible, over every shape of history rather than the one case.
+ */
+describe("records the scan could not check", () => {
+  const anyHistory = fc.record({
+    outgoingCount: fc.nat({max: 3}),
+    incomingCount: fc.nat({max: 3}),
+    zeroValueIncoming: fc.nat({max: 3}),
+    dustIncoming: fc.nat({max: 3}),
+    spoofedOutgoingCount: fc.nat({max: 2}),
+  });
+
+  it("make any address at least a caution, whatever else its history says", () => {
+    fc.assert(
+      fc.property(anyHistory, fc.integer({min: 1, max: 4}), (counts, unchecked) => {
+        const result = assessAddress({
+          to: BOB,
+          history: [alicePaid, sighting({address: BOB, ...counts, uncheckedCount: unchecked})],
+          now: NOW,
+        });
+
+        expect(result.level).not.toBe("safe");
+        expect(result.findings.map((f) => f.code)).toContain("unchecked-records");
+      }),
+    );
+  });
+
+  it("never lower a score, so they cannot be used to soften a verdict", () => {
+    fc.assert(
+      fc.property(anyHistory, fc.integer({min: 1, max: 4}), (counts, unchecked) => {
+        const without = assessAddress({to: BOB, history: [alicePaid, sighting({address: BOB, ...counts})], now: NOW});
+        const withThem = assessAddress({
+          to: BOB,
+          history: [alicePaid, sighting({address: BOB, ...counts, uncheckedCount: unchecked})],
+          now: NOW,
+        });
+
+        expect(withThem.score).toBeGreaterThanOrEqual(without.score);
+      }),
+    );
+  });
+
+  it("weigh exactly enough for a caution on their own, and no more", () => {
+    expect(WEIGHTS.unchecked).toBeGreaterThanOrEqual(THRESHOLDS.caution);
+    expect(WEIGHTS.unchecked).toBeLessThan(THRESHOLDS.danger);
+  });
 });

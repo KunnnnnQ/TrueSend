@@ -1,8 +1,6 @@
 import {anvil, mainnet, sepolia} from "wagmi/chains";
 import {isAddress, type Address} from "viem";
 
-import type {KnownToken} from "@truesend/chain";
-
 /** The singletons a chain needs before Send and Pending can do anything. */
 export interface Deployment {
   chainId: number;
@@ -60,20 +58,5 @@ export const HISTORY_RPC: Partial<Record<number, string>> = {
   [anvil.id]: "http://127.0.0.1:8545",
 };
 
-/**
- * Tokens we can put a dust threshold on.
- *
- * This is **not** the list the Scan screen walks — that would make the attack invisible, because
- * the bait is always a contract the attacker deployed. Scanning is by topic across every token;
- * this table only supplies decimals so a small inbound amount can be called dust rather than
- * guessed at.
- */
-export const KNOWN_TOKENS: Partial<Record<number, KnownToken[]>> = {
-  [mainnet.id]: [
-    {address: "0xdAC17F958D2ee523a2206206994597C13D831ec7", symbol: "USDT", decimals: 6, dustBelow: 1},
-    {address: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", symbol: "USDC", decimals: 6, dustBelow: 1},
-    {address: "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599", symbol: "WBTC", decimals: 8, dustBelow: 0.0001},
-  ],
-  [sepolia.id]: [],
-  [anvil.id]: [],
-};
+// The tokens known for certain, with their dust thresholds, are `KNOWN_TOKENS` in `@truesend/chain`:
+// the replay of the May 2024 case in `packages/chain/test/` has to read the same list as this app.

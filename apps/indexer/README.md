@@ -93,7 +93,7 @@ lands on the cancel button rather than on a form to fill in.
 | `GET /queue/:policy` | Open holds. `?all=1` includes settled ones. |
 | `GET /alerts/:policy` | What was sent, when, and what failed. |
 | `POST /risk` | `{to, history?, owner?, now?}` → the engine's verdict. |
-| `GET /history/:owner` | Folded history with signers resolved. The expensive one. |
+| `GET /history/:owner` | Folded history with signers resolved. The expensive one. A nonzero `unchecked` means the endpoint refused some lookups and the history is incomplete. |
 
 `/risk` distinguishes an address that is not an address from one whose **checksum does not
 match**. The second is a finding rather than a formatting complaint: a mixed-case address whose

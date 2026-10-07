@@ -1,6 +1,11 @@
 import {parseAbiItem, parseUnits, type Address, type PublicClient} from "viem";
 
-import {foldHistory, type AddressSighting, type TransferRecord} from "@truesend/engine";
+import {
+  foldHistory,
+  type AddressSighting,
+  type TransferRecord,
+  type UncheckedTransfer,
+} from "@truesend/engine";
 
 import {accountKind, type AccountKind} from "./account.js";
 import {splitOnRefusal, type BlockRange} from "./client.js";
@@ -11,6 +16,16 @@ const TRANSFER_EVENT = parseAbiItem(
 
 /** Wide enough to be few requests, narrow enough that most endpoints accept it. */
 const CHUNK_BLOCKS = 9_000n;
+
+/**
+ * How long to wait before each pass back over the lookups an endpoint refused: a second, then
+ * three more.
+ *
+ * A refusal is nearly always a rate limit, so those passes ask one lookup at a time after a pause.
+ * Four seconds is as long as a screen can sit on "checking" before it looks broken, and whatever
+ * is still missing after that is reported rather than waited for.
+ */
+const RETRY_DELAYS_MS: readonly number[] = [1_000, 3_000];
 
 export interface ScanProgress {
   /** 0..1, for a progress bar. */
@@ -30,6 +45,18 @@ export interface ScanResult {
   owner: Address;
   range: BlockRange;
   transfers: TransferRecord[];
+  /**
+   * Transfers the scan could not check: who signed the transaction, or when its block was, never
+   * came back, even when asked again.
+   *
+   * Kept out of `transfers`, because a record nobody has checked the signer of is neither a payment
+   * the owner made nor provably a fabrication. Not dropped, though. An earlier version dropped them
+   * without a trace, and the screen showed nothing missing: on the May 2024 case, one refused
+   * lookup — the bait's — turned the attacker from "do not send" into "looks fine". They reach
+   * `history` as `uncheckedCount` on the address involved, and a screen that shows a result with
+   * any of these has to say that it is incomplete.
+   */
+  unchecked: UncheckedTransfer[];
   /** Folded per counterparty, newest first. */
   history: AddressSighting[];
   /** How many transaction signers had to be resolved to build it. */
@@ -55,6 +82,12 @@ export interface ScanOptions {
   onProgress?: (progress: ScanProgress) => void;
   /** How many transactions to resolve at once. Public endpoints start refusing above this. */
   concurrency?: number;
+  /**
+   * The pause before each pass back over refused lookups, in milliseconds, one pass per entry.
+   * Defaults to a second and then three; the tests, which have no rate limit to wait out, use
+   * zeros.
+   */
+  retryDelaysMs?: readonly number[];
 }
 
 /**
@@ -71,6 +104,9 @@ export interface ScanOptions {
  * Logs are filtered by the owner's address on the node instead, which keeps this a handful of
  * requests however wide the range is.
  *
+ * A lookup the endpoint refuses is asked again, more slowly, and whatever still does not come back
+ * is returned in `unchecked` rather than dropped. That field says why the difference matters.
+ *
  * Lives here rather than in either consumer because the web app and the indexer must not drift
  * apart on this: two implementations of "check the signer" is one implementation that eventually
  * forgets to.
@@ -81,7 +117,7 @@ export async function scanHistory(
   range: BlockRange,
   options: ScanOptions = {},
 ): Promise<ScanResult> {
-  const {knownTokens = [], onProgress, concurrency = 8} = options;
+  const {knownTokens = [], onProgress, concurrency = 8, retryDelaysMs = RETRY_DELAYS_MS} = options;
 
   // Started here and awaited at the end: one request, and no reason to make the scan wait on it.
   const kind = accountKind(client, owner);
@@ -96,9 +132,13 @@ export async function scanHistory(
     value: bigint;
     blockNumber: bigint;
     transactionHash: `0x${string}`;
+    /** The block's time, when the endpoint put it on the log, which saves asking for the block. */
+    blockTimestamp?: number;
   }
 
-  const raw: RawLog[] = [];
+  // Keyed by transaction and position: a transfer from the owner to themselves answers both
+  // queries below, and would otherwise be counted twice.
+  const raw = new Map<string, RawLog>();
 
   for (const span of spans) {
     const [sent, received] = await Promise.all([
@@ -123,56 +163,83 @@ export async function scanHistory(
     for (const log of [...sent, ...received]) {
       // Only pending logs carry nulls here, and a historical range has none. Dropping them
       // rather than asserting keeps the types honest about what a node can return.
-      if (log.blockNumber === null || log.transactionHash === null) continue;
+      if (log.blockNumber === null || log.transactionHash === null || log.logIndex === null) continue;
       if (!log.args.from || !log.args.to) continue;
 
-      raw.push({
+      raw.set(`${log.transactionHash}:${log.logIndex}`, {
         token: log.address.toLowerCase() as Address,
         from: log.args.from,
         to: log.args.to,
         value: log.args.value ?? 0n,
         blockNumber: log.blockNumber,
         transactionHash: log.transactionHash,
+        ...(log.blockTimestamp == null ? {} : {blockTimestamp: Number(log.blockTimestamp)}),
       });
     }
 
     done++;
     onProgress?.({
       fraction: (done / spans.length) * 0.6,
-      message: `Reading transfers — ${raw.length} so far`,
+      message: `Reading transfers — ${raw.size} so far`,
     });
   }
 
+  const logs = [...raw.values()];
+
   // Signers and block times are per-transaction and per-block, so deduplicate before fetching;
-  // an address with fifty transfers usually has far fewer of each.
-  const txHashes = [...new Set(raw.map((log) => log.transactionHash))];
-  const blockNumbers = [...new Set(raw.map((log) => log.blockNumber))];
+  // an address with fifty transfers usually has far fewer of each. A block whose time arrived on
+  // one of its logs is not asked about at all: fewer requests, and fewer for an endpoint to refuse.
+  const txHashes = [...new Set(logs.map((log) => log.transactionHash))];
+  const timesOnLogs = new Map<bigint, number>();
+  for (const log of logs) {
+    if (log.blockTimestamp !== undefined) timesOnLogs.set(log.blockNumber, log.blockTimestamp);
+  }
+  const blocksToAsk = [...new Set(logs.map((log) => log.blockNumber))].filter(
+    (block) => !timesOnLogs.has(block),
+  );
 
   onProgress?.({
     fraction: 0.6,
     message: `Checking who signed ${txHashes.length} transaction${txHashes.length === 1 ? "" : "s"}`,
   });
 
+  const onRetry = (missing: number) =>
+    onProgress?.({fraction: 0.9, message: `Asking again about ${missing} the endpoint refused`});
+
   const [signers, times] = await Promise.all([
     resolveAll(
       txHashes,
       async (hash) => (await client.getTransaction({hash})).from.toLowerCase() as Address,
       concurrency,
+      retryDelaysMs,
+      onRetry,
     ),
     resolveAll(
-      blockNumbers,
+      blocksToAsk,
       async (blockNumber) =>
         Number((await client.getBlock({blockNumber, includeTransactions: false})).timestamp),
       concurrency,
+      retryDelaysMs,
+      onRetry,
     ),
   ]);
+  for (const [block, time] of timesOnLogs) times.set(block, time);
 
   onProgress?.({fraction: 0.95, message: "Scoring"});
 
-  const transfers: TransferRecord[] = raw.flatMap((log) => {
+  const transfers: TransferRecord[] = [];
+  const unchecked: UncheckedTransfer[] = [];
+
+  for (const log of logs) {
     const signer = signers.get(log.transactionHash);
     const at = times.get(log.blockNumber);
-    if (signer === undefined || at === undefined) return [];
+    const from = log.from.toLowerCase() as Address;
+    const to = log.to.toLowerCase() as Address;
+
+    if (signer === undefined || at === undefined) {
+      unchecked.push({token: log.token, from, to, value: log.value, txHash: log.transactionHash});
+      continue;
+    }
 
     // Dust needs decimals and some sense of value, which only exists for tokens we recognise. An
     // unknown contract gets no dust verdict rather than a guessed one; the signals that matter
@@ -180,19 +247,17 @@ export async function scanHistory(
     const token = knownTokens.find((t) => t.address.toLowerCase() === log.token);
     const dustLimit = token ? parseUnits(String(token.dustBelow), token.decimals) : 0n;
 
-    return [
-      {
-        token: log.token,
-        from: log.from.toLowerCase() as Address,
-        to: log.to.toLowerCase() as Address,
-        value: log.value,
-        at,
-        signer,
-        dust: log.value > 0n && log.value < dustLimit,
-        txHash: log.transactionHash,
-      },
-    ];
-  });
+    transfers.push({
+      token: log.token,
+      from,
+      to,
+      value: log.value,
+      at,
+      signer,
+      dust: log.value > 0n && log.value < dustLimit,
+      txHash: log.transactionHash,
+    });
+  }
 
   const ownerKind = await kind;
 
@@ -202,9 +267,10 @@ export async function scanHistory(
     owner: owner.toLowerCase() as Address,
     range,
     transfers,
-    history: foldHistory(owner, transfers),
+    unchecked,
+    history: foldHistory(owner, transfers, unchecked),
     signersResolved: signers.size,
-    tokensSeen: [...new Set(transfers.map((t) => t.token))],
+    tokensSeen: [...new Set([...transfers, ...unchecked].map((t) => t.token))],
     ownerKind,
   };
 }
@@ -218,27 +284,56 @@ function chunk(range: BlockRange, size: bigint): BlockRange[] {
   return spans;
 }
 
-/** Resolve a batch with bounded concurrency so a public endpoint does not start refusing. */
+/**
+ * Resolve a batch with bounded concurrency, then go back for whatever was refused.
+ *
+ * The first pass runs `concurrency` lookups at a time, so a large history does not take minutes.
+ * Each later pass waits first and then asks one at a time, because a refusal is nearly always the
+ * endpoint rate-limiting exactly that concurrency. What is still missing at the end is left out of
+ * the map for the caller to report. An earlier version simply left it out, and nobody could tell.
+ */
 async function resolveAll<K, V>(
   keys: readonly K[],
   resolve: (key: K) => Promise<V>,
   concurrency: number,
+  retryDelaysMs: readonly number[],
+  onRetry?: (missing: number) => void,
 ): Promise<Map<K, V>> {
   const out = new Map<K, V>();
-  let cursor = 0;
 
-  async function worker(): Promise<void> {
-    while (cursor < keys.length) {
-      const key = keys[cursor++]!;
-      try {
-        out.set(key, await resolve(key));
-      } catch {
-        // A single unresolvable transaction drops that transfer rather than failing the scan.
-        // The alternative is a screen that shows nothing because one request timed out.
+  const pass = async (batch: readonly K[], width: number): Promise<void> => {
+    let cursor = 0;
+    const worker = async (): Promise<void> => {
+      while (cursor < batch.length) {
+        const key = batch[cursor++]!;
+        try {
+          out.set(key, await resolve(key));
+        } catch {
+          // Left for the next pass, and for the caller to report if every pass is refused.
+        }
       }
-    }
+    };
+    await Promise.all(Array.from({length: Math.min(width, batch.length)}, worker));
+  };
+
+  await pass(keys, concurrency);
+  for (const delay of retryDelaysMs) {
+    const missing = keys.filter((key) => !out.has(key));
+    if (missing.length === 0) break;
+    onRetry?.(missing.length);
+    await pause(delay);
+    await pass(missing, 1);
   }
 
-  await Promise.all(Array.from({length: Math.min(concurrency, keys.length)}, worker));
   return out;
+}
+
+/**
+ * The one timer this package needs. Declared rather than typed in from DOM or Node, since this
+ * runs in both and each has it.
+ */
+declare const setTimeout: (callback: () => void, ms: number) => unknown;
+
+function pause(ms: number): Promise<void> {
+  return ms > 0 ? new Promise((done) => setTimeout(() => done(), ms)) : Promise.resolve();
 }

@@ -25,6 +25,13 @@ would measure a copy of the detector rather than the detector, and the copy is t
 can never ship. `--check` makes it exit non-zero if the headline numbers regress, so it runs in
 CI against the committed sample and the figures below cannot quietly rot.
 
+What it cannot catch is a mistake in the parts it does not run. It builds the May 2024 case's
+history by hand, and that history stops before the loss — which is how the regression told under
+finding 7 got past it. So the live demo's preset also runs in CI the way the screen runs it:
+`packages/chain/test/wbtc-case.test.ts` feeds `scanHistory` every answer mainnet gave about the
+preset's range, recorded by `packages/chain/scripts/record-scan.mjs`, and checks the whole Scan
+screen's verdict — including with the bait's signer lookup refused.
+
 ## What the data changed
 
 Two things came out of this that changed the product, not just the numbers.
@@ -328,6 +335,11 @@ switched on. Every run's file is kept: `data/live-accounts-before-fixes.json`,
 passed with every transfer planted was, both times, a real one used for zero-value poisoning — BUSD,
 then USDT.
 
+All three runs used `scanHistory` as it was before 2026-10-07, which dropped a transfer without a
+trace when the endpoint refused to say who signed it. A dropped record could have hidden a warning,
+or caused one; nothing counted them, so whether any did cannot now be told. The script now refuses
+a scan with anything unchecked, as the app now says so instead of hiding it.
+
 ### 7. A copied payment made a real contact "do not send"
 
 The one contact warned about in the first run — and one more in a two-account trial before it — had
@@ -343,7 +355,8 @@ test, and the first version of the fix got it wrong. It asked only whether the u
 the address, and on the app's own May 2024 preset — which scans past the loss — it called the
 attacker "Looks fine": the 1155 WBTC was a payment the victim signed, so the bait before it read as
 a copy. No test caught it, because every test built its copy case without a loss in it; loading the
-preset in the app did, after the change had already reached the live demo. A planter copying a real
+preset in the app did, after the change had already reached the live demo. The preset now runs in
+CI from recorded mainnet answers, and with the first version of the fix put back, it fails. A planter copying a real
 payment produces the payment first and the fake after; an attack that works produces the fake first
 and the payment after. The exemption now needs the payment first, a history that cannot show the
 order gets none, and when the user paid after the fake the finding says so. In the final run the
@@ -594,6 +607,11 @@ the second one is the reason the product exists.
   detector does on those, not what share of all poisoning it would catch. The end-only rule was
   read off the same rows, so its numbers there show the hole closing, not that the rule works — the
   fresh-data check is what says that.
+- **Runs before 2026-10-07 could not see a refused lookup.** `scanHistory` dropped any transfer
+  whose signer or block time the endpoint refused, silently, in the app and in these scripts alike.
+  `poison-hunter.mjs` checked for the one record that mattered most to it, the bait, and rescanned
+  any case missing it; no bait is missing from the published results. The other scripts had no such
+  check. Every script that measures now refuses an incomplete scan.
 - **Not adversarial.** These rules are public. An attacker who reads them can plant a lookalike
   that matches only three characters, wait a day, and score nothing. That is precisely why the
   contracts never consult the score: an unknown recipient is held regardless.
