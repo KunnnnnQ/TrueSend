@@ -36,6 +36,7 @@ export {
 export {
   counterparties,
   foldHistory,
+  forgedTransfersByToken,
   type TransferRecord,
 } from "./history.js";
 
@@ -64,6 +65,7 @@ export {
 } from "./scan.js";
 
 export {
+  checkTokens,
   confusableSkeleton,
   hasNonAscii,
   inspectToken,
@@ -77,6 +79,8 @@ export {
   type FlaggedToken,
   type FlaggedTokens,
   type RestrictionLevel,
+  type TokenCheckResult,
+  type TokenIdentityInput,
   type TokenSymbolFinding,
   type TokenVerdict,
   type TokenSymbolIssue,

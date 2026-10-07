@@ -35,9 +35,8 @@ import {createChainClient, readTokenIdentities, scanHistory, splitOnRefusal} fro
 import {
   MIN_AFFIX_MATCH,
   assessAddress,
+  checkTokens,
   foldHistory,
-  inspectToken,
-  judgeToken,
   sharedPrefixLength,
   sharedSuffixLength,
 } from "@truesend/engine";
@@ -284,6 +283,8 @@ function score(c, scan) {
   return {
     transfers: transfers.length,
     baitToken: {transfers: ofToken.length, planted},
+    // Held only until the token check below has run on it, then dropped: it carries the victim.
+    _bait: {owner: c.victim, transfers: ofToken},
     // The hash alone would match any of the other transfers a batched bait carries.
     baitInScan: transfers.some(
       (t) =>
@@ -415,21 +416,18 @@ const identities = new Map(
   (await readTokenIdentities(client, fakeTokens)).map((identity) => [identity.address.toLowerCase(), identity]),
 );
 for (const r of results.filter((row) => row.type === "fake")) {
-  const identity = identities.get(r.token);
-  if (!identity || identity.symbol === null) {
-    r.tokenCheck = {verdict: "unread"};
-    continue;
-  }
-  const findings = inspectToken(
-    {symbol: identity.symbol, address: identity.address, ...(identity.name ? {name: identity.name} : {})},
-    {canonical: CANONICAL},
-  );
+  const identity = identities.get(r.token) ?? {address: r.token, symbol: null, name: null};
+  // The engine's own check, given only this token's records: whether the account ever held a
+  // token is a question about that token's transfers alone, so nothing it decides is lost.
+  const check = checkTokens(r._bait.owner, r._bait.transfers, [identity], {canonical: CANONICAL});
+  const flagged = check.counterfeit[0] ?? check.unusual[0];
   r.tokenCheck = {
     symbol: identity.symbol,
-    verdict: judgeToken(findings, r.baitToken.planted),
-    issues: findings.map((f) => f.issue),
+    verdict: check.counterfeit.length ? "counterfeit" : check.unusual.length ? "unusual" : check.unreadable ? "unread" : "clean",
+    issues: [...(flagged?.forged ? ["forged-transfers"] : []), ...(flagged?.findings ?? []).map((f) => f.issue)],
   };
 }
+for (const r of results) delete r._bait;
 
 // ---------------------------------------------------------------------------
 // Tallies. Misses are listed one by one rather than folded into a rate.

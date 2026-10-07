@@ -316,11 +316,13 @@ function shortenError(message: string): string {
 function FlaggedTokenWarning({match}: {match: NonNullable<ReturnType<typeof matchFlaggedToken>>}) {
   const {token, verdict} = match;
   const symbol = <code className="tabular">{revealSymbol(token.symbol)}</code>;
+  // A forged token need not have a name at all: two found on live accounts gave an empty one.
+  const calls = token.symbol === "" ? <>it gives no name</> : <>it calls itself {symbol}</>;
 
   if (verdict === "counterfeit") {
     return (
       <p className="mt-1.5 text-xs leading-relaxed text-danger">
-        This contract was flagged as counterfeit in your last scan — it calls itself {symbol}
+        This contract was flagged as counterfeit in your last scan — {calls}
         {token.planted > 0 ? (
           <> and {token.planted} of its transfers to that account were planted by someone else</>
         ) : null}
@@ -332,7 +334,7 @@ function FlaggedTokenWarning({match}: {match: NonNullable<ReturnType<typeof matc
 
   return (
     <p className="mt-1.5 text-xs leading-relaxed text-caution">
-      This contract&rsquo;s symbol ({symbol}) was flagged as unusual, not counterfeit, in your last
+      This contract&rsquo;s symbol ({token.symbol === "" ? "empty" : symbol}) was flagged as unusual, not counterfeit, in your last
       scan — nothing about how it was used there looked planted.
     </p>
   );

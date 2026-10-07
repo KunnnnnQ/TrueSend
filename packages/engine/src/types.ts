@@ -112,6 +112,8 @@ export interface PoisonReport {
 
 export type FindingCode =
   | "spoofed-outgoing-transfer"
+  /** The same fabrication aimed at an address the user has also paid themselves. Weighs nothing. */
+  | "spoofed-copy-of-payment"
   | "lookalike-of-known-payee"
   | "appeared-right-after-payment"
   | "zero-value-inbound"

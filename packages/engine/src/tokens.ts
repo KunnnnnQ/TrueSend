@@ -1,4 +1,5 @@
 import {addressesEqual, normalizeAddress, type Address} from "./address.js";
+import {forgedTransfersByToken, type TransferRecord} from "./history.js";
 
 /**
  * Fake-token detection.
@@ -471,6 +472,11 @@ const IMPERSONATION: ReadonlySet<TokenSymbolIssue> = new Set([
  * the account never signed, or as a zero-value transfer in. A token the account bought and moved
  * itself never does. So:
  *
+ *  - **writing transfers it had no balance for** — the account "sending" a nonzero amount it never
+ *    held, signed by someone else — is counterfeit whatever it is called. A real token cannot
+ *    record that. This is the only rule that catches a fake with an ordinary name for an asset
+ *    the canonical list does not know: on live accounts, a "cbBTC" that is not Coinbase's and two
+ *    contracts with empty names, each forging three hundred transfers at a time;
  *  - **claiming to be a specific real asset** — the wrong contract for a known ticker, a fake
  *    native currency, a lookalike of one — is counterfeit however the token got there;
  *  - **spelled strangely and used against the account** is counterfeit;
@@ -478,8 +484,15 @@ const IMPERSONATION: ReadonlySet<TokenSymbolIssue> = new Set([
  *
  * @param plantedTransfers transfers of this token that name the account as sender without its
  *   signature, plus zero-value ones sent to it. Counted by the caller from the history.
+ * @param forgedTransfers the nonzero ones among them, of a token the account never held — see
+ *   `forgedTransfersByToken`.
  */
-export function judgeToken(findings: readonly TokenSymbolFinding[], plantedTransfers: number): TokenVerdict {
+export function judgeToken(
+  findings: readonly TokenSymbolFinding[],
+  plantedTransfers: number,
+  forgedTransfers = 0,
+): TokenVerdict {
+  if (forgedTransfers > 0) return "counterfeit";
   if (findings.length === 0) return "clean";
   if (findings.some((finding) => IMPERSONATION.has(finding.issue))) return "counterfeit";
   return plantedTransfers > 0 ? "counterfeit" : "unusual";
@@ -494,6 +507,11 @@ export interface FlaggedToken {
   transfers: number;
   /** How many of those were planted — see `judgeToken`. */
   planted: number;
+  /**
+   * How many of those had the account sending an amount it never held — see
+   * `forgedTransfersByToken`. Absent from scans stored before it existed, which read as none.
+   */
+  forged?: number;
   findings: readonly TokenSymbolFinding[];
 }
 
@@ -501,6 +519,90 @@ export interface FlaggedToken {
 export interface FlaggedTokens {
   counterfeit: readonly FlaggedToken[];
   unusual: readonly FlaggedToken[];
+}
+
+/** What a token contract says it is called. `null` where it would not say. */
+export interface TokenIdentityInput {
+  address: string;
+  symbol: string | null;
+  name: string | null;
+}
+
+export interface TokenCheckResult extends FlaggedTokens {
+  counterfeit: FlaggedToken[];
+  unusual: FlaggedToken[];
+  checked: number;
+  /** Would not say what they are called, and nothing in the history convicted them either. */
+  unreadable: number;
+}
+
+/**
+ * The whole token check, as the Scan screen runs it, in one place.
+ *
+ * The screen and three scripts in `analysis/` used to carry their own copy of this loop and keep
+ * them alike by hand, which is how a measurement quietly stops describing what ships. Now they all
+ * call this.
+ *
+ * A token that would not say what it is called cannot be judged by its name, and is counted rather
+ * than passed — unless its own records already convict it, which needs no name at all.
+ */
+export function checkTokens(
+  owner: string,
+  transfers: readonly TransferRecord[],
+  identities: readonly TokenIdentityInput[],
+  options: {canonical?: readonly CanonicalToken[]} = {},
+): TokenCheckResult {
+  const me = normalizeAddress(owner);
+  const forgedBy = forgedTransfersByToken(me, transfers);
+  const counterfeit: FlaggedToken[] = [];
+  const unusual: FlaggedToken[] = [];
+  let unreadable = 0;
+
+  for (const identity of identities) {
+    const address = normalizeAddress(identity.address);
+    const own = transfers.filter((t) => normalizeAddress(t.token) === address);
+    // Planted, not merely present: the account "sending" it in a transaction it did not sign, or a
+    // zero-value transfer in. An account does not sign for, or receive nothing of, a token it chose
+    // to hold — which is what tells a counterfeit from a strange spelling.
+    const planted = own.filter(
+      (t) =>
+        (normalizeAddress(t.from) === me && normalizeAddress(t.signer) !== me) ||
+        (normalizeAddress(t.to) === me && t.value === 0n),
+    ).length;
+    const forged = forgedBy.get(address) ?? 0;
+
+    if (identity.symbol === null && forged === 0) {
+      unreadable++;
+      continue;
+    }
+
+    const findings =
+      identity.symbol === null
+        ? []
+        : inspectToken(
+            {symbol: identity.symbol, address, ...(identity.name ? {name: identity.name} : {})},
+            {canonical: options.canonical ?? []},
+          );
+    const verdict = judgeToken(findings, planted, forged);
+    if (verdict === "clean") continue;
+
+    const token: FlaggedToken = {
+      address,
+      symbol: identity.symbol ?? "",
+      name: identity.name,
+      transfers: own.length,
+      planted,
+      ...(forged > 0 ? {forged} : {}),
+      findings,
+    };
+    (verdict === "counterfeit" ? counterfeit : unusual).push(token);
+  }
+
+  const byUse = (a: FlaggedToken, b: FlaggedToken) => b.planted - a.planted || b.transfers - a.transfers;
+  counterfeit.sort(byUse);
+  unusual.sort(byUse);
+
+  return {checked: identities.length, unreadable, counterfeit, unusual};
 }
 
 /**

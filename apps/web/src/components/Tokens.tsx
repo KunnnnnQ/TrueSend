@@ -130,7 +130,7 @@ function TokenRow({token}: {token: FlaggedToken}) {
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
         {/* Code points, not the string: two of the characters in these are invisible, and a symbol
             can carry a right-to-left override that reorders the text around it. */}
-        <code className="tabular text-sm text-text">{revealSymbol(token.symbol)}</code>
+        <code className="tabular text-sm text-text">{token.symbol === "" ? "(no name)" : revealSymbol(token.symbol)}</code>
         <span className="tabular text-xs text-faint">
           {token.transfers} {plural(token.transfers, "transfer")}
         </span>
@@ -144,6 +144,15 @@ function TokenRow({token}: {token: FlaggedToken}) {
         </span>
       </div>
       <ul className="mt-1.5 space-y-1">
+        {/* The one reason that does not depend on the name, so it comes first whenever it applies. */}
+        {token.forged ? (
+          <li className="text-sm leading-relaxed text-text/90">
+            Its contract records this account sending it {token.forged}{" "}
+            {plural(token.forged, "time")}, in transactions the account did not sign, though nothing
+            in this history shows the account ever holding any. A real token cannot move a balance
+            that is not there.
+          </li>
+        ) : null}
         {token.findings.slice(0, 2).map((finding) => (
           <li key={finding.issue} className="text-sm leading-relaxed text-text/90">
             {finding.message}

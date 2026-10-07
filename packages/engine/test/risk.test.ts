@@ -356,6 +356,36 @@ describe("fabricated outgoing records", () => {
     expect(result.level).toBe("safe");
     expect(result.score).toBe(0);
   });
+
+  /**
+   * Found on live accounts (`analysis/src/live-accounts.mjs`): a planter copies a real payment with
+   * a counterfeit token — same amount, same real recipient, minutes later — and the recipient, a
+   * contact the user had paid with their own signature, used to read "Do not send".
+   */
+  it("does not hold a copied payment against an address the user really paid", () => {
+    const contact = sighting({address: BOB, outgoingCount: 2, lastOutgoingAt: NOW - HOUR, spoofedOutgoingCount: 1});
+    const result = assessAddress({to: BOB, history: [contact], now: NOW});
+
+    expect(result.level).toBe("safe");
+    expect(result.findings.map((f) => f.code)).toEqual(["spoofed-copy-of-payment"]);
+    expect(result.findings[0]?.weight).toBe(0);
+    expect(result.findings[0]?.message).toContain("you have paid it yourself");
+  });
+
+  /** The one case the exemption weakens: the user already paid the attacker once, by mistake. */
+  it("still names the contact being imitated when the user paid a lookalike by mistake", () => {
+    const paidByMistake = sighting({
+      address: POISONED,
+      outgoingCount: 1,
+      spoofedOutgoingCount: 1,
+      lastOutgoingAt: NOW - HOUR,
+      firstSeenAt: NOW - 2 * HOUR + 600,
+    });
+    const result = assessAddress({to: POISONED, history: [alicePaid, paidByMistake], now: NOW});
+
+    expect(result.findings.map((f) => f.code)).toContain("lookalike-of-known-payee");
+    expect(result.level).toBe("danger");
+  });
 });
 
 /**

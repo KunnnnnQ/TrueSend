@@ -209,6 +209,43 @@ function tokensTheOwnerHasHeld(
 }
 
 /**
+ * Records a token contract made up about this owner, counted per token.
+ *
+ * A record of the owner *sending* a nonzero amount, in a transaction the owner did not sign, of a
+ * token the owner has never held. Nobody can authorise moving what was never there, so the
+ * contract wrote a transfer it had no balance for. It is the test `foldHistory` uses to call such
+ * a record a fabrication (`couldHaveMoved`), asked about the token instead of the counterparty, and
+ * it does not care what the token calls itself — which is the point: on live accounts it caught a
+ * "cbBTC" that is not Coinbase's and two contracts with no name at all, none of which a rule about
+ * names could see.
+ *
+ * Zero-value records are left out on purpose. They are the commonest poisoning primitive, but they
+ * run on real tokens — most planted lookalikes arrive through USDT's and USDC's own zero-value
+ * `transferFrom` — so they say nothing about whether the contract itself is genuine.
+ *
+ * Bounded by the history it is given, like `tokensTheOwnerHasHeld`: a real token received before
+ * the scanned window, then moved by somebody the owner authorised, looks forged here.
+ */
+export function forgedTransfersByToken(
+  owner: string,
+  transfers: readonly TransferRecord[],
+): Map<Address, number> {
+  const me = normalizeAddress(owner);
+  const held = tokensTheOwnerHasHeld(me, transfers);
+  const forged = new Map<Address, number>();
+
+  for (const transfer of transfers) {
+    if (normalizeAddress(transfer.from) !== me) continue;
+    if (normalizeAddress(transfer.signer) === me || transfer.value === 0n) continue;
+    const token = normalizeAddress(transfer.token);
+    if (held.has(token)) continue;
+    forged.set(token, (forged.get(token) ?? 0) + 1);
+  }
+
+  return forged;
+}
+
+/**
  * Every counterparty in a folded history, newest first.
  *
  * Convenience for the Scan screen, which assesses the whole address book rather than one

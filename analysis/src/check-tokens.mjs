@@ -14,7 +14,7 @@
  */
 
 import {createChainClient, readTokenIdentities, scanHistory} from "@truesend/chain";
-import {inspectToken, judgeToken, revealSymbol} from "@truesend/engine";
+import {checkTokens, revealSymbol} from "@truesend/engine";
 
 import {ARCHIVE_ENDPOINTS} from "./rpc.mjs";
 
@@ -46,43 +46,24 @@ const started = Date.now();
 const identities = await readTokenIdentities(client, scan.tokensSeen);
 const seconds = ((Date.now() - started) / 1000).toFixed(1);
 
-const unreadable = identities.filter((i) => i.symbol === null);
-const counterfeit = [];
-const unusual = [];
+// The web app's own check, from the engine — not a copy of it.
+const {counterfeit, unusual, unreadable} = checkTokens(scan.owner, scan.transfers, identities, {canonical: CANONICAL});
 
-for (const identity of identities) {
-  if (identity.symbol === null) continue;
-  const findings = inspectToken(
-    {symbol: identity.symbol, address: identity.address, ...(identity.name ? {name: identity.name} : {})},
-    {canonical: CANONICAL},
-  );
-  if (findings.length === 0) continue;
-
-  const own = scan.transfers.filter((t) => t.token === identity.address);
-  // Planted, not merely present: the account "sending" it in a transaction it never signed, or a
-  // zero-value transfer in. This is the same count the web app makes.
-  const planted = own.filter(
-    (t) => (t.from === scan.owner && t.signer !== scan.owner) || (t.to === scan.owner && t.value === 0n),
-  ).length;
-
-  const entry = {identity, findings, transfers: own.length, planted};
-  (judgeToken(findings, planted) === "counterfeit" ? counterfeit : unusual).push(entry);
-}
-
-console.log(`read ${identities.length - unreadable.length} of ${identities.length} token identities in ${seconds}s (${unreadable.length} would not say)`);
+console.log(`read ${identities.length - unreadable} of ${identities.length} token identities in ${seconds}s (${unreadable} would not say)`);
 console.log(`counterfeit ${counterfeit.length}, unusual-but-not-planted ${unusual.length}
 `);
 
-for (const {identity, findings, transfers, planted} of counterfeit.sort((a, b) => b.planted - a.planted || b.transfers - a.transfers)) {
-  console.log(`  ${identity.address}   ${String(transfers).padStart(3)} transfers, ${planted} planted`);
-  console.log(`    calls itself  ${revealSymbol(identity.symbol)}`);
-  console.log(`    because       ${findings.map((f) => f.issue).join(", ")}`);
+for (const token of counterfeit) {
+  console.log(`  ${token.address}   ${String(token.transfers).padStart(3)} transfers, ${token.planted} planted`);
+  console.log(`    calls itself  ${token.symbol === "" ? "(no name)" : revealSymbol(token.symbol)}`);
+  const why = [...(token.forged ? [`${token.forged} forged`] : []), ...token.findings.map((f) => f.issue)];
+  console.log(`    because       ${why.join(", ")}`);
 }
-for (const {identity, transfers} of unusual) {
-  console.log(`  (unusual) ${identity.address}  ${transfers} transfers  ${revealSymbol(identity.symbol)}`);
+for (const token of unusual) {
+  console.log(`  (unusual) ${token.address}  ${token.transfers} transfers  ${revealSymbol(token.symbol)}`);
 }
 
-const judged = new Set([...counterfeit, ...unusual].map((e) => e.identity.address));
+const judged = new Set([...counterfeit, ...unusual].map((token) => token.address));
 const clean = identities.filter((i) => i.symbol !== null && !judged.has(i.address));
 console.log(`
 not flagged (${clean.length}): ${clean.map((i) => JSON.stringify(i.symbol)).slice(0, 25).join(" ")}${clean.length > 25 ? " …" : ""}`);

@@ -14,9 +14,7 @@ import {
 } from "@truesend/chain";
 import {
   assessAddress,
-  inspectToken,
-  judgeToken,
-  type FlaggedToken,
+  checkTokens,
   type PoisonReport,
   type RiskAssessment,
 } from "@truesend/engine";
@@ -190,53 +188,13 @@ export default function ScanPage() {
       try {
         const identities = await readTokenIdentities(createChainClient(endpoint), result.tokensSeen);
         const canonical = (KNOWN_TOKENS[scanChain] ?? []).map((t) => ({symbol: t.symbol, address: t.address}));
-
-        const counterfeit: FlaggedToken[] = [];
-        const unusual: FlaggedToken[] = [];
-        let unreadable = 0;
-        for (const identity of identities) {
-          // A token that would not say what it is called cannot be judged, and is counted rather
-          // than passed: reporting it as clean would be a claim nothing established.
-          if (identity.symbol === null) {
-            unreadable++;
-            continue;
-          }
-
-          const findings = inspectToken(
-            {
-              symbol: identity.symbol,
-              address: identity.address,
-              ...(identity.name ? {name: identity.name} : {}),
-            },
-            {canonical},
-          );
-          if (findings.length === 0) continue;
-
-          const own = result.transfers.filter((t) => t.token === identity.address);
-          // Planted, not merely present: the account "sending" it in a transaction it did not sign,
-          // or a zero-value transfer in. An account does not sign for, or receive nothing of, a
-          // token it chose to hold — which is what tells a counterfeit from a strange spelling.
-          const planted = own.filter(
-            (t) => (t.from === result.owner && t.signer !== result.owner) || (t.to === result.owner && t.value === 0n),
-          ).length;
-
-          const token: FlaggedToken = {
-            address: identity.address,
-            symbol: identity.symbol,
-            name: identity.name,
-            transfers: own.length,
-            planted,
-            findings,
-          };
-          (judgeToken(findings, planted) === "counterfeit" ? counterfeit : unusual).push(token);
-        }
-        const byUse = (a: FlaggedToken, b: FlaggedToken) => b.planted - a.planted || b.transfers - a.transfers;
-        counterfeit.sort(byUse);
-        unusual.sort(byUse);
+        // The same check `analysis/` measures: names against the canonical list, and each token's
+        // records in this history — planted, or forged outright — against what the account signed.
+        const check = checkTokens(result.owner, result.transfers, identities, {canonical});
 
         if (!cancelled) {
-          setTokenCheck({status: "done", checked: identities.length, unreadable, counterfeit, unusual});
-          attachTokenCheck(result.owner, {checked: identities.length, unreadable, counterfeit, unusual});
+          setTokenCheck({status: "done", ...check});
+          attachTokenCheck(result.owner, check);
         }
       } catch (caught) {
         if (!cancelled) {

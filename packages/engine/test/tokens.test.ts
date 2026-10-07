@@ -1,6 +1,8 @@
 import {describe, expect, it} from "vitest";
 
+import type {TransferRecord} from "../src/history.js";
 import {
+  checkTokens,
   confusableSkeleton,
   hasNonAscii,
   inspectToken,
@@ -263,6 +265,81 @@ describe("judgeToken", () => {
 
   it("calls a fake native currency counterfeit on its own", () => {
     expect(judgeToken(inspectTokenSymbol("Ether.."), 0)).toBe("counterfeit");
+  });
+
+  it("calls a contract that forged transfers counterfeit, whatever its name", () => {
+    expect(judgeToken([], 1, 1)).toBe("counterfeit");
+  });
+});
+
+/**
+ * Three fakes from live accounts (`analysis/src/live-accounts.mjs`) that every rule about names let
+ * through, because there was nothing wrong with the names: a "cbBTC" that is not Coinbase's — the
+ * canonical list does not know cbBTC — and two contracts with no name at all, each of which forged
+ * three hundred transfers in one transaction. What convicts them is their own records.
+ */
+describe("checkTokens: a contract that forges its own transfers", () => {
+  const OWNER = "0x1111111111111111111111111111111111111111" as Address;
+  const PLANTER = "0x2222222222222222222222222222222222222222" as Address;
+  const LOOKALIKE = "0x3333333333333333333333333333333333333333" as Address;
+  const FAKE_CBBTC = "0xf08f6ff75b72897e716c0afa8d75544cfbc5afb7" as Address;
+  const NAMELESS = "0x814e949a5fa573dacbb62f7d8f93f4a2433bc230" as Address;
+  const USDC = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" as Address;
+
+  /** The account "sending" a nonzero amount it never held, in a transaction somebody else signed. */
+  const forgery = (token: Address): TransferRecord => ({
+    token,
+    from: OWNER,
+    to: LOOKALIKE,
+    value: 20_002_421n,
+    at: 1,
+    signer: PLANTER,
+  });
+
+  it("is caught under an ordinary name the canonical list does not know", () => {
+    const check = checkTokens(
+      OWNER,
+      [forgery(FAKE_CBBTC)],
+      [{address: FAKE_CBBTC, symbol: "cbBTC", name: "cbBTC"}],
+      {canonical: CANONICAL},
+    );
+
+    expect(check.counterfeit.map((t) => t.address)).toEqual([FAKE_CBBTC]);
+    expect(check.counterfeit[0]?.forged).toBe(1);
+    expect(check.counterfeit[0]?.findings).toEqual([]);
+  });
+
+  it("is caught with an empty name, and when it will not say a name at all", () => {
+    const empty = checkTokens(OWNER, [forgery(NAMELESS)], [{address: NAMELESS, symbol: "", name: ""}]);
+    expect(empty.counterfeit).toHaveLength(1);
+
+    const silent = checkTokens(OWNER, [forgery(NAMELESS)], [{address: NAMELESS, symbol: null, name: null}]);
+    expect(silent.counterfeit).toHaveLength(1);
+    expect(silent.unreadable).toBe(0);
+  });
+
+  /** Zero-value poisoning runs on real USDC. The record is planted; the contract is genuine. */
+  it("leaves a real token used for zero-value poisoning alone", () => {
+    const zeroValue = {...forgery(USDC), value: 0n};
+    const check = checkTokens(OWNER, [zeroValue], [{address: USDC, symbol: "USDC", name: "USD Coin"}], {
+      canonical: CANONICAL,
+    });
+
+    expect(check.counterfeit).toEqual([]);
+    expect(check.unusual).toEqual([]);
+  });
+
+  /** A solver settling an order the account signed for moves a token the account really holds. */
+  it("leaves a token the account received alone when somebody else moves it", () => {
+    const received: TransferRecord = {...forgery(NAMELESS), from: PLANTER, to: OWNER};
+    const check = checkTokens(OWNER, [received, forgery(NAMELESS)], [{address: NAMELESS, symbol: "TKN", name: "Token"}]);
+
+    expect(check.counterfeit).toEqual([]);
+  });
+
+  it("still counts a token that will not say its name and forged nothing as unreadable, not clean", () => {
+    const check = checkTokens(OWNER, [], [{address: NAMELESS, symbol: null, name: null}]);
+    expect(check).toMatchObject({checked: 1, unreadable: 1, counterfeit: [], unusual: []});
   });
 });
 

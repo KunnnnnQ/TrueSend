@@ -191,7 +191,7 @@ export function assessAddress(input: RiskInput): RiskAssessment {
 
   // Checked first because it stands alone: it needs no similar address, no timing and no
   // community report, which is precisely the situation the rules below cannot handle.
-  if (self && self.spoofedOutgoingCount > 0) {
+  if (self && self.spoofedOutgoingCount > 0 && self.outgoingCount === 0) {
     findings.push({
       code: "spoofed-outgoing-transfer",
       weight: WEIGHTS.spoofedOutgoing,
@@ -199,6 +199,33 @@ export function assessAddress(input: RiskInput): RiskAssessment {
         `Your history shows ${plural(self.spoofedOutgoingCount, "payment")} from you to this ` +
         `address that you never signed. Someone else published ${self.spoofedOutgoingCount === 1 ? "that record" : "those records"} ` +
         `so the address would look like one you had already paid.`,
+      evidence: {spoofedOutgoingCount: self.spoofedOutgoingCount, genuineOutgoing: self.outgoingCount},
+    });
+  }
+
+  /**
+   * The same fabrication, aimed at somebody the user really has paid.
+   *
+   * Seen on live accounts (`analysis/src/live-accounts.mjs`): a planter copies a genuine payment
+   * with a counterfeit token — same amount, same real recipient, a few minutes later. The record is
+   * as fake as any other, but what makes it dangerous elsewhere is missing here: it cannot make the
+   * address look like one the user has paid, because the user has, with their own signature. Held
+   * against the address, it told users "do not send" about their own contacts.
+   *
+   * So it is said and not scored. The exemption cannot be bought by an attacker: it needs a payment
+   * the user signed to that exact address. A user who once paid an attacker by mistake loses this
+   * one signal on a second payment, and keeps the lookalike and timing rules, which are what name
+   * the contact being imitated.
+   */
+  if (self && self.spoofedOutgoingCount > 0 && self.outgoingCount > 0) {
+    findings.push({
+      code: "spoofed-copy-of-payment",
+      weight: 0,
+      message:
+        `Someone also published ${plural(self.spoofedOutgoingCount, "record")} of you paying this ` +
+        `address that you never signed — but you have paid it yourself, ${plural(self.outgoingCount, "time")}. ` +
+        `A fake copy of a real payment is not held against the address; it does mean someone is ` +
+        `working on your history.`,
       evidence: {spoofedOutgoingCount: self.spoofedOutgoingCount, genuineOutgoing: self.outgoingCount},
     });
   }
@@ -387,8 +414,11 @@ function scoreOf(findings: readonly Finding[]): number {
     findings.reduce((sum, finding) => sum + finding.weight, 0),
   );
 
+  // A finding that weighs nothing is said, not held against the address, so it cannot be the
+  // genuine signal that lifts the cap either.
   const onlyReportsAndBaseline = findings.every(
-    (finding) => finding.code === "community-reported" || BASELINE_CODES.has(finding.code),
+    (finding) =>
+      finding.code === "community-reported" || BASELINE_CODES.has(finding.code) || finding.weight === 0,
   );
 
   return onlyReportsAndBaseline ? Math.min(total, COMMUNITY_CAP) : total;
