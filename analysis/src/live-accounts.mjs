@@ -1,7 +1,7 @@
 /**
  * The whole Scan screen, run on accounts being poisoned right now.
  *
- *   node src/live-accounts.mjs [--accounts 25] [--lookback 50000] [--max-transfers 2000]
+ *   node src/live-accounts.mjs [--accounts 25] [--lookback 50000] [--max-transfers 2000] [--out file.json]
  *
  * The token check, and the product run end to end, had been tried on one live account
  * (2026-09-26, `check-tokens.mjs`). This picks accounts that had a payment record fabricated in
@@ -34,14 +34,14 @@
  * skipped, never silently dropped. Account addresses are left out of the output; every listed finding
  * carries a transaction hash, which is enough to check it on an explorer.
  *
- * Writes `data/live-accounts.json`.
+ * Writes `data/live-accounts.json`, or the file `--out` names.
  */
 
 import {mkdir, writeFile} from "node:fs/promises";
 import {dirname, join} from "node:path";
 import {fileURLToPath} from "node:url";
 
-import {createChainClient, readTokenIdentities, scanHistory} from "@truesend/chain";
+import {LISTED_TOKENS, createChainClient, readTokenIdentities, scanHistory} from "@truesend/chain";
 import {MIN_AFFIX_MATCH, assessAddress, checkTokens} from "@truesend/engine";
 
 import {
@@ -62,6 +62,8 @@ const ACCOUNTS = Number(args.get("accounts") ?? 25);
 /** `DEFAULT_LOOKBACK` in apps/web/src/app/page.tsx. */
 const LOOKBACK = BigInt(args.get("lookback") ?? 50_000);
 const MAX_TRANSFERS = Number(args.get("max-transfers") ?? 2_000);
+/** Each run is its own measurement, so a later one need not overwrite the one a write-up cites. */
+const OUT = args.get("out") ?? "live-accounts.json";
 /** Where the accounts are drawn from: recent enough that they are being poisoned now. */
 const SAMPLE_BLOCKS = 300;
 
@@ -72,6 +74,8 @@ const KNOWN_TOKENS = [
   {address: TOKENS.WBTC, symbol: "WBTC", decimals: 8, dustBelow: 0.0001},
 ];
 const CANONICAL = KNOWN_TOKENS.map((t) => ({symbol: t.symbol, address: t.address}));
+/** The app's second tier, from the same pinned list the Scan screen passes. */
+const LISTED = LISTED_TOKENS[1] ?? [];
 
 const here = dirname(fileURLToPath(import.meta.url));
 const dataDir = join(here, "..", "data");
@@ -109,6 +113,12 @@ const txs = [...new Set(zeroValue.map((t) => t.tx))];
 const fetched = await rpc.batch("eth_getTransactionByHash", txs.map((hash) => [hash]), {chunkSize: 100});
 const signerOf = new Map(txs.map((hash, i) => [hash, fetched[i]?.from?.toLowerCase()]));
 const targeted = [...new Set(zeroValue.filter((t) => signerOf.get(t.tx) && signerOf.get(t.tx) !== t.from).map((t) => t.from))];
+// Hundreds of accounts are poisoned in any 300 blocks. None means the signer lookups failed, and a
+// report of zero accounts scanned would read as a result rather than as the outage it is.
+const resolved = txs.filter((hash) => signerOf.get(hash)).length;
+if (targeted.length === 0) {
+  throw new Error(`no accounts drawn: ${zeroValue.length} zero-value transfers, ${resolved} of ${txs.length} signers resolved`);
+}
 
 // Fisher–Yates, so the sample is not biased towards whichever bot ran first in the window.
 for (let i = targeted.length - 1; i > 0; i--) {
@@ -192,7 +202,14 @@ for (const account of targeted) {
 
     // Every token, as the Scan screen judges it: the same engine call, not a copy of it.
     const identities = await readTokenIdentities(client, scan.tokensSeen);
-    const check = checkTokens(owner, scan.transfers, identities, {canonical: CANONICAL});
+    const check = checkTokens(owner, scan.transfers, identities, {canonical: CANONICAL, listed: LISTED});
+    // What the listed tier said on its own: a listed name at another contract, nothing stronger.
+    const byListedName = (t) =>
+      t.findings.length > 0 && t.findings.every((f) => f.issue === "listed-symbol-wrong-contract");
+    const listedTier = {
+      counterfeit: check.counterfeit.filter((t) => byListedName(t) && !t.forged).map((t) => ({token: t.address, symbol: t.symbol, planted: t.planted})),
+      unusual: check.unusual.filter(byListedName).map((t) => ({token: t.address, symbol: t.symbol})),
+    };
     const flagged = new Map([
       ...check.counterfeit.map((t) => [t.address, "counterfeit"]),
       ...check.unusual.map((t) => [t.address, "unusual"]),
@@ -259,6 +276,7 @@ for (const account of targeted) {
       tokensTheAccountMoved: choseTokens.size,
       alarmsOnHeldTokens,
       forgedOnly,
+      listedTier,
       plantedButClean,
     });
     console.log(`${label} ${String(scan.transfers.length).padStart(5)} transfers  ` +
@@ -299,6 +317,8 @@ const summary = {
   tokensTheAccountsMoved: sum((r) => r.tokensTheAccountMoved),
   heldTokensFlagged: sum((r) => r.alarmsOnHeldTokens.length),
   counterfeitOnTheirRecordsAlone: sum((r) => (r.forgedOnly ?? []).length),
+  counterfeitOnAListedNameAlone: sum((r) => (r.listedTier?.counterfeit ?? []).length),
+  unusualOnAListedNameAlone: sum((r) => (r.listedTier?.unusual ?? []).length),
   ofThoseOnCoinGecko: sum((r) => (r.forgedOnly ?? []).filter((t) => t.onCoinGecko).length),
   plantedTokensCalledClean: sum((r) => r.plantedButClean.length),
 };
@@ -311,11 +331,14 @@ console.log(`  tokens: counterfeit ${summary.tokens.counterfeit}, unusual ${summ
 console.log(`  tokens the accounts moved themselves: ${summary.tokensTheAccountsMoved}, flagged: ${summary.heldTokensFlagged}`);
 console.log(`  contacts with a copied payment shown but not held against them: ${summary.contactsWithACopiedPaymentShown}`);
 console.log(`  counterfeit on their own records alone: ${summary.counterfeitOnTheirRecordsAlone}, of which on CoinGecko's list: ${summary.ofThoseOnCoinGecko}`);
+console.log(`  on a listed name alone: counterfeit (planted) ${summary.counterfeitOnAListedNameAlone}, unusual (not planted) ${summary.unusualOnAListedNameAlone}`);
 console.log(`  tokens with every transfer planted that the check called clean: ${summary.plantedTokensCalledClean}`);
 
 for (const r of results) {
   for (const a of r.alarmsOnContacts) console.log(`    contact warned: ${a.level} ${a.score} ${a.codes.join(", ")}  paid in ${a.signedPaymentTx}`);
   for (const a of r.alarmsOnHeldTokens) console.log(`    held token flagged: ${a.verdict} ${JSON.stringify(a.symbol)} ${a.issues.join(", ")}  moved in ${a.tx}`);
+  for (const t of r.listedTier?.counterfeit ?? []) console.log(`    listed name, planted: ${JSON.stringify(t.symbol)} ${t.planted} planted  ${t.token}`);
+  for (const t of r.listedTier?.unusual ?? []) console.log(`    listed name, not planted (unusual): ${JSON.stringify(t.symbol)}  ${t.token}`);
   for (const f of r.forgedOnly ?? []) {
     console.log(`    forged-only: ${JSON.stringify(f.symbol)} ${JSON.stringify(f.name)} ${f.forged} forged${f.onCoinGecko ? "  ON COINGECKO" : ""}  e.g. ${f.tx}`);
   }
@@ -324,7 +347,7 @@ for (const r of results) {
 
 await mkdir(dataDir, {recursive: true});
 await writeFile(
-  join(dataDir, "live-accounts.json"),
+  join(dataDir, OUT),
   `${JSON.stringify({scannedAt: new Date().toISOString(), drawnFrom: {fromBlock: sampleFrom, toBlock: Number(head)}, lookbackBlocks: Number(LOOKBACK), summary, accounts: results}, null, 2)}\n`,
 );
-console.log("\nwrote data/live-accounts.json");
+console.log(`\nwrote data/${OUT}`);

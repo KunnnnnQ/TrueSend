@@ -1,10 +1,10 @@
 {
-  "measuredAt": "2026-09-26T14:10:29.279Z",
+  "measuredAt": "2026-10-07T11:21:53.291Z",
   "lists": [
     {
       "name": "Uniswap default list (curated)",
       "source": "https://raw.githubusercontent.com/Uniswap/default-token-list/main/src/tokens/mainnet.json",
-      "tokens": 407,
+      "tokens": 408,
       "flagged": 0,
       "share": 0,
       "byIssue": {},
@@ -13,9 +13,9 @@
     {
       "name": "CoinGecko (broad; contains junk)",
       "source": "https://tokens.coingecko.com/uniswap/all.json",
-      "tokens": 6001,
+      "tokens": 6026,
       "flagged": 8,
-      "share": 0.0013331111481419764,
+      "share": 0.001327580484566877,
       "byIssue": {
         "non-ascii-symbol": 7,
         "invisible-characters": 1,
@@ -94,5 +94,401 @@
         }
       ]
     }
-  ]
+  ],
+  "listedTier": {
+    "source": {
+      "list": "Uniswap default token list",
+      "url": "https://github.com/Uniswap/default-token-list/blob/b41e2b93ef284c4acc897d100e77686e531fa249/src/tokens/mainnet.json",
+      "commit": "b41e2b93ef284c4acc897d100e77686e531fa249",
+      "tokens": 408
+    },
+    "listedTokens": 408,
+    "lists": [
+      {
+        "name": "Uniswap default list (curated)",
+        "tokens": 408,
+        "namesakes": 0,
+        "share": 0,
+        "tokensFound": []
+      },
+      {
+        "name": "CoinGecko (broad; contains junk)",
+        "tokens": 6026,
+        "namesakes": 74,
+        "share": 0.01228011948224361,
+        "tokensFound": [
+          {
+            "address": "0xef89c37fe9e5c906b404cd7edae4a2992b5d25fa",
+            "symbol": "TIME",
+            "name": "Time Alliance Guild Time"
+          },
+          {
+            "address": "0x4dfae3690b93c47470b03036a17b23c1be05127c",
+            "symbol": "PEPE",
+            "name": "The Original Pepe"
+          },
+          {
+            "address": "0x469eda64aed3a3ad6f868c44564291aa415cb1d9",
+            "symbol": "FLUX",
+            "name": "Datamine FLUX"
+          },
+          {
+            "address": "0xc5b3d3231001a776123194cf1290068e8b0c783b",
+            "symbol": "LIT",
+            "name": "LIT"
+          },
+          {
+            "address": "0xe5acbb03d73267c03349c76ead672ee4d941f499",
+            "symbol": "BEAM",
+            "name": "BEAM"
+          },
+          {
+            "address": "0xc575bd129848ce06a460a19466c30e1d0328f52c",
+            "symbol": "RAI",
+            "name": "Reploy"
+          },
+          {
+            "address": "0x51a59a02ba906194285e81eb1f98ffa28e7cf4c9",
+            "symbol": "PEPE",
+            "name": "Pepe King Prawn"
+          },
+          {
+            "address": "0x2c623d3cc9a2cc158951b8093cb94e80cf56deea",
+            "symbol": "NEX",
+            "name": "NexAI"
+          },
+          {
+            "address": "0xbd7e92cf6f857be8541fca6abfb72aef8e16c307",
+            "symbol": "PRO",
+            "name": "Prodigy Bot"
+          },
+          {
+            "address": "0xc744df3419a8c9bd4d6b9852a503eb1c5308a326",
+            "symbol": "RED",
+            "name": "RED TOKEN"
+          },
+          {
+            "address": "0xdefa4e8a7bcba345f687a2f1456f5edd9ce97202",
+            "symbol": "KNC",
+            "name": "Kyber Network Crystal"
+          },
+          {
+            "address": "0xbf40440703a3f7092b2e73c2f7868727275dbbda",
+            "symbol": "KEEP",
+            "name": "Keep Finance"
+          },
+          {
+            "address": "0x9e20461bc2c4c980f62f1b279d71734207a6a356",
+            "symbol": "OMNI",
+            "name": "OmniCat"
+          },
+          {
+            "address": "0xa4ffdf3208f46898ce063e25c1c43056fa754739",
+            "symbol": "ATH",
+            "name": "AthenaDAO"
+          },
+          {
+            "address": "0x8cd41041505885ef0ad3858181d66f17be8aae7e",
+            "symbol": "LCX",
+            "name": "LCX"
+          },
+          {
+            "address": "0xaca92e438df0b2401ff60da7e4337b687a2435da",
+            "symbol": "MUSD",
+            "name": "MetaMask USD"
+          },
+          {
+            "address": "0x0d88ed6e74bbfd96b831231638b66c05571e824f",
+            "symbol": "AVT",
+            "name": "Aventus"
+          },
+          {
+            "address": "0x3330bfb7332ca23cd071631837dc289b09c33333",
+            "symbol": "RBC",
+            "name": "Rubic"
+          },
+          {
+            "address": "0xa0385e7283c83e2871e9af49eec0966088421ddd",
+            "symbol": "APE",
+            "name": "Ape"
+          },
+          {
+            "address": "0xff75ced57419bcaebe5f05254983b013b0646ef5",
+            "symbol": "COOK",
+            "name": "Cook"
+          },
+          {
+            "address": "0xf4b7b9ab55a2eeb3bd6123b8f45b0abffd5089c7",
+            "symbol": "SHIB",
+            "name": "Strategic Hub for Innovation in Blockchain"
+          },
+          {
+            "address": "0xc01154b4ccb518232d6bbfc9b9e6c5068b766f82",
+            "symbol": "NEX",
+            "name": "NEXUS"
+          },
+          {
+            "address": "0x9994e35db50125e0df82e4c2dde62496ce330999",
+            "symbol": "MORPHO",
+            "name": "Legacy Morpho"
+          },
+          {
+            "address": "0x69e15ab0fd240de689d09e4851181a6667968008",
+            "symbol": "PEPE",
+            "name": "El Sapo Pepe"
+          },
+          {
+            "address": "0x6f2dec5da475333b0af4a3ffc9a33b0211a9a452",
+            "symbol": "CT",
+            "name": "CryptoTwitter"
+          },
+          {
+            "address": "0xd084944d3c05cd115c09d072b9f44ba3e0e45921",
+            "symbol": "FOLD",
+            "name": "Manifold Finance"
+          },
+          {
+            "address": "0x8e9c32a536ab623a2e0e9961bce6f5fe7504e084",
+            "symbol": "EURR",
+            "name": "Revolut Euro"
+          },
+          {
+            "address": "0xc91b523a59acc63a64f61fc7bbfb4bfc82dd25f2",
+            "symbol": "AI",
+            "name": "Multiverse"
+          },
+          {
+            "address": "0x2730d6fdc86c95a74253beffaa8306b40fedecbb",
+            "symbol": "UNI",
+            "name": "UNICORN"
+          },
+          {
+            "address": "0xba25b2281214300e4e649fead9a6d6acd25f1c0a",
+            "symbol": "TREE",
+            "name": "Tree"
+          },
+          {
+            "address": "0x2598c30330d5771ae9f983979209486ae26de875",
+            "symbol": "AI",
+            "name": "Any Inu"
+          },
+          {
+            "address": "0xba5ed44733953d79717f6269357c77718c8ba5ed",
+            "symbol": "U",
+            "name": "Union"
+          },
+          {
+            "address": "0x2a8e1e676ec238d8a992307b495b45b3feaa5e86",
+            "symbol": "OUSD",
+            "name": "Origin Dollar"
+          },
+          {
+            "address": "0x005e6fd1610302018dcd9caf29b8bc38ff6efd98",
+            "symbol": "FOX",
+            "name": "Metafox"
+          },
+          {
+            "address": "0xfd0205066521550d7d7ab19da8f72bb004b4c341",
+            "symbol": "LIT",
+            "name": "Timeless"
+          },
+          {
+            "address": "0x109ba5f0230b7b39e4a8ab56e7361db89fa0e108",
+            "symbol": "TURBO",
+            "name": "TURBO.WIN"
+          },
+          {
+            "address": "0x6ecf5fe60e27cd03abdba3a19af8dc6845a0da58",
+            "symbol": "BOBA",
+            "name": "Boba Cat"
+          },
+          {
+            "address": "0x221657776846890989a759ba2973e427dff5c9bb",
+            "symbol": "REP",
+            "name": "Augur [OLD]"
+          },
+          {
+            "address": "0x58412ae274f2764b71c66315d97662d47d930d94",
+            "symbol": "NEX",
+            "name": "Nexora"
+          },
+          {
+            "address": "0x42476f744292107e34519f9c357927074ea3f75d",
+            "symbol": "LOOM",
+            "name": "Loom Network (NEW)"
+          },
+          {
+            "address": "0xe138fda441fc31b36171122397a8a11d6cd2c479",
+            "symbol": "GTC",
+            "name": "Global Trust Coin"
+          },
+          {
+            "address": "0xe50365f5d679cb98a1dd62d6f6e58e59321bcddf",
+            "symbol": "LA",
+            "name": "LA"
+          },
+          {
+            "address": "0xece811d35f79c4868a2b911e55d9aa0821399edf",
+            "symbol": "GUSD",
+            "name": "Generic USD"
+          },
+          {
+            "address": "0xf65b5c5104c4fafd4b709d9d60a185eae063276c",
+            "symbol": "TRU",
+            "name": "Truebit Protocol"
+          },
+          {
+            "address": "0xbe042e9d09cb588331ff911c2b46fd833a3e5bd6",
+            "symbol": "PEPE",
+            "name": "Pepe Community"
+          },
+          {
+            "address": "0xfcaf0e4498e78d65526a507360f755178b804ba8",
+            "symbol": "SHIB",
+            "name": "NicCageWaluigiElmo42069Inu"
+          },
+          {
+            "address": "0x67f3086f7823eaf35f5aaadfb2e9b9c5b09578cf",
+            "symbol": "INX",
+            "name": "InsightX"
+          },
+          {
+            "address": "0xc49da7892155ccc603f0b88eaedaa3b57910096f",
+            "symbol": "CVX",
+            "name": "Chevron Corp (Dinari Tokenized Stock)"
+          },
+          {
+            "address": "0x69420e3a3aa9e17dea102bb3a9b3b73dcddb9528",
+            "symbol": "ELON",
+            "name": "Eloncoin"
+          },
+          {
+            "address": "0x3432b6a60d23ca0dfca7761b7ab56459d9c964d0",
+            "symbol": "FRAX",
+            "name": "Frax (prev. FXS)"
+          },
+          {
+            "address": "0x068eb24ace80087a2012fb7c1dea0b09d4cc9959",
+            "symbol": "STRK",
+            "name": "Strategy Strike Preferred (Dinari Tokenized Stock)"
+          },
+          {
+            "address": "0x4ea40dcee961675683e0a2e1721bd49cb9bca913",
+            "symbol": "USDR",
+            "name": "Ring USD"
+          },
+          {
+            "address": "0xa6180029845469e89c507fe3eafedfa242687822",
+            "symbol": "NEIRO",
+            "name": "Neiro"
+          },
+          {
+            "address": "0x97673d6be983ae675aea9ad3ad4473d01062abbf",
+            "symbol": "ABT",
+            "name": "Abbott Laboratories (Dinari Tokenized Stock)"
+          },
+          {
+            "address": "0xeac0b4e38c9af59ec3ad832e35bb0d33469d98d5",
+            "symbol": "DIA",
+            "name": "State Street SPDR Dow Jones Industrial Average ETF Trust (Di"
+          },
+          {
+            "address": "0xc6cc91506b22d68437b1e5be4bdc1818a7fd74eb",
+            "symbol": "FIS",
+            "name": "Fidelity National Information Services (Dinari Tokenized Sto"
+          },
+          {
+            "address": "0xbc544207ff1c5b2bc47a35f745010b603b97e99e",
+            "symbol": "AI",
+            "name": "AI PIN"
+          },
+          {
+            "address": "0x909e34d3f6124c324ac83dcca84b74398a6fa173",
+            "symbol": "ZKP",
+            "name": "Panther Protocol"
+          },
+          {
+            "address": "0xda6a067d9435a28549d75dd459c0016911c26e54",
+            "symbol": "SLP",
+            "name": "Sivo DeFi"
+          },
+          {
+            "address": "0x118b70df4f06fa5678e7d543e6066e028c8ea0c0",
+            "symbol": "KITE",
+            "name": "Kite"
+          },
+          {
+            "address": "0x7e13b43065380acdec1c2d138c579cbbbafa0731",
+            "symbol": "TEL",
+            "name": "Telcoin"
+          },
+          {
+            "address": "0xd2ba23de8a19316a638dc1e7a9adda1d74233368",
+            "symbol": "QUICK",
+            "name": "Quickswap"
+          },
+          {
+            "address": "0xdd468a1ddc392dcdbef6db6e34e89aa338f9f186",
+            "symbol": "MUSD",
+            "name": "Mezo USD"
+          },
+          {
+            "address": "0x31a2e08f4232329e4eddb025c0275f43c9cd56d7",
+            "symbol": "LUSD",
+            "name": "LUSD"
+          },
+          {
+            "address": "0x91a69021b0baef3445e51726458a0ce601471846",
+            "symbol": "ERN",
+            "name": "Ethos Reserve Note"
+          },
+          {
+            "address": "0xb990d93c308a31c737aa91839e8ba8eaf4017d7a",
+            "symbol": "PIRATE",
+            "name": "PirateCash"
+          },
+          {
+            "address": "0x9b3a8f7cec208e247d97dee13313690977e24459",
+            "symbol": "USDP",
+            "name": "Parallel USDp"
+          },
+          {
+            "address": "0x3e4a2f26fc4f92d92d7cd1e49ddade32869d00a4",
+            "symbol": "AGLD",
+            "name": "SPDR Gold Shares aStock"
+          },
+          {
+            "address": "0xe2dc070524a6e305ddb64d8513dc444b6a1ec845",
+            "symbol": "NEX",
+            "name": "Nash"
+          },
+          {
+            "address": "0x19ebb35279a16207ec4ba82799cc64715065f7f6",
+            "symbol": "PRIME",
+            "name": "Hastra PRIME"
+          },
+          {
+            "address": "0x6ab4ce36260f201e4e2391eca2fd7538f71e4131",
+            "symbol": "AI",
+            "name": "Flourishing AI"
+          },
+          {
+            "address": "0x1f0211620dd867245f3bfceb6b5ff8e0403877bf",
+            "symbol": "FX",
+            "name": "Ford Motor xStock"
+          },
+          {
+            "address": "0x863f08a3d3b14fbd3d42ffd061d0e290f7dbc538",
+            "symbol": "NES",
+            "name": "Nesa"
+          },
+          {
+            "address": "0x267a0a7ddcf0a7802fea1cd806f4ffc311a3cfa9",
+            "symbol": "IOTX",
+            "name": "Samsara xStock"
+          }
+        ]
+      }
+    ]
+  }
 }

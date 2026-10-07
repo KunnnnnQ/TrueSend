@@ -200,11 +200,13 @@ itself `ETH`. On a real account being poisoned on 2026-09-26, sixteen of sevente
 recent history were counterfeits — eleven posing as USDT in four spellings, five posing as ETH — and
 every one of their transfers had been planted. The Scan screen now reads what each token calls itself and
 says so; before that, the token rules existed, were tested and were listed as a defence, and nothing in
-the product called them. Measured against Uniswap's curated token list they flag none of 407 legitimate
-tokens, after a first version flagged MATIC, SOL and POL. Names were not enough, though: on accounts
+the product called them. Measured against Uniswap's curated token list they flag none of 408 legitimate
+tokens, after a first version flagged MATIC, SOL and POL; that list is now also a second, weaker tier
+of names, questioning a namesake at another contract and convicting it only once it has been planted.
+Names were not enough, though: on accounts
 being poisoned this hour, a "cbBTC" that is not Coinbase's, and contracts with no name at all, passed
 every name rule. A token is now also counterfeit on its own records — the account "sending" an amount
-it never held, in a transaction somebody else signed — and in two runs of 25 such accounts, no token
+it never held, in a transaction somebody else signed — and in three runs of 25 such accounts, no token
 the accounts had moved themselves was flagged.
 [`analysis/README.md`](analysis/README.md#on-accounts-being-poisoned-right-now).
 
@@ -219,15 +221,18 @@ all — the victim's history contained nothing resembling the attacker's address
 similarity rule scored it zero. Measured: `safe` (0) before, `danger` (71) after. One exception,
 found on accounts being poisoned right now: planters also copy real payments — same amount, same
 real recipient, minutes later — and the rule used to tell users "do not send" to their own contacts.
-On an address the user has paid with their own signature, the copy is now shown and not held against
-it; in a fresh run of 25 accounts, none of 62 such contacts was warned about.
+When the user's own signed payment came *before* the fake, the copy is now shown and not held against
+it. The other order — the fake first, then a payment — is the attack working: a first version of this
+fix ignored the order and called the May 2024 attacker "Looks fine" on the live demo, until loading
+the preset caught it. In a final run of 25 accounts the copy was on 16 of 136 contacts the accounts
+had paid, and none of the 136 was warned about.
 
 ## Status
 
 | Component | State |
 | --- | --- |
 | `contracts/` — policy, 7702 delegate, vault, factory, community registry | Built and [deployed on Sepolia](#deployed-on-sepolia). 94 tests: unit, fuzz, invariant. 100% branch coverage |
-| `packages/engine/` — fingerprints, heuristics, scoring | Built. 166 tests including property tests |
+| `packages/engine/` — fingerprints, heuristics, scoring | Built. 176 tests including property tests |
 | `packages/chain/` — history with signer resolution, token identities, policy reads | Built. 27 tests. Shared by the app and the indexer |
 | `apps/web/` — Scan, Send, Pending | Built. Scan reads mainnet directly, resolves signers and reads what every token in the history calls itself; that scan follows the user to Send, which also recognises a token address Scan already flagged; Send and Pending drive a deployed policy |
 | `apps/indexer/` — hold watcher, alerts, risk API | Built. 17 tests on alert idempotency and resume |

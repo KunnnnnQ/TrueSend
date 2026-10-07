@@ -1,0 +1,771 @@
+{
+  "scannedAt": "2026-10-07T12:02:17.907Z",
+  "drawnFrom": {
+    "fromBlock": 26140010,
+    "toBlock": 26140309
+  },
+  "lookbackBlocks": 50000,
+  "summary": {
+    "accountsScanned": 25,
+    "skippedAsTooActive": 0,
+    "failed": 0,
+    "transfers": 4284,
+    "counterparties": 781,
+    "levels": {
+      "danger": 522,
+      "caution": 27,
+      "safe": 232
+    },
+    "lookalikes": 350,
+    "lookalikesOnTheEndAlone": 4,
+    "contactsTheAccountsPaid": 136,
+    "contactsWarnedAbout": 0,
+    "contactsWithACopiedPaymentShown": 16,
+    "tokens": {
+      "counterfeit": 600,
+      "unusual": 2,
+      "clean": 45,
+      "unread": 0
+    },
+    "tokensTheAccountsMoved": 30,
+    "heldTokensFlagged": 0,
+    "counterfeitOnTheirRecordsAlone": 2,
+    "counterfeitOnAListedNameAlone": 0,
+    "unusualOnAListedNameAlone": 1,
+    "ofThoseOnCoinGecko": 0,
+    "plantedTokensCalledClean": 1
+  },
+  "accounts": [
+    {
+      "transfers": 283,
+      "counterparties": 53,
+      "levels": {
+        "danger": 41,
+        "caution": 0,
+        "safe": 12
+      },
+      "lookalikes": 26,
+      "lookalikesOnTheEndAlone": 0,
+      "contactsTheAccountPaid": 10,
+      "alarmsOnContacts": [],
+      "copiedPayments": 0,
+      "tokens": {
+        "counterfeit": 63,
+        "unusual": 0,
+        "clean": 2,
+        "unread": 0
+      },
+      "tokensTheAccountMoved": 2,
+      "alarmsOnHeldTokens": [],
+      "forgedOnly": [],
+      "listedTier": {
+        "counterfeit": [],
+        "unusual": []
+      },
+      "plantedButClean": []
+    },
+    {
+      "transfers": 78,
+      "counterparties": 5,
+      "levels": {
+        "danger": 3,
+        "caution": 0,
+        "safe": 2
+      },
+      "lookalikes": 2,
+      "lookalikesOnTheEndAlone": 0,
+      "contactsTheAccountPaid": 1,
+      "alarmsOnContacts": [],
+      "copiedPayments": 0,
+      "tokens": {
+        "counterfeit": 15,
+        "unusual": 0,
+        "clean": 1,
+        "unread": 0
+      },
+      "tokensTheAccountMoved": 1,
+      "alarmsOnHeldTokens": [],
+      "forgedOnly": [],
+      "listedTier": {
+        "counterfeit": [],
+        "unusual": []
+      },
+      "plantedButClean": []
+    },
+    {
+      "transfers": 34,
+      "counterparties": 17,
+      "levels": {
+        "danger": 12,
+        "caution": 0,
+        "safe": 5
+      },
+      "lookalikes": 9,
+      "lookalikesOnTheEndAlone": 0,
+      "contactsTheAccountPaid": 4,
+      "alarmsOnContacts": [],
+      "copiedPayments": 0,
+      "tokens": {
+        "counterfeit": 15,
+        "unusual": 0,
+        "clean": 2,
+        "unread": 0
+      },
+      "tokensTheAccountMoved": 1,
+      "alarmsOnHeldTokens": [],
+      "forgedOnly": [
+        {
+          "token": "0x8a1fe63d9cdda8f8d866e51d074182b743f58434",
+          "symbol": "",
+          "name": "",
+          "forged": 1,
+          "onCoinGecko": false,
+          "tx": "0x3deae2a6a27bbedb054959ab36b93ba9c6265064703bf64b2d42388788d1a778"
+        }
+      ],
+      "listedTier": {
+        "counterfeit": [],
+        "unusual": []
+      },
+      "plantedButClean": []
+    },
+    {
+      "transfers": 528,
+      "counterparties": 23,
+      "levels": {
+        "danger": 17,
+        "caution": 2,
+        "safe": 4
+      },
+      "lookalikes": 15,
+      "lookalikesOnTheEndAlone": 0,
+      "contactsTheAccountPaid": 3,
+      "alarmsOnContacts": [],
+      "copiedPayments": 1,
+      "tokens": {
+        "counterfeit": 46,
+        "unusual": 0,
+        "clean": 2,
+        "unread": 0
+      },
+      "tokensTheAccountMoved": 2,
+      "alarmsOnHeldTokens": [],
+      "forgedOnly": [
+        {
+          "token": "0x814e949a5fa573dacbb62f7d8f93f4a2433bc230",
+          "symbol": "",
+          "name": "",
+          "forged": 1,
+          "onCoinGecko": false,
+          "tx": "0xd0452a85570f4f0629b4a4906ace237378a01f9530d05ab9151fce5c2228bbd9"
+        }
+      ],
+      "listedTier": {
+        "counterfeit": [],
+        "unusual": []
+      },
+      "plantedButClean": []
+    },
+    {
+      "transfers": 134,
+      "counterparties": 12,
+      "levels": {
+        "danger": 9,
+        "caution": 1,
+        "safe": 2
+      },
+      "lookalikes": 6,
+      "lookalikesOnTheEndAlone": 0,
+      "contactsTheAccountPaid": 1,
+      "alarmsOnContacts": [],
+      "copiedPayments": 0,
+      "tokens": {
+        "counterfeit": 17,
+        "unusual": 0,
+        "clean": 2,
+        "unread": 0
+      },
+      "tokensTheAccountMoved": 1,
+      "alarmsOnHeldTokens": [],
+      "forgedOnly": [],
+      "listedTier": {
+        "counterfeit": [],
+        "unusual": []
+      },
+      "plantedButClean": []
+    },
+    {
+      "transfers": 11,
+      "counterparties": 4,
+      "levels": {
+        "danger": 3,
+        "caution": 0,
+        "safe": 1
+      },
+      "lookalikes": 2,
+      "lookalikesOnTheEndAlone": 0,
+      "contactsTheAccountPaid": 1,
+      "alarmsOnContacts": [],
+      "copiedPayments": 0,
+      "tokens": {
+        "counterfeit": 5,
+        "unusual": 0,
+        "clean": 2,
+        "unread": 0
+      },
+      "tokensTheAccountMoved": 2,
+      "alarmsOnHeldTokens": [],
+      "forgedOnly": [],
+      "listedTier": {
+        "counterfeit": [],
+        "unusual": []
+      },
+      "plantedButClean": []
+    },
+    {
+      "transfers": 5,
+      "counterparties": 3,
+      "levels": {
+        "danger": 2,
+        "caution": 0,
+        "safe": 1
+      },
+      "lookalikes": 0,
+      "lookalikesOnTheEndAlone": 0,
+      "contactsTheAccountPaid": 0,
+      "alarmsOnContacts": [],
+      "copiedPayments": 0,
+      "tokens": {
+        "counterfeit": 2,
+        "unusual": 0,
+        "clean": 1,
+        "unread": 0
+      },
+      "tokensTheAccountMoved": 0,
+      "alarmsOnHeldTokens": [],
+      "forgedOnly": [],
+      "listedTier": {
+        "counterfeit": [],
+        "unusual": []
+      },
+      "plantedButClean": []
+    },
+    {
+      "transfers": 13,
+      "counterparties": 7,
+      "levels": {
+        "danger": 5,
+        "caution": 0,
+        "safe": 2
+      },
+      "lookalikes": 4,
+      "lookalikesOnTheEndAlone": 0,
+      "contactsTheAccountPaid": 2,
+      "alarmsOnContacts": [],
+      "copiedPayments": 0,
+      "tokens": {
+        "counterfeit": 3,
+        "unusual": 0,
+        "clean": 1,
+        "unread": 0
+      },
+      "tokensTheAccountMoved": 1,
+      "alarmsOnHeldTokens": [],
+      "forgedOnly": [],
+      "listedTier": {
+        "counterfeit": [],
+        "unusual": []
+      },
+      "plantedButClean": []
+    },
+    {
+      "transfers": 88,
+      "counterparties": 20,
+      "levels": {
+        "danger": 12,
+        "caution": 1,
+        "safe": 7
+      },
+      "lookalikes": 7,
+      "lookalikesOnTheEndAlone": 0,
+      "contactsTheAccountPaid": 4,
+      "alarmsOnContacts": [],
+      "copiedPayments": 0,
+      "tokens": {
+        "counterfeit": 19,
+        "unusual": 0,
+        "clean": 2,
+        "unread": 0
+      },
+      "tokensTheAccountMoved": 1,
+      "alarmsOnHeldTokens": [],
+      "forgedOnly": [],
+      "listedTier": {
+        "counterfeit": [],
+        "unusual": []
+      },
+      "plantedButClean": []
+    },
+    {
+      "transfers": 3,
+      "counterparties": 2,
+      "levels": {
+        "danger": 1,
+        "caution": 0,
+        "safe": 1
+      },
+      "lookalikes": 0,
+      "lookalikesOnTheEndAlone": 0,
+      "contactsTheAccountPaid": 0,
+      "alarmsOnContacts": [],
+      "copiedPayments": 0,
+      "tokens": {
+        "counterfeit": 1,
+        "unusual": 0,
+        "clean": 1,
+        "unread": 0
+      },
+      "tokensTheAccountMoved": 0,
+      "alarmsOnHeldTokens": [],
+      "forgedOnly": [],
+      "listedTier": {
+        "counterfeit": [],
+        "unusual": []
+      },
+      "plantedButClean": []
+    },
+    {
+      "transfers": 145,
+      "counterparties": 60,
+      "levels": {
+        "danger": 34,
+        "caution": 0,
+        "safe": 26
+      },
+      "lookalikes": 29,
+      "lookalikesOnTheEndAlone": 0,
+      "contactsTheAccountPaid": 23,
+      "alarmsOnContacts": [],
+      "copiedPayments": 0,
+      "tokens": {
+        "counterfeit": 11,
+        "unusual": 0,
+        "clean": 2,
+        "unread": 0
+      },
+      "tokensTheAccountMoved": 2,
+      "alarmsOnHeldTokens": [],
+      "forgedOnly": [],
+      "listedTier": {
+        "counterfeit": [],
+        "unusual": []
+      },
+      "plantedButClean": []
+    },
+    {
+      "transfers": 27,
+      "counterparties": 6,
+      "levels": {
+        "danger": 4,
+        "caution": 1,
+        "safe": 1
+      },
+      "lookalikes": 0,
+      "lookalikesOnTheEndAlone": 0,
+      "contactsTheAccountPaid": 0,
+      "alarmsOnContacts": [],
+      "copiedPayments": 0,
+      "tokens": {
+        "counterfeit": 19,
+        "unusual": 0,
+        "clean": 1,
+        "unread": 0
+      },
+      "tokensTheAccountMoved": 0,
+      "alarmsOnHeldTokens": [],
+      "forgedOnly": [],
+      "listedTier": {
+        "counterfeit": [],
+        "unusual": []
+      },
+      "plantedButClean": []
+    },
+    {
+      "transfers": 4,
+      "counterparties": 3,
+      "levels": {
+        "danger": 2,
+        "caution": 0,
+        "safe": 1
+      },
+      "lookalikes": 0,
+      "lookalikesOnTheEndAlone": 0,
+      "contactsTheAccountPaid": 0,
+      "alarmsOnContacts": [],
+      "copiedPayments": 0,
+      "tokens": {
+        "counterfeit": 1,
+        "unusual": 0,
+        "clean": 1,
+        "unread": 0
+      },
+      "tokensTheAccountMoved": 0,
+      "alarmsOnHeldTokens": [],
+      "forgedOnly": [],
+      "listedTier": {
+        "counterfeit": [],
+        "unusual": []
+      },
+      "plantedButClean": []
+    },
+    {
+      "transfers": 85,
+      "counterparties": 19,
+      "levels": {
+        "danger": 15,
+        "caution": 0,
+        "safe": 4
+      },
+      "lookalikes": 1,
+      "lookalikesOnTheEndAlone": 0,
+      "contactsTheAccountPaid": 1,
+      "alarmsOnContacts": [],
+      "copiedPayments": 0,
+      "tokens": {
+        "counterfeit": 25,
+        "unusual": 1,
+        "clean": 3,
+        "unread": 0
+      },
+      "tokensTheAccountMoved": 1,
+      "alarmsOnHeldTokens": [],
+      "forgedOnly": [],
+      "listedTier": {
+        "counterfeit": [],
+        "unusual": []
+      },
+      "plantedButClean": [
+        {
+          "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+          "symbol": "USDT",
+          "name": "Tether USD",
+          "transfers": 7,
+          "tx": "0xbb7da59295ffb46eb555975f09b4b5364f26da2e156aaca7d2b200116a90996e"
+        }
+      ]
+    },
+    {
+      "transfers": 434,
+      "counterparties": 178,
+      "levels": {
+        "danger": 127,
+        "caution": 12,
+        "safe": 39
+      },
+      "lookalikes": 79,
+      "lookalikesOnTheEndAlone": 1,
+      "contactsTheAccountPaid": 37,
+      "alarmsOnContacts": [],
+      "copiedPayments": 6,
+      "tokens": {
+        "counterfeit": 54,
+        "unusual": 0,
+        "clean": 2,
+        "unread": 0
+      },
+      "tokensTheAccountMoved": 1,
+      "alarmsOnHeldTokens": [],
+      "forgedOnly": [],
+      "listedTier": {
+        "counterfeit": [],
+        "unusual": []
+      },
+      "plantedButClean": []
+    },
+    {
+      "transfers": 27,
+      "counterparties": 7,
+      "levels": {
+        "danger": 3,
+        "caution": 1,
+        "safe": 3
+      },
+      "lookalikes": 3,
+      "lookalikesOnTheEndAlone": 0,
+      "contactsTheAccountPaid": 1,
+      "alarmsOnContacts": [],
+      "copiedPayments": 0,
+      "tokens": {
+        "counterfeit": 3,
+        "unusual": 0,
+        "clean": 1,
+        "unread": 0
+      },
+      "tokensTheAccountMoved": 1,
+      "alarmsOnHeldTokens": [],
+      "forgedOnly": [],
+      "listedTier": {
+        "counterfeit": [],
+        "unusual": []
+      },
+      "plantedButClean": []
+    },
+    {
+      "transfers": 38,
+      "counterparties": 7,
+      "levels": {
+        "danger": 6,
+        "caution": 0,
+        "safe": 1
+      },
+      "lookalikes": 5,
+      "lookalikesOnTheEndAlone": 0,
+      "contactsTheAccountPaid": 1,
+      "alarmsOnContacts": [],
+      "copiedPayments": 0,
+      "tokens": {
+        "counterfeit": 5,
+        "unusual": 0,
+        "clean": 1,
+        "unread": 0
+      },
+      "tokensTheAccountMoved": 1,
+      "alarmsOnHeldTokens": [],
+      "forgedOnly": [],
+      "listedTier": {
+        "counterfeit": [],
+        "unusual": []
+      },
+      "plantedButClean": []
+    },
+    {
+      "transfers": 821,
+      "counterparties": 113,
+      "levels": {
+        "danger": 92,
+        "caution": 2,
+        "safe": 19
+      },
+      "lookalikes": 69,
+      "lookalikesOnTheEndAlone": 2,
+      "contactsTheAccountPaid": 19,
+      "alarmsOnContacts": [],
+      "copiedPayments": 7,
+      "tokens": {
+        "counterfeit": 68,
+        "unusual": 0,
+        "clean": 1,
+        "unread": 0
+      },
+      "tokensTheAccountMoved": 1,
+      "alarmsOnHeldTokens": [],
+      "forgedOnly": [],
+      "listedTier": {
+        "counterfeit": [],
+        "unusual": []
+      },
+      "plantedButClean": []
+    },
+    {
+      "transfers": 146,
+      "counterparties": 41,
+      "levels": {
+        "danger": 4,
+        "caution": 2,
+        "safe": 35
+      },
+      "lookalikes": 4,
+      "lookalikesOnTheEndAlone": 0,
+      "contactsTheAccountPaid": 1,
+      "alarmsOnContacts": [],
+      "copiedPayments": 0,
+      "tokens": {
+        "counterfeit": 18,
+        "unusual": 0,
+        "clean": 2,
+        "unread": 0
+      },
+      "tokensTheAccountMoved": 2,
+      "alarmsOnHeldTokens": [],
+      "forgedOnly": [],
+      "listedTier": {
+        "counterfeit": [],
+        "unusual": []
+      },
+      "plantedButClean": []
+    },
+    {
+      "transfers": 17,
+      "counterparties": 9,
+      "levels": {
+        "danger": 2,
+        "caution": 0,
+        "safe": 7
+      },
+      "lookalikes": 0,
+      "lookalikesOnTheEndAlone": 0,
+      "contactsTheAccountPaid": 2,
+      "alarmsOnContacts": [],
+      "copiedPayments": 0,
+      "tokens": {
+        "counterfeit": 2,
+        "unusual": 1,
+        "clean": 3,
+        "unread": 0
+      },
+      "tokensTheAccountMoved": 2,
+      "alarmsOnHeldTokens": [],
+      "forgedOnly": [],
+      "listedTier": {
+        "counterfeit": [],
+        "unusual": [
+          {
+            "token": "0x68725d45a960c100e082dd14ec82c9d83c2240a6",
+            "symbol": "ALPHA"
+          }
+        ]
+      },
+      "plantedButClean": []
+    },
+    {
+      "transfers": 747,
+      "counterparties": 20,
+      "levels": {
+        "danger": 13,
+        "caution": 1,
+        "safe": 6
+      },
+      "lookalikes": 10,
+      "lookalikesOnTheEndAlone": 0,
+      "contactsTheAccountPaid": 2,
+      "alarmsOnContacts": [],
+      "copiedPayments": 0,
+      "tokens": {
+        "counterfeit": 75,
+        "unusual": 0,
+        "clean": 1,
+        "unread": 0
+      },
+      "tokensTheAccountMoved": 1,
+      "alarmsOnHeldTokens": [],
+      "forgedOnly": [],
+      "listedTier": {
+        "counterfeit": [],
+        "unusual": []
+      },
+      "plantedButClean": []
+    },
+    {
+      "transfers": 193,
+      "counterparties": 95,
+      "levels": {
+        "danger": 63,
+        "caution": 0,
+        "safe": 32
+      },
+      "lookalikes": 41,
+      "lookalikesOnTheEndAlone": 0,
+      "contactsTheAccountPaid": 14,
+      "alarmsOnContacts": [],
+      "copiedPayments": 1,
+      "tokens": {
+        "counterfeit": 44,
+        "unusual": 0,
+        "clean": 6,
+        "unread": 0
+      },
+      "tokensTheAccountMoved": 2,
+      "alarmsOnHeldTokens": [],
+      "forgedOnly": [],
+      "listedTier": {
+        "counterfeit": [],
+        "unusual": []
+      },
+      "plantedButClean": []
+    },
+    {
+      "transfers": 31,
+      "counterparties": 5,
+      "levels": {
+        "danger": 4,
+        "caution": 0,
+        "safe": 1
+      },
+      "lookalikes": 3,
+      "lookalikesOnTheEndAlone": 0,
+      "contactsTheAccountPaid": 1,
+      "alarmsOnContacts": [],
+      "copiedPayments": 1,
+      "tokens": {
+        "counterfeit": 5,
+        "unusual": 0,
+        "clean": 1,
+        "unread": 0
+      },
+      "tokensTheAccountMoved": 1,
+      "alarmsOnHeldTokens": [],
+      "forgedOnly": [],
+      "listedTier": {
+        "counterfeit": [],
+        "unusual": []
+      },
+      "plantedButClean": []
+    },
+    {
+      "transfers": 38,
+      "counterparties": 7,
+      "levels": {
+        "danger": 4,
+        "caution": 1,
+        "safe": 2
+      },
+      "lookalikes": 3,
+      "lookalikesOnTheEndAlone": 1,
+      "contactsTheAccountPaid": 1,
+      "alarmsOnContacts": [],
+      "copiedPayments": 0,
+      "tokens": {
+        "counterfeit": 12,
+        "unusual": 0,
+        "clean": 2,
+        "unread": 0
+      },
+      "tokensTheAccountMoved": 2,
+      "alarmsOnHeldTokens": [],
+      "forgedOnly": [],
+      "listedTier": {
+        "counterfeit": [],
+        "unusual": []
+      },
+      "plantedButClean": []
+    },
+    {
+      "transfers": 354,
+      "counterparties": 65,
+      "levels": {
+        "danger": 44,
+        "caution": 3,
+        "safe": 18
+      },
+      "lookalikes": 32,
+      "lookalikesOnTheEndAlone": 0,
+      "contactsTheAccountPaid": 7,
+      "alarmsOnContacts": [],
+      "copiedPayments": 0,
+      "tokens": {
+        "counterfeit": 72,
+        "unusual": 0,
+        "clean": 2,
+        "unread": 0
+      },
+      "tokensTheAccountMoved": 2,
+      "alarmsOnHeldTokens": [],
+      "forgedOnly": [],
+      "listedTier": {
+        "counterfeit": [],
+        "unusual": []
+      },
+      "plantedButClean": []
+    }
+  ]
+}

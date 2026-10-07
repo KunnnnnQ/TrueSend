@@ -21,6 +21,7 @@ import {writeFile, mkdir} from "node:fs/promises";
 import {fileURLToPath} from "node:url";
 import {dirname, join} from "node:path";
 
+import {LISTED_TOKENS, LISTED_TOKENS_SOURCE} from "@truesend/chain";
 import {inspectToken, revealSymbol} from "@truesend/engine";
 
 const CHECK = process.argv.includes("--check");
@@ -95,6 +96,32 @@ for (const list of LISTS) {
     flaggedTokens: flagged,
   });
 }
+
+/**
+ * The second tier, measured the same way.
+ *
+ * `LISTED_TOKENS` is Uniswap's default list, pinned in @truesend/chain. Across CoinGecko's list, a
+ * token sharing a listed ticker at another contract gets `listed-symbol-wrong-contract`. That is
+ * never a counterfeit verdict on its own — `judgeToken` needs the token used against the account
+ * first — so what is counted here is the line a holder of a legitimate namesake would see.
+ */
+const listed = LISTED_TOKENS[1] ?? [];
+const listedTier = {source: LISTED_TOKENS_SOURCE, listedTokens: listed.length, lists: []};
+for (const list of LISTS) {
+  const tokens = list.tokens(download(list.url)).filter((t) => typeof t.symbol === "string" && t.address);
+  const namesakes = tokens
+    .filter((token) =>
+      inspectToken({symbol: token.symbol, address: token.address}, {canonical: CANONICAL, listed}).some(
+        (f) => f.issue === "listed-symbol-wrong-contract",
+      ),
+    )
+    .map((token) => ({address: token.address.toLowerCase(), symbol: revealSymbol(token.symbol), name: token.name ?? null}));
+
+  console.log(`\nListed tier over ${list.name}: ${namesakes.length} of ${tokens.length} share a listed ticker at another contract`);
+  for (const n of namesakes.slice(0, 14)) console.log(`  - ${n.symbol.slice(0, 20).padEnd(20)} ${(n.name ?? "").slice(0, 40)}`);
+  listedTier.lists.push({name: list.name, tokens: tokens.length, namesakes: namesakes.length, share: namesakes.length / tokens.length, tokensFound: namesakes});
+}
+report.listedTier = listedTier;
 
 await mkdir(join(here, "..", "data"), {recursive: true});
 const path = join(here, "..", "data", "token-precision.json");

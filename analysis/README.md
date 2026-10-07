@@ -191,6 +191,19 @@ tokens are. `node src/token-precision.mjs`, over two published lists of legitima
 | Uniswap default list (curated) | 407 | **3** (0.74%) — MATIC, SOL, POL | **0** |
 | CoinGecko (broad, contains junk) | 6,001 | 12 (0.20%) | 8 (0.13%) |
 
+Re-measured on 2026-10-07 against the lists as they now stand — 408 and 6,027 tokens — the rules
+still flag 0 and 8.
+
+A second, weaker tier came later: the 408 tokens of Uniswap's default list, pinned in
+`packages/chain/src/token-list.ts` by `tools/update-token-list.mjs`. A token named like one of them at
+another contract is questioned (`listed-symbol-wrong-contract`): **counterfeit** once it has been planted
+in the account's history, **unusual** otherwise, never an alarm on the name alone. Tickers are not
+unique: across CoinGecko's list, 74 of 6,026 tokens share a listed ticker at a different contract — a
+crowd of PEPEs, and the *current* Kyber Network Crystal, because Uniswap's list still carries the
+contract from before Kyber's migration. That one is a real token the tier questions, a stale entry in
+someone else's curation; the price is a line, not an alarm. Uniswap's own list carries one ticker
+twice, two different `LIT`s, and the rule had to be taught that matching either one is a match.
+
 Those three were false alarms on tokens people really hold. The native-currency rule had listed *every*
 chain's currency — matic, bnb, avax, sol, pol — on the reasoning that a native currency cannot be a
 token, which is true of the chain you are on and false of every other. On Ethereum, MATIC, POL and SOL are
@@ -204,8 +217,9 @@ the rule is right to flag. Being spelled strangely is not being counterfeit. So 
 when it claims to be a specific real asset, or when it was *planted* in this account's history — the
 same fact the whole project rests on — and merely **unusual** otherwise, in a line and not an alarm.
 
-What this does not establish: the live-account result is **one account**, and an unusually heavily
-poisoned one, not a typical user. The two legitimate lists are lists of tokens that get listed, which
+What this does not establish: the live-account result here is **one account**, and an unusually heavily
+poisoned one, not a typical user — three later runs of 25 accounts each are in "On accounts being
+poisoned right now". The two legitimate lists are lists of tokens that get listed, which
 is not the same as tokens people hold. And a counterfeit spelled strangely that has not yet been planted
 in a given history is shown as unusual rather than as an alarm — the price of the precision, stated in
 `docs/threat-model.md`.
@@ -296,19 +310,23 @@ through the engine's `checkTokens`. What counts as right comes from the account'
 not from the rules under test: a counterparty it signed a payment to is a contact it chose, and a
 token it signed a transfer of is one it holds.
 
-| | first run | after the two fixes below |
-| --- | --- | --- |
-| accounts scanned (skipped as too active) | 25 (1) | 25 (2) |
-| counterparties scored | 1,407 | 501 |
-| contacts the accounts paid themselves, warned about | **1** of 789 | **0** of 62 |
-| tokens the accounts moved themselves, flagged | 0 of 64 | 0 of 30 |
-| counterfeit tokens named | 502 | 674 |
-| tokens with every transfer planted, called clean | 4 | 1 |
+| | first run | after the fixes, first version of 7 | final |
+| --- | --- | --- | --- |
+| accounts scanned (skipped as too active) | 25 (1) | 25 (2) | 25 (0) |
+| counterparties scored | 1,407 | 501 | 781 |
+| contacts the accounts paid themselves, warned about | **1** of 789 | **0** of 62 | **0** of 136 |
+| tokens the accounts moved themselves, flagged | 0 of 64 | 0 of 30 | 0 of 30 |
+| counterfeit tokens named | 502 | 674 | 600 |
+| tokens with every transfer planted, called clean | 4 | 1 | 1 |
 
 The second run is a fresh draw from a later window — blocks 26,139,487–26,139,786; the first drew
 from 26,139,303–26,139,602, so a few accounts may be in both. Neither fix has a threshold that could
-have been tuned on the first. Both runs' files are kept: `data/live-accounts-before-fixes.json` and
-`data/live-accounts.json`.
+have been tuned on the first. The final run drew from blocks 26,140,010–26,140,309, a window that
+overlaps neither, with fix 7 in its corrected form and the listed tier described under finding 4
+switched on. Every run's file is kept: `data/live-accounts-before-fixes.json`,
+`data/live-accounts.json` and `data/live-accounts-listed-tier.json`. After the fixes, the one token
+passed with every transfer planted was, both times, a real one used for zero-value poisoning — BUSD,
+then USDT.
 
 ### 7. A copied payment made a real contact "do not send"
 
@@ -319,12 +337,17 @@ amount from the account to the same real recipient. The fabrication rule exists 
 record makes an address look like one already paid; this address really had been paid, but the rule
 still scored it 65, and the real recipient read "Do not send".
 
-On an address the user has signed a payment to, the record is now `spoofed-copy-of-payment`: shown,
-weighing nothing. An attacker cannot buy the exemption, which needs the user's own signature on a
-payment to that exact address. The one case it weakens is a user who has already paid an attacker
-by mistake; for them the lookalike and timing rules still fire, and a test pins that case at
-`danger`. In the second run the pattern turned up twice more, and both were shown and not held
-against the contact.
+On an address the user had already paid with their own signature *before* any fabrication named
+it, the record is now `spoofed-copy-of-payment`: shown, weighing nothing. The order is the whole
+test, and the first version of the fix got it wrong. It asked only whether the user had ever paid
+the address, and on the app's own May 2024 preset — which scans past the loss — it called the
+attacker "Looks fine": the 1155 WBTC was a payment the victim signed, so the bait before it read as
+a copy. No test caught it, because every test built its copy case without a loss in it; loading the
+preset in the app did, after the change had already reached the live demo. A planter copying a real
+payment produces the payment first and the fake after; an attack that works produces the fake first
+and the payment after. The exemption now needs the payment first, a history that cannot show the
+order gets none, and when the user paid after the fake the finding says so. In the final run the
+copy turned up on 16 of the 136 contacts the accounts had paid, and none of the 136 was warned about.
 
 ### 8. Fakes with ordinary names, or none, were called clean
 
@@ -343,6 +366,13 @@ fold already has: a token received before the scanned window and moved by an app
 forged. In the second run, five tokens were convicted on their records alone; all five had no name,
 and none is on CoinGecko's Ethereum token list. The one token still passed with every transfer
 planted was the real BUSD, used for zero-value poisoning.
+
+The listed tier, on in the final run, caught no fake that the other rules had missed. It questioned
+one token — an `ALPHA` at a contract that is neither Alpha Finance's nor on CoinGecko's list, never
+planted, so shown as unusual — and none of the 30 tokens the accounts moved themselves. What it is
+for is a case that sample did not contain: a fake named like a real asset that only ever plants
+zero-value records, which no other rule can see. It also takes the 408 listed tokens out of the
+forgery rule's one false alarm, a real token held from before the look-back.
 
 ## Does it cry wolf?
 
