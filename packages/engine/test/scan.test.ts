@@ -1,6 +1,7 @@
 import fc from "fast-check";
 import {describe, expect, it} from "vitest";
 
+import {lookalikeAffixes} from "../src/risk.js";
 import {collidingAddresses, collidingPairs, findAddresses} from "../src/scan.js";
 import type {Address} from "../src/address.js";
 
@@ -113,16 +114,37 @@ describe("collidingPairs", () => {
     .uint8Array({minLength: 20, maxLength: 20})
     .map((bytes) => `0x${[...bytes].map((b) => b.toString(16).padStart(2, "0")).join("")}`);
 
-  it("never reports a pair that does not actually share both affixes", () => {
+  it("never reports a pair the risk engine would not call a lookalike", () => {
     fc.assert(
-      fc.property(fc.array(anyAddress, {minLength: 2, maxLength: 30}), (addresses) => {
-        for (const pair of collidingPairs(addresses)) {
-          expect(pair.sharedPrefix).toBeGreaterThanOrEqual(4);
-          expect(pair.sharedSuffix).toBeGreaterThanOrEqual(4);
-          expect(pair.a).not.toBe(pair.b);
+      fc.property(fc.array(anyAddress, {minLength: 2, maxLength: 30}), fc.nat({max: 40}), (addresses, keep) => {
+        // Graft the end of the first address onto the second, so pairs of every shape turn up.
+        const [first, second, ...rest] = addresses;
+        const grafted = `0x${second!.slice(2, 42 - keep)}${first!.slice(42 - keep)}`;
+
+        for (const pair of collidingPairs([first!, grafted, ...rest])) {
+          expect(lookalikeAffixes(pair.a, pair.b)).toEqual({
+            sharedPrefix: pair.sharedPrefix,
+            sharedSuffix: pair.sharedSuffix,
+          });
         }
       }),
     );
+  });
+
+  /** The shape the page scan used to miss: the same end, almost nothing at the start. */
+  it("spots two addresses that only end alike", () => {
+    const endsAlike = `0xab${"0".repeat(31)}1f00e93`;
+    const [pair, ...others] = collidingPairs([ALICE, endsAlike, BOB]);
+
+    expect(others).toEqual([]);
+    expect([pair!.a, pair!.b].sort()).toEqual([ALICE, endsAlike].sort());
+    expect(pair!.sharedPrefix).toBe(2);
+    expect(pair!.sharedSuffix).toBe(7);
+  });
+
+  it("reports a pair that passes both tests once", () => {
+    const both = `0x${ALICE.slice(2, 8)}${"0".repeat(26)}${ALICE.slice(-8)}`;
+    expect(collidingPairs([ALICE, both])).toHaveLength(1);
   });
 
   it("finds a forged lookalike whatever the rest of the address is", () => {

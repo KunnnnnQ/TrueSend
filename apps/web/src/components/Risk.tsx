@@ -2,6 +2,7 @@
 
 import {
   compareFingerprints,
+  describeAffixMatch,
   type PoisonReport,
   type RiskAssessment,
   type RiskLevel,
@@ -146,7 +147,7 @@ export function LookalikeComparison({assessment}: {assessment: RiskAssessment}) 
   return (
     <div className="rise rounded-lg border border-line bg-surface p-4">
       <div className="mb-3 text-xs uppercase tracking-wide text-faint">
-        Shares the first {resembles.sharedPrefix} and last {resembles.sharedSuffix} characters with
+        Shares {describeAffixMatch(resembles)} with
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <div>

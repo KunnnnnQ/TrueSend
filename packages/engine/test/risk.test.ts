@@ -4,11 +4,14 @@ import {describe, expect, it} from "vitest";
 import {normalizeAddress} from "../src/address.js";
 import {
   COMMUNITY_CAP,
+  SUFFIX_ONLY_MATCH,
   THRESHOLDS,
   WEIGHTS,
   assessAddress,
   assessMany,
+  describeAffixMatch,
   levelFor,
+  lookalikeAffixes,
   nearestLookalike,
 } from "../src/risk.js";
 import type {AddressSighting, PoisonReport} from "../src/types.js";
@@ -155,6 +158,105 @@ describe("nearestLookalike", () => {
 
     const best = nearestLookalike(POISONED, [alicePaid, closer]);
     expect(best?.entry.label).toBe("closer");
+  });
+});
+
+/**
+ * The shape the both-ends floor could not see. 40 of the 44 dust baits in Guan and Li's
+ * Poison-Hunter sample matched the last seven characters of the address they imitated and two or
+ * fewer of the first; replayed through the engine as it was, every one scored a bare caution from
+ * the dust rule and none was recognised as imitating the contact the victim had just paid.
+ */
+describe("a lookalike that only matches how the address ends", () => {
+  /** Alice's first 2 and last 7 characters, and nothing else: the shape of those baits. */
+  const ENDS_ALIKE = `0xab${"0".repeat(31)}1f00e93`;
+  const duster = sighting({
+    address: ENDS_ALIKE,
+    dustIncoming: 1,
+    incomingCount: 1,
+    // Dusted five minutes after the user paid Alice.
+    firstSeenAt: NOW - 2 * HOUR + 5 * 60,
+    lastSeenAt: NOW - 2 * HOUR + 5 * 60,
+  });
+  const history = [alicePaid, duster];
+
+  it("is recognised as imitating the contact it copies", () => {
+    const result = assessAddress({to: ENDS_ALIKE, history, now: NOW});
+
+    expect(result.findings.map((f) => f.code)).toContain("lookalike-of-known-payee");
+    expect(result.resembles?.label).toBe("Alice");
+    expect(result.level).toBe("danger");
+  });
+
+  it("says which characters match, without pointing at the start that does not", () => {
+    const finding = assessAddress({to: ENDS_ALIKE, history, now: NOW}).findings.find(
+      (f) => f.code === "lookalike-of-known-payee",
+    );
+
+    expect(finding?.message).toContain("the last 7 characters of");
+    expect(finding?.message).not.toContain("first");
+  });
+
+  it("weighs exactly seven like the four-and-four floor, and more only with more", () => {
+    const weightOf = (address: string) =>
+      assessAddress({to: address, history: [alicePaid], now: NOW}).findings.find(
+        (f) => f.code === "lookalike-of-known-payee",
+      )?.weight;
+
+    expect(weightOf(ENDS_ALIKE)).toBe(WEIGHTS.lookalikeBase);
+    expect(weightOf(`0xab${"0".repeat(30)}d1f00e93`)).toBe(WEIGHTS.lookalikeBase + WEIGHTS.lookalikePerExtraChar);
+  });
+
+  it("stops at six", () => {
+    expect(lookalikeAffixes(`0xab${"0".repeat(32)}f00e93`, ALICE)).toBeUndefined();
+    expect(SUFFIX_ONLY_MATCH).toBe(7);
+  });
+
+  /**
+   * Leading zeros are what a legitimate vanity address looks like. A rule that fired on a long
+   * shared start would put every pair of them in front of a user as an attack.
+   */
+  it("has no twin for a long shared start", () => {
+    expect(lookalikeAffixes(`0xab58c49b${"0".repeat(32)}`, ALICE)).toBeUndefined();
+    expect(lookalikeAffixes(`0x0000000${"1".repeat(33)}`, `0x0000000${"2".repeat(33)}`)).toBeUndefined();
+  });
+});
+
+describe("lookalikeAffixes", () => {
+  it("never calls an address a lookalike of itself", () => {
+    expect(lookalikeAffixes(ALICE, ALICE)).toBeUndefined();
+  });
+
+  it("accepts four or more at both ends", () => {
+    expect(lookalikeAffixes(POISONED, ALICE)).toEqual({sharedPrefix: 6, sharedSuffix: 4});
+  });
+
+  it("refuses three at the start with six at the end", () => {
+    expect(lookalikeAffixes(`0xab5${"0".repeat(31)}f00e93`, ALICE)).toBeUndefined();
+  });
+
+  const anyAddress = fc
+    .uint8Array({minLength: 20, maxLength: 20})
+    .map((bytes) => `0x${[...bytes].map((b) => b.toString(16).padStart(2, "0")).join("")}`);
+
+  it("gives the same answer whichever way round it is asked", () => {
+    fc.assert(
+      fc.property(anyAddress, anyAddress, fc.nat({max: 40}), (a, b, keep) => {
+        // Splice part of a into b so matches of every length actually turn up.
+        const spliced = `0x${b.slice(2, 42 - keep)}${a.slice(42 - keep)}`;
+        expect(lookalikeAffixes(a, spliced)).toEqual(lookalikeAffixes(spliced, a));
+      }),
+    );
+  });
+});
+
+describe("describeAffixMatch", () => {
+  it("names both ends when both qualified", () => {
+    expect(describeAffixMatch({sharedPrefix: 6, sharedSuffix: 4})).toBe("the first 6 and last 4 characters");
+  });
+
+  it("names only the end when the start did not earn a mention", () => {
+    expect(describeAffixMatch({sharedPrefix: 2, sharedSuffix: 7})).toBe("the last 7 characters");
   });
 });
 

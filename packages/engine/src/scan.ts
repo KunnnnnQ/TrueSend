@@ -1,6 +1,6 @@
 import {normalizeAddress, type Address} from "./address.js";
 import {sharedPrefixLength, sharedSuffixLength} from "./fingerprint.js";
-import {MIN_AFFIX_MATCH} from "./risk.js";
+import {MIN_AFFIX_MATCH, SUFFIX_ONLY_MATCH} from "./risk.js";
 
 /** An address as it appeared in some text, with enough to point back at it. */
 export interface AddressMatch {
@@ -43,7 +43,8 @@ export interface AddressCollision {
 }
 
 /**
- * Find pairs of addresses that a wallet would render identically.
+ * Find pairs of addresses that pass for each other: the same first and last few characters a
+ * wallet shows, or the same last seven people are told to compare.
  *
  * The reason this is worth doing on a page rather than against a stored history: when someone is
  * looking at their transaction list, the planted address and the address it imitates are usually
@@ -52,42 +53,47 @@ export interface AddressCollision {
  * characters the interface shows and differ everywhere else is a fact about what is in front of
  * the user right now.
  *
- * Bucketed on the first and last `minAffix` characters rather than compared pairwise, so a block
- * explorer page with several hundred addresses stays a linear pass instead of a quadratic one.
+ * The two tests are `lookalikeAffixes`'s, so a pair outlined here is a pair the risk engine would
+ * also call a lookalike. Each is a bucket key rather than a pairwise comparison, so a block
+ * explorer page with several hundred addresses stays a linear pass instead of a quadratic one, and
+ * a pair that shares both keys is reported once.
  */
 export function collidingPairs(
   addresses: Iterable<string>,
   minAffix: number = MIN_AFFIX_MATCH,
 ): AddressCollision[] {
-  const buckets = new Map<string, Address[]>();
-
-  for (const value of addresses) {
-    const address = normalizeAddress(value);
-    const body = address.slice(2);
-    const key = `${body.slice(0, minAffix)}:${body.slice(-minAffix)}`;
-
-    const bucket = buckets.get(key);
-    if (bucket) {
-      if (!bucket.includes(address)) bucket.push(address);
-    } else {
-      buckets.set(key, [address]);
-    }
-  }
+  const unique = [...new Set([...addresses].map((value) => normalizeAddress(value)))];
+  const keys = [
+    (body: string) => `${body.slice(0, minAffix)}:${body.slice(-minAffix)}`,
+    (body: string) => body.slice(-SUFFIX_ONLY_MATCH),
+  ];
 
   const collisions: AddressCollision[] = [];
-  for (const bucket of buckets.values()) {
-    if (bucket.length < 2) continue;
+  const reported = new Set<string>();
 
-    for (let i = 0; i < bucket.length; i++) {
-      for (let j = i + 1; j < bucket.length; j++) {
-        const a = bucket[i]!;
-        const b = bucket[j]!;
-        collisions.push({
-          a,
-          b,
-          sharedPrefix: sharedPrefixLength(a, b),
-          sharedSuffix: sharedSuffixLength(a, b),
-        });
+  for (const keyOf of keys) {
+    const buckets = new Map<string, Address[]>();
+    for (const address of unique) {
+      const key = keyOf(address.slice(2));
+      const bucket = buckets.get(key);
+      if (bucket) bucket.push(address);
+      else buckets.set(key, [address]);
+    }
+
+    for (const bucket of buckets.values()) {
+      for (let i = 0; i < bucket.length; i++) {
+        for (let j = i + 1; j < bucket.length; j++) {
+          const a = bucket[i]!;
+          const b = bucket[j]!;
+          if (reported.has(`${a}:${b}`)) continue;
+          reported.add(`${a}:${b}`);
+          collisions.push({
+            a,
+            b,
+            sharedPrefix: sharedPrefixLength(a, b),
+            sharedSuffix: sharedSuffixLength(a, b),
+          });
+        }
       }
     }
   }

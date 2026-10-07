@@ -11,7 +11,7 @@ import type {
 
 /**
  * How many leading and trailing hex characters have to match before two addresses count as
- * lookalikes.
+ * lookalikes at both ends. `SUFFIX_ONLY_MATCH` below is the other way to qualify.
  *
  * Four and four is the floor rather than the typical case. Wallets truncate to roughly six and
  * four, so an attack that only matched three characters would not fool anyone; one that matches
@@ -19,6 +19,65 @@ import type {
  * rise with the match length means a marginal case shows up as a caution instead of vanishing.
  */
 export const MIN_AFFIX_MATCH = 4;
+
+/**
+ * How many trailing hex characters make two addresses lookalikes on their own, whatever the start.
+ *
+ * Added after a replay against somebody else's cases found the both-ends floor blind to a whole
+ * family. In the dust attacks in Guan and Li's Poison-Hunter sample (`analysis/src/poison-hunter.mjs`),
+ * 40 of 44 lookalikes matched the last seven characters of the address they imitated and two or
+ * fewer of the first — aimed at the habit of checking how an address ends. The victim had paid
+ * the imitated address that same week in 43 of them, so the history held everything needed to
+ * name it, and the floor above said nothing.
+ *
+ * Seven, not six, by the same arithmetic that justifies four-and-four. Seven characters are 28
+ * bits, and across the false-positive sample in `analysis/` that puts the expected number of
+ * chance matches at about one half; six would put it near eight. The seven was read off that
+ * sample, so the sample cannot also be its evidence — it is checked against fresh data in
+ * `analysis/src/suffix-rule.mjs`.
+ *
+ * Deliberately no prefix-only twin. Long runs of leading zeros are the usual vanity pattern for
+ * legitimate contracts and bots, so a rule that fired on a long shared start would cry wolf at
+ * the addresses people use most.
+ */
+export const SUFFIX_ONLY_MATCH = 7;
+
+/** How much two addresses share at each end, when it is enough to count as a lookalike. */
+export interface AffixMatch {
+  sharedPrefix: number;
+  sharedSuffix: number;
+}
+
+/**
+ * Whether two addresses are lookalikes, and by how much: four characters at both ends, or seven
+ * at the end alone.
+ *
+ * The one place that rule lives. The Scan and Send verdicts, the extension's copy guard and its
+ * page scan all ask this, so they cannot come to disagree about what a lookalike is. The
+ * registry's on-chain test is a different, narrower question — whether a claim is provable — and
+ * stays four-and-four in `PoisonRegistry`.
+ */
+export function lookalikeAffixes(a: string, b: string): AffixMatch | undefined {
+  const x = normalizeAddress(a);
+  const y = normalizeAddress(b);
+  if (x === y) return undefined;
+
+  const sharedPrefix = sharedPrefixLength(x, y);
+  const sharedSuffix = sharedSuffixLength(x, y);
+  const bothEnds = sharedPrefix >= MIN_AFFIX_MATCH && sharedSuffix >= MIN_AFFIX_MATCH;
+  return bothEnds || sharedSuffix >= SUFFIX_ONLY_MATCH ? {sharedPrefix, sharedSuffix} : undefined;
+}
+
+/**
+ * What a match covers, in words: "the first 6 and last 4 characters", or "the last 7 characters"
+ * when the start played no part. Saying "the first 2" of a match the start did not earn would
+ * point the reader at the one end that does not look alike.
+ */
+export function describeAffixMatch({sharedPrefix, sharedSuffix}: AffixMatch): string {
+  return sharedPrefix >= MIN_AFFIX_MATCH
+    ? `the first ${sharedPrefix} and last ${sharedSuffix} characters`
+    : `the last ${sharedSuffix} characters`;
+}
 
 /**
  * How soon after a payment an address has to appear for the timing to be suspicious.
@@ -147,8 +206,12 @@ export function assessAddress(input: RiskInput): RiskAssessment {
   const nearest = nearestLookalike(to, payees);
 
   if (nearest) {
+    // Credit beyond whichever floor the match cleared, so a match on the end alone starts at the
+    // same weight as one on both ends: either is far past anything chance puts in one history.
     const extra =
-      nearest.sharedPrefix - MIN_AFFIX_MATCH + (nearest.sharedSuffix - MIN_AFFIX_MATCH);
+      nearest.sharedPrefix >= MIN_AFFIX_MATCH
+        ? nearest.sharedPrefix - MIN_AFFIX_MATCH + (nearest.sharedSuffix - MIN_AFFIX_MATCH)
+        : nearest.sharedSuffix - SUFFIX_ONLY_MATCH;
     const weight = Math.min(
       WEIGHTS.lookalikeMax,
       WEIGHTS.lookalikeBase + extra * WEIGHTS.lookalikePerExtraChar,
@@ -162,8 +225,8 @@ export function assessAddress(input: RiskInput): RiskAssessment {
       code: "lookalike-of-known-payee",
       weight,
       message:
-        `This address matches the first ${nearest.sharedPrefix} and last ${nearest.sharedSuffix} ` +
-        `characters of ${who}, which you have paid before — but its fingerprint reads ` +
+        `This address matches ${describeAffixMatch(nearest)} of ${who}, ` +
+        `which you have paid before — but its fingerprint reads ` +
         `"${mine.phrase}" instead of "${theirs.phrase}".`,
       evidence: {
         resembles: theirs.address,
@@ -331,10 +394,8 @@ function scoreOf(findings: readonly Finding[]): number {
   return onlyReportsAndBaseline ? Math.min(total, COMMUNITY_CAP) : total;
 }
 
-interface Lookalike {
+interface Lookalike extends AffixMatch {
   entry: AddressSighting;
-  sharedPrefix: number;
-  sharedSuffix: number;
 }
 
 /**
@@ -351,15 +412,11 @@ export function nearestLookalike(
   let best: Lookalike | undefined;
 
   for (const entry of payees) {
-    const other = normalizeAddress(entry.address);
-    if (other === to) continue;
+    const match = lookalikeAffixes(to, entry.address);
+    if (!match) continue;
 
-    const sharedPrefix = sharedPrefixLength(to, other);
-    const sharedSuffix = sharedSuffixLength(to, other);
-    if (sharedPrefix < MIN_AFFIX_MATCH || sharedSuffix < MIN_AFFIX_MATCH) continue;
-
-    if (!best || sharedPrefix + sharedSuffix > best.sharedPrefix + best.sharedSuffix) {
-      best = {entry, sharedPrefix, sharedSuffix};
+    if (!best || match.sharedPrefix + match.sharedSuffix > best.sharedPrefix + best.sharedSuffix) {
+      best = {entry, ...match};
     }
   }
 

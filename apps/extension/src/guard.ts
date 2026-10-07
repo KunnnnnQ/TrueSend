@@ -1,6 +1,7 @@
 import {
   checkAddressFormat,
   collidingPairs,
+  describeAffixMatch,
   fingerprint,
   normalizeAddress,
   type Address,
@@ -89,8 +90,7 @@ export function judge(input: JudgeInput): GuardVerdict {
         ? `This is not ${savedMatch.label}`
         : "This imitates an address you saved",
       detail:
-        `It matches the first ${savedMatch.sharedPrefix} and last ${savedMatch.sharedSuffix} ` +
-        `characters of one you saved, and nothing else.`,
+        `It matches ${describeAffixMatch(savedMatch)} of one you saved, and nothing else.`,
       lookalike: {...savedMatch, source: "saved"},
     };
   }
@@ -107,8 +107,8 @@ export function judge(input: JudgeInput): GuardVerdict {
       level: "danger",
       headline: "Two addresses on this page look the same",
       detail:
-        `Another address here shares its first ${pageMatch.sharedPrefix} and last ` +
-        `${pageMatch.sharedSuffix} characters. One of them is not what you think it is.`,
+        `Another address here shares ${describeAffixMatch(pageMatch)} with it. ` +
+        `One of them is not what you think it is.`,
       lookalike: {...pageMatch, source: "page"},
     };
   }

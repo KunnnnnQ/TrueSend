@@ -43,12 +43,16 @@ export {
   COMMUNITY_CAP,
   MIN_AFFIX_MATCH,
   RECENT_PAYMENT_WINDOW_SECONDS,
+  SUFFIX_ONLY_MATCH,
   THRESHOLDS,
   WEIGHTS,
   assessAddress,
   assessMany,
+  describeAffixMatch,
   levelFor,
+  lookalikeAffixes,
   nearestLookalike,
+  type AffixMatch,
 } from "./risk.js";
 
 export {
