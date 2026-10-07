@@ -25,8 +25,8 @@ export const MIN_AFFIX_MATCH = 4;
  *
  * Added after a replay against somebody else's cases found the both-ends floor blind to a whole
  * family. In the dust attacks in Guan and Li's Poison-Hunter sample (`analysis/src/poison-hunter.mjs`),
- * 40 of 44 lookalikes matched the last seven characters of the address they imitated and two or
- * fewer of the first — aimed at the habit of checking how an address ends. The victim had paid
+ * 40 of 44 lookalikes matched the last seven characters of the address they imitated and fewer
+ * than four of the first — aimed at the habit of checking how an address ends. The victim had paid
  * the imitated address that same week in 43 of them, so the history held everything needed to
  * name it, and the floor above said nothing.
  *

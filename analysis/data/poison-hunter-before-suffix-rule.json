@@ -8,19 +8,19 @@
   },
   "lookbackBlocks": 50000,
   "endpoint": "https://rpc.mevblocker.io",
-  "ranAt": "2026-10-07T09:13:34.002Z",
+  "ranAt": "2026-10-07T06:13:51.169Z",
   "summary": {
     "rows": 150,
     "baits": 144,
     "failed": 0,
     "signerAware": {
-      "danger": 142,
-      "caution": 2,
+      "danger": 102,
+      "caution": 42,
       "safe": 0
     },
     "naive": {
-      "danger": 87,
-      "caution": 7,
+      "danger": 47,
+      "caution": 47,
       "safe": 50
     },
     "control": {
@@ -32,13 +32,13 @@
       "dust": {
         "baits": 44,
         "signerAware": {
-          "danger": 42,
-          "caution": 2,
+          "danger": 2,
+          "caution": 42,
           "safe": 0
         },
         "naive": {
-          "danger": 42,
-          "caution": 2,
+          "danger": 2,
+          "caution": 42,
           "safe": 0
         }
       },
@@ -190,21 +190,17 @@
         "suffix": 7
       },
       "signerAware": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
       },
       "naive": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
@@ -235,21 +231,17 @@
         "suffix": 7
       },
       "signerAware": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
       },
       "naive": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
@@ -280,21 +272,17 @@
         "suffix": 7
       },
       "signerAware": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
       },
       "naive": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
@@ -325,21 +313,17 @@
         "suffix": 7
       },
       "signerAware": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
       },
       "naive": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
@@ -370,21 +354,17 @@
         "suffix": 7
       },
       "signerAware": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
       },
       "naive": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
@@ -415,21 +395,17 @@
         "suffix": 7
       },
       "signerAware": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
       },
       "naive": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
@@ -460,21 +436,17 @@
         "suffix": 7
       },
       "signerAware": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
       },
       "naive": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
@@ -505,21 +477,17 @@
         "suffix": 7
       },
       "signerAware": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
       },
       "naive": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
@@ -550,21 +518,17 @@
         "suffix": 7
       },
       "signerAware": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
       },
       "naive": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
@@ -595,19 +559,17 @@
         "suffix": 7
       },
       "signerAware": {
-        "level": "danger",
-        "score": 58,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
           "dust-inbound",
           "never-paid-before"
         ]
       },
       "naive": {
-        "level": "danger",
-        "score": 58,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
           "dust-inbound",
           "never-paid-before"
         ]
@@ -638,19 +600,17 @@
         "suffix": 7
       },
       "signerAware": {
-        "level": "danger",
-        "score": 58,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
           "dust-inbound",
           "never-paid-before"
         ]
       },
       "naive": {
-        "level": "danger",
-        "score": 58,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
           "dust-inbound",
           "never-paid-before"
         ]
@@ -681,21 +641,17 @@
         "suffix": 7
       },
       "signerAware": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
       },
       "naive": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
@@ -726,21 +682,17 @@
         "suffix": 7
       },
       "signerAware": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
       },
       "naive": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
@@ -771,21 +723,17 @@
         "suffix": 7
       },
       "signerAware": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
       },
       "naive": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
@@ -817,21 +765,17 @@
         "suffix": 7
       },
       "signerAware": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
       },
       "naive": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
@@ -862,21 +806,17 @@
         "suffix": 7
       },
       "signerAware": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
       },
       "naive": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
@@ -907,19 +847,17 @@
         "suffix": 7
       },
       "signerAware": {
-        "level": "danger",
-        "score": 58,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
           "dust-inbound",
           "never-paid-before"
         ]
       },
       "naive": {
-        "level": "danger",
-        "score": 58,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
           "dust-inbound",
           "never-paid-before"
         ]
@@ -950,21 +888,17 @@
         "suffix": 7
       },
       "signerAware": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
       },
       "naive": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
@@ -995,21 +929,17 @@
         "suffix": 7
       },
       "signerAware": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
       },
       "naive": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
@@ -1040,19 +970,17 @@
         "suffix": 7
       },
       "signerAware": {
-        "level": "danger",
-        "score": 58,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
           "dust-inbound",
           "never-paid-before"
         ]
       },
       "naive": {
-        "level": "danger",
-        "score": 58,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
           "dust-inbound",
           "never-paid-before"
         ]
@@ -1083,21 +1011,17 @@
         "suffix": 7
       },
       "signerAware": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
       },
       "naive": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
@@ -1128,19 +1052,17 @@
         "suffix": 7
       },
       "signerAware": {
-        "level": "danger",
-        "score": 58,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
           "dust-inbound",
           "never-paid-before"
         ]
       },
       "naive": {
-        "level": "danger",
-        "score": 58,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
           "dust-inbound",
           "never-paid-before"
         ]
@@ -1171,21 +1093,17 @@
         "suffix": 7
       },
       "signerAware": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
       },
       "naive": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
@@ -1216,21 +1134,17 @@
         "suffix": 7
       },
       "signerAware": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
       },
       "naive": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
@@ -1261,21 +1175,17 @@
         "suffix": 7
       },
       "signerAware": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
       },
       "naive": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
@@ -1306,21 +1216,17 @@
         "suffix": 7
       },
       "signerAware": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
       },
       "naive": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
@@ -1351,21 +1257,17 @@
         "suffix": 7
       },
       "signerAware": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
       },
       "naive": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
@@ -1396,21 +1298,17 @@
         "suffix": 7
       },
       "signerAware": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
       },
       "naive": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
@@ -1441,19 +1339,17 @@
         "suffix": 7
       },
       "signerAware": {
-        "level": "danger",
-        "score": 58,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
           "dust-inbound",
           "never-paid-before"
         ]
       },
       "naive": {
-        "level": "danger",
-        "score": 58,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
           "dust-inbound",
           "never-paid-before"
         ]
@@ -1484,21 +1380,17 @@
         "suffix": 7
       },
       "signerAware": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
       },
       "naive": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
@@ -1529,21 +1421,17 @@
         "suffix": 7
       },
       "signerAware": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
       },
       "naive": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
@@ -1574,19 +1462,17 @@
         "suffix": 7
       },
       "signerAware": {
-        "level": "danger",
-        "score": 58,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
           "dust-inbound",
           "never-paid-before"
         ]
       },
       "naive": {
-        "level": "danger",
-        "score": 58,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
           "dust-inbound",
           "never-paid-before"
         ]
@@ -1617,21 +1503,17 @@
         "suffix": 7
       },
       "signerAware": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
       },
       "naive": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
@@ -1662,19 +1544,17 @@
         "suffix": 7
       },
       "signerAware": {
-        "level": "danger",
-        "score": 58,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
           "dust-inbound",
           "never-paid-before"
         ]
       },
       "naive": {
-        "level": "danger",
-        "score": 58,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
           "dust-inbound",
           "never-paid-before"
         ]
@@ -1705,21 +1585,17 @@
         "suffix": 7
       },
       "signerAware": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
       },
       "naive": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
@@ -1750,19 +1626,17 @@
         "suffix": 7
       },
       "signerAware": {
-        "level": "danger",
-        "score": 58,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
           "dust-inbound",
           "never-paid-before"
         ]
       },
       "naive": {
-        "level": "danger",
-        "score": 58,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
           "dust-inbound",
           "never-paid-before"
         ]
@@ -1793,21 +1667,17 @@
         "suffix": 7
       },
       "signerAware": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
       },
       "naive": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
@@ -1838,21 +1708,17 @@
         "suffix": 7
       },
       "signerAware": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
       },
       "naive": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
@@ -1883,21 +1749,17 @@
         "suffix": 7
       },
       "signerAware": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
       },
       "naive": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
@@ -1928,19 +1790,17 @@
         "suffix": 7
       },
       "signerAware": {
-        "level": "danger",
-        "score": 58,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
           "dust-inbound",
           "never-paid-before"
         ]
       },
       "naive": {
-        "level": "danger",
-        "score": 58,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
           "dust-inbound",
           "never-paid-before"
         ]
@@ -1971,21 +1831,17 @@
         "suffix": 7
       },
       "signerAware": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
       },
       "naive": {
-        "level": "danger",
-        "score": 83,
+        "level": "caution",
+        "score": 18,
         "codes": [
-          "lookalike-of-known-payee",
-          "appeared-right-after-payment",
           "dust-inbound",
           "never-paid-before"
         ]
@@ -6328,7 +6184,7 @@
       },
       "naive": {
         "level": "caution",
-        "score": 40,
+        "score": 42,
         "codes": [
           "lookalike-of-known-payee"
         ]

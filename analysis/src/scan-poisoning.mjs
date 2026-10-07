@@ -41,7 +41,11 @@ const TOKEN_NAME = (args.get("token") ?? "USDT").toUpperCase();
 const TOKEN = TOKENS[TOKEN_NAME];
 if (!TOKEN) throw new Error(`unknown token ${TOKEN_NAME}; known: ${Object.keys(TOKENS).join(", ")}`);
 
-/** Matching this many leading and trailing characters is what the engine treats as a lookalike. */
+/**
+ * The engine's both-ends lookalike rule. Its other one — seven trailing characters, whatever the
+ * start — is not applied here, so these counts stay comparable with every earlier run; it is
+ * measured on its own in `suffix-rule.mjs`.
+ */
 const MIN_AFFIX = 4;
 
 const here = dirname(fileURLToPath(import.meta.url));

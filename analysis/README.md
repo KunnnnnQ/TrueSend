@@ -1,6 +1,6 @@
 # Validating the detectors against real mainnet activity
 
-Ten scripts, no API key, no notebook. Each one fetches from public RPC endpoints and either
+Twelve scripts, no API key, no notebook. Each one fetches from public RPC endpoints and either
 asserts its claims or fails.
 
 ```bash
@@ -14,6 +14,8 @@ node src/account-kinds.mjs         # find out which senders can sign at all
 node src/check-tokens.mjs 0x…      # which tokens in an account's history are counterfeit
 node src/token-precision.mjs       # whether the token rules cry wolf on legitimate tokens
 node src/etherscan-labels.mjs      # how many planted lookalikes Etherscan already labels
+node src/poison-hunter.mjs         # replay cases somebody else found: Poison-Hunter's sample
+node src/suffix-rule.mjs           # check the end-only lookalike rule on fresh data
 ```
 
 `evaluate-engine.mjs` imports `@truesend/engine` from its built `dist`, exactly as the web app
@@ -223,6 +225,67 @@ this project can honestly claim to be first at. That is `docs/prior-work.md` §6
 sampled a week after they were planted, **1** carried an Etherscan label (`node src/etherscan-labels.mjs`;
 a sample that small puts the true share between roughly 0.6% and 17%).
 
+## Against somebody else's cases
+
+Every number above was measured on cases this project found, with rules written beside the detector
+they test. `poison-hunter.mjs` uses cases somebody else found: the 150 sample poisoning transfers Guan
+and Li published with their CCS 2024 paper (`docs/prior-work.md` §1). They come to 144 distinct
+baits — 44 dust, 50 zero-value and 50 counterfeit-token — from November 2022 to August 2023. Six rows
+repeat a bait against a different earlier payment it imitates; each bait is counted once. For every
+bait the victim's history is rebuilt the way the Scan screen would have built it the moment the bait
+landed — `scanHistory`, the app's own 50,000-block look-back, signers resolved — and the attacker's
+address is scored the way Send would score it when the victim pasted it.
+
+| the attacker's address | danger | caution | safe |
+| --- | --- | --- | --- |
+| zero-value baits (50) | **50** | 0 | 0 |
+| counterfeit-token baits (50) | **50** | 0 | 0 |
+| dust baits (44), the engine as it was | 2 | 42 | 0 |
+| dust baits (44), with the end-only rule below | **42** | 2 | 0 |
+
+- **No bait came back `safe`.** The 100 zero-value and counterfeit baits were caught by the
+  fabrication rule alone — a record of the victim paying the attacker, in a transaction the victim
+  never signed — with no help from similarity. An indexer that believes the logs leaves **50 of those
+  100 at `safe`**: finding 2 at the top of this page, on cases nobody here chose.
+- **The token check named all 50 counterfeit tokens.** The contract each counterfeit bait used was
+  judged the way Scan judges it, and every one came back counterfeit.
+- **No genuine payee was flagged.** Every address the victim had provably paid that week, by the
+  victim's own signature, scored `safe`: 121 of 121. Thirteen addresses the dataset labels genuine
+  scored `danger`, and each was checked: not one record naming any of them was signed by the victim.
+  In eight, the victim's real payee — paid between one and nine times that week — is a third address,
+  which both the dataset's attacker and its "genuine" address imitate; the label there is a second
+  lookalike. The other five fit the same pattern, but no payee they imitate turned up in seven weeks
+  of history, so they are left open rather than counted either way.
+
+### 6. Lookalikes that only copy the end were invisible
+
+The dust row above read 2 and 42 when this replay first ran (`data/poison-hunter-before-suffix-rule.json`).
+Forty of the 44 dust baits matched the last seven characters of the address they imitated and fewer
+than four of the first — 39 of them two or fewer — aimed at the habit of checking how an address
+ends. The lookalike rule demanded
+four at both ends, so it never fired on them. They reached `caution` only because a dust transfer from
+an address never paid scores exactly the caution threshold, and the warning never said who was being
+imitated — although in 43 of the 44 the victim had paid that address the same week.
+
+The rule now also accepts **seven characters at the end alone** (`SUFFIX_ONLY_MATCH` in
+`packages/engine/src/risk.ts`). Seven is 28 bits; six would have put the arithmetic in "Lookalikes are
+never coincidence" below at about eight expected chance matches. The two dust baits still at `caution`
+are not lookalikes under any rule: two leading characters, and one or three trailing.
+
+Seven was read off this sample, so this sample cannot be its evidence. `suffix-rule.mjs` checks it on
+fresh data — blocks 26,137,630–26,138,829, about four hours of mainnet USDT and USDC, 186,540 transfers:
+
+- **Crying wolf.** Across 27,948,642 comparisons between genuine counterparties of the same account —
+  addresses it paid at least one whole token, and addresses that paid it — the end-only rule matched
+  **none**. Chance alone predicts 0.10.
+- **Still catching.** In those four hours, **126 dust plantings** imitate a payee of the account they
+  were sent to by the end alone — 120 of them with three leading characters and seven trailing, one
+  short of the old floor. The both-ends rule recognises 1,706 others and missed all 126.
+
+It shows in the app, too. Loaded in Scan with its 2022 history, one of the replayed dust baits used to
+read `caution` at 18, from the dust rule alone. It now reads "Do not send" at 83, and its first reason
+names the payee it imitates by "the last 7 characters".
+
 ## Does it cry wolf?
 
 Everything above measures whether the detector *catches* things. This measures whether it is
@@ -403,6 +466,12 @@ sample the expected number of chance collisions is **0.030**. The number observe
 That is the heuristic's whole justification, and it is a factor of roughly nineteen thousand
 rather than a judgement call.
 
+The end-only rule added after the Poison-Hunter replay needs seven trailing characters: 28 bits,
+sixteen times likelier by chance, which puts the same sample's expectation at about **0.5** — still
+under one. Six would have put it near eight, which is why it is seven. It was then checked on fresh
+data rather than left to the arithmetic: no genuine pair in 27.9 million comparisons (see
+[Against somebody else's cases](#against-somebody-elses-cases)).
+
 ### The distribution is heavy-tailed
 
 Danger verdicts per wallet, sorted: 163, 154, 95, 71, 63, 56, 50, 44, 44, 31, … and then 31
@@ -426,7 +495,13 @@ the second one is the reason the product exists.
 - **Not a recall figure.** The 4,234 pairs are the ones where victim, bait and imitated address
   all land inside one 1200-block window on one token. Poisoning where the real payment happened
   earlier, on another token, or in native ETH is invisible to this scan. The true volume is
-  higher than measured; nothing here estimates how much.
+  higher than measured; nothing here estimates how much. The recall figure is the Poison-Hunter
+  replay, which has limits of its own:
+- **The Poison-Hunter sample is 150 rows its authors chose,** from November 2022 to August 2023,
+  50 of each kind; the repository does not say how they were chosen. The replay says what the
+  detector does on those, not what share of all poisoning it would catch. The end-only rule was
+  read off the same rows, so its numbers there show the hole closing, not that the rule works — the
+  fresh-data check is what says that.
 - **Not adversarial.** These rules are public. An attacker who reads them can plant a lookalike
   that matches only three characters, wait a day, and score nothing. That is precisely why the
   contracts never consult the score: an unknown recipient is held regardless.
@@ -449,3 +524,8 @@ Archive queries for the 2024 case need an endpoint that serves old blocks on a f
 flashbots and 1rpc are all either gated, rate-limited to a handful of blocks, or down. The list
 lives in `src/rpc.mjs` with that note attached, because none of it is discoverable from their
 documentation.
+
+`poison-hunter.mjs` scans 144 victims through that one endpoint, which answers with a Cloudflare
+rate-limit page (error 1015) well before four scans run in parallel; the default is two, and every
+finished scan is cached in `.cache/` so a rerun resumes. Behind a proxy, Node's `fetch` ignores
+`HTTPS_PROXY` unless `NODE_USE_ENV_PROXY=1` is set.

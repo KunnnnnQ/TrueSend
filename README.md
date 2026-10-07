@@ -157,6 +157,18 @@ record is reconciled against the token's own balances, and all 884 held up. A to
 wolf gets switched off, and then it protects nobody, so that number is the one worth arguing
 about. [`analysis/README.md`](analysis/README.md#does-it-cry-wolf).
 
+**It has been run against somebody else's cases, and they found a hole.** Replayed against the 144
+poisoning baits Guan and Li published with their CCS 2024 paper — chosen by them, not by this
+project — the detector put all 100 zero-value and counterfeit-token baits at "do not send", and
+flagged no address the victim had genuinely paid (121 of 121 clean). But 40 of the 44 dust baits
+copied only the end of the address they imitated — the last seven characters, fewer than four of
+the first — and the lookalike rule, which wanted four at both ends, recognised none of them: they got a
+generic caution that never named who was being imitated. The rule now also accepts seven at the end
+alone. That seven was read off the same sample, so it was checked on fresh mainnet data instead:
+across 27.9 million comparisons between genuine counterparties it matched none (0.1 expected by
+chance), and in four hours it recognised 126 dust plantings the old rule missed.
+[`analysis/README.md`](analysis/README.md#against-somebody-elses-cases).
+
 **Measuring it found two ways it cried wolf. Fixing the second one found a worse bug hiding behind
 the fix.** A transfer you did not sign is not always a fabrication: someone you authorised — a
 Permit2 filler, a CoW solver, a relayer spending a gasless signature — can move your tokens for
@@ -206,12 +218,12 @@ similarity rule scored it zero. Measured: `safe` (0) before, `danger` (71) after
 | Component | State |
 | --- | --- |
 | `contracts/` — policy, 7702 delegate, vault, factory, community registry | Built and [deployed on Sepolia](#deployed-on-sepolia). 94 tests: unit, fuzz, invariant. 100% branch coverage |
-| `packages/engine/` — fingerprints, heuristics, scoring | Built. 145 tests including property tests |
+| `packages/engine/` — fingerprints, heuristics, scoring | Built. 158 tests including property tests |
 | `packages/chain/` — history with signer resolution, token identities, policy reads | Built. 27 tests. Shared by the app and the indexer |
 | `apps/web/` — Scan, Send, Pending | Built. Scan reads mainnet directly, resolves signers and reads what every token in the history calls itself; that scan follows the user to Send, which also recognises a token address Scan already flagged; Send and Pending drive a deployed policy |
 | `apps/indexer/` — hold watcher, alerts, risk API | Built. 17 tests on alert idempotency and resume |
 | `apps/extension/` — copy and paste guard, in-page collision scan | Built and [released](https://github.com/KunnnnnQ/TrueSend/releases/latest). 41 tests, 13 of them against markup copied from real Etherscan and Blockscout pages |
-| `analysis/` — replay against real mainnet cases | Built. Verifies the 2024 WBTC case from chain, measures live poisoning volume and the false-positive rate, replays the shipped detector |
+| `analysis/` — replay against real mainnet cases | Built. Verifies the 2024 WBTC case from chain, measures live poisoning volume and the false-positive rate, replays the shipped detector — including over 144 poisoning cases somebody else published |
 
 Not audited.
 

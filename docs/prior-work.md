@@ -102,10 +102,16 @@ four-hour window — agree about where the attack comes from, having been made t
 
 **What the attackers spend, which sets the bar for the lookalike rule.** Section 7.2 estimates
 Group 1 burned "3.0×10^7 CPU-days or 27,093 GPU-days" grinding addresses, reaching a maximum
-20-digit match where other groups reach 14. TrueSend's lookalike rule triggers on four leading
+20-digit match where other groups reach 14. TrueSend's lookalike rule triggered on four leading
 plus four trailing hex characters — eight. Real attackers routinely produce more than twice that,
-so the threshold sits comfortably below what it has to catch, and a matched pair is even less
-likely to be coincidence than the 32-bit arithmetic in `analysis/README.md` suggests.
+which made the threshold look comfortably below what it had to catch.
+
+**Total length was the wrong thing to compare, and the CCS'24 sample is what showed it.** Replayed
+against the 150 poisoning transfers published with §1's paper (`analysis/src/poison-hunter.mjs`),
+40 of the 44 dust baits matched the last seven characters of the address they imitated and fewer
+than four of the first. However long the match, a rule that demanded four at *both* ends never saw
+them. The rule now also accepts seven at the end alone, and was checked on fresh mainnet data rather
+than on the sample it was read off — `analysis/README.md`, "Against somebody else's cases".
 
 ## 3. Ethereum Crypto Wallets under Address Poisoning: How Usable and Secure Are They?
 

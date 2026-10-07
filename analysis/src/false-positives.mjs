@@ -398,10 +398,12 @@ console.log(`  a false alarm costs trust, a miss costs the user their money.`);
 /**
  * The analytical check.
  *
- * A lookalike needs four leading and four trailing hex characters to match: 32 bits. For a wallet
- * with `n` counterparties the expected number of chance collisions is about n^2 / 2^33, so a
+ * A both-ends lookalike needs four leading and four trailing hex characters to match: 32 bits. For a
+ * wallet with `n` counterparties the expected number of chance collisions is about n^2 / 2^33, so a
  * warning that fires is essentially never a coincidence. Worth stating and worth checking, since
- * the whole heuristic rests on it.
+ * the whole heuristic rests on it. The engine's end-only rule (seven trailing characters, 28 bits)
+ * multiplies that by about sixteen; it was checked against fresh data in `suffix-rule.mjs` rather
+ * than only argued for here.
  */
 const expectedChance = wallets.reduce((sum, w) => sum + (w.counterparties ** 2) / 2 ** 33, 0);
 console.log(

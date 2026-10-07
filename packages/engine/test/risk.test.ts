@@ -163,8 +163,8 @@ describe("nearestLookalike", () => {
 
 /**
  * The shape the both-ends floor could not see. 40 of the 44 dust baits in Guan and Li's
- * Poison-Hunter sample matched the last seven characters of the address they imitated and two or
- * fewer of the first; replayed through the engine as it was, every one scored a bare caution from
+ * Poison-Hunter sample matched the last seven characters of the address they imitated and fewer
+ * than four of the first; replayed through the engine as it was, every one scored a bare caution from
  * the dust rule and none was recognised as imitating the contact the victim had just paid.
  */
 describe("a lookalike that only matches how the address ends", () => {

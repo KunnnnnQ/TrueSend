@@ -12,7 +12,8 @@
     "test": "node src/evaluate-engine.mjs --check",
     "typecheck": "node --check src/rpc.mjs && node --check src/verify-wbtc-case.mjs",
     "false-positives": "node src/false-positives.mjs",
-    "poison-hunter": "node src/poison-hunter.mjs"
+    "poison-hunter": "node src/poison-hunter.mjs",
+    "suffix-rule": "node src/suffix-rule.mjs"
   },
   "dependencies": {
     "@truesend/chain": "workspace:*",
