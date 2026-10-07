@@ -1,0 +1,6760 @@
+{
+  "dataset": {
+    "source": "https://github.com/DS2L/Poison-Hunter",
+    "paper": "Guan and Li, Characterizing Ethereum Address Poisoning Attack, ACM CCS 2024",
+    "commit": "74ff6f7d14f196a7396d7aa0b88aecd9a3bd9ff0",
+    "file": "phishing_transfers_sample.csv",
+    "sha256": "1de4bf2aa0bdc02e8347eeedf5d843f32e83a3f8e0c7fd864fea1997726fcc84"
+  },
+  "lookbackBlocks": 50000,
+  "endpoint": "https://rpc.mevblocker.io",
+  "ranAt": "2026-10-07T06:13:51.169Z",
+  "summary": {
+    "rows": 150,
+    "baits": 144,
+    "failed": 0,
+    "signerAware": {
+      "danger": 102,
+      "caution": 42,
+      "safe": 0
+    },
+    "naive": {
+      "danger": 47,
+      "caution": 47,
+      "safe": 50
+    },
+    "control": {
+      "danger": 13,
+      "caution": 0,
+      "safe": 131
+    },
+    "byType": {
+      "dust": {
+        "baits": 44,
+        "signerAware": {
+          "danger": 2,
+          "caution": 42,
+          "safe": 0
+        },
+        "naive": {
+          "danger": 2,
+          "caution": 42,
+          "safe": 0
+        }
+      },
+      "zero": {
+        "baits": 50,
+        "signerAware": {
+          "danger": 50,
+          "caution": 0,
+          "safe": 0
+        },
+        "naive": {
+          "danger": 17,
+          "caution": 3,
+          "safe": 30
+        }
+      },
+      "fake": {
+        "baits": 50,
+        "signerAware": {
+          "danger": 50,
+          "caution": 0,
+          "safe": 0
+        },
+        "naive": {
+          "danger": 28,
+          "caution": 2,
+          "safe": 20
+        }
+      }
+    },
+    "baitMissingFromScan": 0,
+    "belowAffixFloor": 97,
+    "controlWherePaid": {
+      "danger": 0,
+      "caution": 0,
+      "safe": 121
+    },
+    "tokenCheck": {
+      "counterfeit": 50,
+      "unusual": 0,
+      "clean": 0,
+      "unread": 0
+    }
+  },
+  "failures": [],
+  "cases": [
+    {
+      "row": 1,
+      "txHash": "0xa5e518f9aaf7ebc37e68a5b3b17d7eec6f82ca1a0ac1cf46b676586e81000634",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 15861385,
+      "attacker": "0x4008b8dfcdfc0d5b837b28aa4a890122292b0c3f",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 1360,
+      "baitToken": {
+        "transfers": 1236,
+        "planted": 0
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 2,
+        "suffix": 3
+      },
+      "signerAware": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 2,
+      "txHash": "0xf5830ee536cc888ddf513c5a8c05de391aa6b2e4cdcb5f8bbbe9d722032baa99",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16038516,
+      "attacker": "0xa99ec488c68460a4463456545a26a91feebcecd2",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 30,
+      "baitToken": {
+        "transfers": 29,
+        "planted": 0
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": false,
+      "affix": {
+        "prefix": 2,
+        "suffix": 1
+      },
+      "signerAware": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 6,
+        "codes": [
+          "never-paid-before"
+        ]
+      },
+      "genuinePaymentsInWindow": 0
+    },
+    {
+      "row": 3,
+      "txHash": "0x148df30057ef634f3f172e89d207dc4a35d7a4bd39b005f43042aaffdd3a6ebc",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16167148,
+      "attacker": "0x1e838f790ae411a351a1beab6905a276ae48e85a",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 26,
+      "baitToken": {
+        "transfers": 26,
+        "planted": 11
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 2,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 4,
+      "txHash": "0x346bf80cfa72f603340f6573276c1c10a95a4e8460f40b20b813681f4e89a23c",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16169863,
+      "attacker": "0xce207dba55252bab150936c11ec72a189b4fa3f2",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 7,
+      "baitToken": {
+        "transfers": 7,
+        "planted": 1
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 2,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 5,
+      "txHash": "0xcbe7e4b4c8b0961bca336c74ad8d71bdf46cfe424991d0b0af48f9a304b9c635",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16170019,
+      "attacker": "0xa183e7c4583aeaa7b4e7a3fd021f1ed435ba1903",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 5,
+      "baitToken": {
+        "transfers": 5,
+        "planted": 1
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 2,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 6,
+      "txHash": "0x6099c2762185676e053f3abfb8447b7b06d40c9484ec72d307ed7aff621af40a",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16175529,
+      "attacker": "0x032a1bf6772557ffeb5abc03f83dfa9636b2eb36",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 35,
+      "baitToken": {
+        "transfers": 35,
+        "planted": 8
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 2,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 7,
+      "txHash": "0xa4504dba7be883370f76c882ce4a09a8193524e1460e9c8eb5b22b440e2c6157",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16178994,
+      "attacker": "0xf391662b54181dd2c1f698f6313e32c1d25a522c",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 14,
+      "baitToken": {
+        "transfers": 14,
+        "planted": 7
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 2,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 8,
+      "txHash": "0x38f08441907ef5d45e72c0462f3cf13e6e6e003f948116662e82dde7234b797b",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16180588,
+      "attacker": "0xd93c34eb02c18e8dd70e334aad53f75d9b65a0e1",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 23,
+      "baitToken": {
+        "transfers": 23,
+        "planted": 4
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 2,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 9,
+      "txHash": "0x05a9fd550d91febb286f15b8a7e9bff46551b6ca3def9c6c3354c210b16ed2f2",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16191447,
+      "attacker": "0x66629dd87fbe0f6956e9342c90acdf7c23bccf8f",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 37,
+      "baitToken": {
+        "transfers": 37,
+        "planted": 18
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 2,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 10,
+      "txHash": "0xe0ae81267376a69a4b883b79ec41f6f0e047dec7da4cd1153dec1272aa17e1d7",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16196977,
+      "attacker": "0x031ba18ad41eb1a1f3a5d78aa9b3b1cdddd314b3",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 32,
+      "baitToken": {
+        "transfers": 32,
+        "planted": 14
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 0,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 11,
+      "txHash": "0x73a0325ee1b0282971ef5882088b8cc2970fd4024211e3c59f09ec6de62355f9",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16197990,
+      "attacker": "0x9a94117f319e0b868b815581b919b4453f57e92e",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 18,
+      "baitToken": {
+        "transfers": 18,
+        "planted": 9
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 2,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 12,
+      "txHash": "0x93a5b06e8c9fa022cfdc10169f33258ab33a6723c194caa4c0197730649c24ea",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16199545,
+      "attacker": "0x031ba18ad41eb1a1f3a5d78aa9b3b1cdddd314b3",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 34,
+      "baitToken": {
+        "transfers": 34,
+        "planted": 14
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 0,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 13,
+      "txHash": "0xab8dd31072d5b1618b3bc955a3f90741f313c8a1a020166c4c285882c8d4250f",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16202706,
+      "attacker": "0x031ba18ad41eb1a1f3a5d78aa9b3b1cdddd314b3",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 39,
+      "baitToken": {
+        "transfers": 39,
+        "planted": 16
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 0,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 14,
+      "txHash": "0x8db2529d1feaaad30ac017d8d365857b93f7ae6a102c273614316333f3531afa",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16203325,
+      "attacker": "0xd60474cd5a1388ed21a9bc8064753d006cfb8e9c",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 7,
+      "baitToken": {
+        "transfers": 6,
+        "planted": 3
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 2,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 15,
+      "txHash": "0x17cef719318b3611db1254474249edf581e265e36124d9d96972906d93d7f019",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16209222,
+      "attacker": "0xf1580fdc760eca7f63523a52753dfb83b0ff8e46",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 28,
+      "baitToken": {
+        "transfers": 28,
+        "planted": 14
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 2,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 16,
+      "txHash": "0x7ded31734462f8480cae4bbda200f6816d1e6326b5a830f4a96ba10c1c146ecb",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16209229,
+      "attacker": "0x8b2da27923a6c236484eeed163c67b8a3ec0c6ff",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 56,
+      "baitToken": {
+        "transfers": 56,
+        "planted": 25
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 2,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 17,
+      "duplicateOf": 16,
+      "txHash": "0x7ded31734462f8480cae4bbda200f6816d1e6326b5a830f4a96ba10c1c146ecb",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16209229,
+      "attacker": "0x8b2da27923a6c236484eeed163c67b8a3ec0c6ff",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 56,
+      "baitToken": {
+        "transfers": 56,
+        "planted": 25
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 2,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 18,
+      "txHash": "0xb9fcbb822a7556d4fbf1d0a2b23bba98024e7cbeb1778f929b7481c2d028d0ac",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16212557,
+      "attacker": "0x8dfc63719edd47a505eca6d56bd34f8cbe6d1636",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 7,
+      "baitToken": {
+        "transfers": 7,
+        "planted": 1
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 2,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 19,
+      "txHash": "0x92d9d6927a60592956b6ef438aeb49bde571d32e4e1c9cb647d4ec469186f2c1",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16214432,
+      "attacker": "0x957eeb1e2f16bc6b733da2bad715eccd5d9dc472",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 32,
+      "baitToken": {
+        "transfers": 32,
+        "planted": 12
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 2,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 20,
+      "txHash": "0x399297d5e58aae80aad4271cce217ee83c7426b00edd77bd036f14dc13aea110",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16214263,
+      "attacker": "0x957eeb1e2f16bc6b733da2bad715eccd5d9dc472",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 30,
+      "baitToken": {
+        "transfers": 30,
+        "planted": 12
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 2,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 21,
+      "txHash": "0x9853f178b03851a1dca91671887e586411d81d6190d79c812bf992400d49dece",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16215834,
+      "attacker": "0x4b87bd7c10163e940113ea60285d37dd23dabb51",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 24,
+      "baitToken": {
+        "transfers": 14,
+        "planted": 5
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 2,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 22,
+      "txHash": "0xdb59ba5e80326af7bc77973e4e0ef80158b3f16b16f2b7e4967cd6644fe09665",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16215945,
+      "attacker": "0x4b87bd7c10163e940113ea60285d37dd23dabb51",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 26,
+      "baitToken": {
+        "transfers": 16,
+        "planted": 5
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 2,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 23,
+      "txHash": "0x7745058b85afcbda0e85713cfdc264fea7454d825d1101b8face09b1b69824e3",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16215696,
+      "attacker": "0x974353266ba1609711dc4fd3464598f831ce6b46",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 22,
+      "baitToken": {
+        "transfers": 22,
+        "planted": 8
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 2,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 24,
+      "txHash": "0x09b308b59c8246a7f85cc20eef88a1ec7fa0833738923f0f27f68737b361b7d3",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16216730,
+      "attacker": "0x4b87bd7c10163e940113ea60285d37dd23dabb51",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 29,
+      "baitToken": {
+        "transfers": 19,
+        "planted": 6
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 2,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 25,
+      "txHash": "0x06c29608f9f0b5983cae02e33a652de65088881d7ad59fb8612f0fb304709f52",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16217131,
+      "attacker": "0x0073d558dbc5f93ae9084da7d2ecf7d2f0a46747",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 15,
+      "baitToken": {
+        "transfers": 15,
+        "planted": 7
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 1,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 26,
+      "txHash": "0x59df00a09e61f348c97e12c77e7f62d4838441ac7ec724aeabf19ea332719b5b",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16217671,
+      "attacker": "0x512ef88770074ec5e62c1a35b83dad4d970a3ac7",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 14,
+      "baitToken": {
+        "transfers": 14,
+        "planted": 9
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 2,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 27,
+      "txHash": "0xe295ebbfcc1d1d6f87ebc7d8c336d5cda80d3b7b5490c008e462d4f5ac4c55aa",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16217786,
+      "attacker": "0x686a14feda38d90c4c696ecafff5085c1fc8c77d",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 17,
+      "baitToken": {
+        "transfers": 15,
+        "planted": 8
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 1,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 28,
+      "txHash": "0xbf4ba4047ec04f445e82300bfb2e1e2670a91de1e41318f75229fe3efc4d4f3c",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16217855,
+      "attacker": "0xbaf383bfaa99d8694e54f24e7606b48d43599c3b",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 13,
+      "baitToken": {
+        "transfers": 13,
+        "planted": 7
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 2,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 29,
+      "txHash": "0xd65b16f65cd0d8cd51f56b20949fac33fc07e24c9a118a66b6855e3eeed8febf",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16218145,
+      "attacker": "0x6dda196eb223b1db5d248924ba3fd5138c03c5da",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 20,
+      "baitToken": {
+        "transfers": 20,
+        "planted": 7
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 3,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 30,
+      "txHash": "0x338d33235ffb06e5d3c936ee07aaa3506e8f15dc9b864d3416573159ef15b9a0",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16218475,
+      "attacker": "0x26d638572cda60689ceb2f755c7fcf37841c0433",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 10,
+      "baitToken": {
+        "transfers": 10,
+        "planted": 0
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 2,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 31,
+      "txHash": "0x3884fe0b3d8ad60a7218797eca28c630918fd8af6745174d7ca58d80711c3651",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16218591,
+      "attacker": "0xd60474cd5a1388ed21a9bc8064753d006cfb8e9c",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 10,
+      "baitToken": {
+        "transfers": 9,
+        "planted": 4
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 2,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 32,
+      "txHash": "0x8a74758c9599bf3bd0459947b604943484d4051a7d8d307ecce44ad484dafe90",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16218612,
+      "attacker": "0x8868d7025e0b92d9501ccf1d2278f7b3667327ea",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 25,
+      "baitToken": {
+        "transfers": 11,
+        "planted": 2
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 0,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 33,
+      "txHash": "0xc5e9c1bef4a88a9606fbd298497925adef13055f370c3f0b70ec1dc737956ef0",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16219780,
+      "attacker": "0xcbbd08cfd2139882ff58bb9211546949700177e2",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 33,
+      "baitToken": {
+        "transfers": 33,
+        "planted": 12
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 2,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 34,
+      "txHash": "0x69262bfd973312f8e534321b90761156c5982e60ac6e501917c5644585417e44",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16220363,
+      "attacker": "0xcbbd08cfd2139882ff58bb9211546949700177e2",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 32,
+      "baitToken": {
+        "transfers": 32,
+        "planted": 12
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 2,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 35,
+      "txHash": "0xf03743fc9493b05c0daf54da3bdbcfbafe617c906c00a69f647b7d2996d975d5",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16220931,
+      "attacker": "0x0bd7de7e8b57c4f579b13efcc6af45d29572f59a",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 43,
+      "baitToken": {
+        "transfers": 43,
+        "planted": 4
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 1,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 36,
+      "txHash": "0x284b4a6a862294ac40960fd7828e00ef853e89657f35e1eb316f77219ae1f24a",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16220985,
+      "attacker": "0xd60474cd5a1388ed21a9bc8064753d006cfb8e9c",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 13,
+      "baitToken": {
+        "transfers": 12,
+        "planted": 5
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 2,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 37,
+      "txHash": "0xe67c62780df642ce056ef4b698372e8b4aece70f1037a18c8ff4a3956774e933",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16223367,
+      "attacker": "0x226a95e7a4583208e73b668fc04802873017794d",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 18,
+      "baitToken": {
+        "transfers": 17,
+        "planted": 7
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 2,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 38,
+      "txHash": "0x25f3a9f8b2164d2c01b120e31b8ee697d7d861b8aaac85f740c2462dad1b4cc2",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16223872,
+      "attacker": "0x031ba18ad41eb1a1f3a5d78aa9b3b1cdddd314b3",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 39,
+      "baitToken": {
+        "transfers": 39,
+        "planted": 17
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 0,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 39,
+      "txHash": "0x2193515ed56f678713922171634b15494c827ece670d632b07b96d2e5dbfa89f",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16224584,
+      "attacker": "0x2f2bf5fd013ca8416f16b73300a756ad6b62b9d8",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 84,
+      "baitToken": {
+        "transfers": 75,
+        "planted": 9
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 2,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 40,
+      "txHash": "0x7ca42e9ddd57f0ba28589af5acbb325f66fb45c4bd8af876202d12aa7c32620a",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16225407,
+      "attacker": "0x078af6a7a75c5bde326f2989ff6daed2c0871e0b",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 36,
+      "baitToken": {
+        "transfers": 36,
+        "planted": 15
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 0,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 41,
+      "txHash": "0x5228efcd87b4f27a80a618611986014e38117a42b60503874aa34a2f521390fb",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16239116,
+      "attacker": "0x032a1bf6772557ffeb5abc03f83dfa9636b2eb36",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 54,
+      "baitToken": {
+        "transfers": 48,
+        "planted": 9
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 2,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 42,
+      "txHash": "0x937cd6d959339c0c7632bda4a66e96f40588177e30e19790ad7f3a2a0d3b22f5",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16246027,
+      "attacker": "0x4b87bd7c10163e940113ea60285d37dd23dabb51",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 19,
+      "baitToken": {
+        "transfers": 19,
+        "planted": 8
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 2,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 43,
+      "txHash": "0x3807ae7723caf07f9007a565de597937ca66a8aa26edf24a0881d180c83350dd",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16269781,
+      "attacker": "0x26d638572cda60689ceb2f755c7fcf37841c0433",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 13,
+      "baitToken": {
+        "transfers": 13,
+        "planted": 1
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 2,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 18,
+        "codes": [
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 44,
+      "txHash": "0xd599a08dc631fbae475bf9ba90f93d5ed075a896336a23027fc321f589d9de1b",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16564304,
+      "attacker": "0xcb9d34bbb0480e714f4c004cfd8cb72b776db1b6",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 4,
+      "baitToken": {
+        "transfers": 4,
+        "planted": 0
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 4,
+        "suffix": 4
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 83,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 83,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 45,
+      "txHash": "0xe5ead60137cb50d9ba247c47683e108c390ee4ad6cd534a99bb53414e2ab705b",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16564320,
+      "attacker": "0xb1be92d9c8c626f63630e57b97484ad44594c1e9",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 319,
+      "baitToken": {
+        "transfers": 240,
+        "planted": 39
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 4,
+        "suffix": 4
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 83,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 83,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 46,
+      "duplicateOf": 45,
+      "txHash": "0xe5ead60137cb50d9ba247c47683e108c390ee4ad6cd534a99bb53414e2ab705b",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16564320,
+      "attacker": "0xb1be92d9c8c626f63630e57b97484ad44594c1e9",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 319,
+      "baitToken": {
+        "transfers": 240,
+        "planted": 39
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 4,
+        "suffix": 4
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 83,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 83,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 47,
+      "duplicateOf": 45,
+      "txHash": "0xe5ead60137cb50d9ba247c47683e108c390ee4ad6cd534a99bb53414e2ab705b",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16564320,
+      "attacker": "0xb1be92d9c8c626f63630e57b97484ad44594c1e9",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 319,
+      "baitToken": {
+        "transfers": 240,
+        "planted": 39
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 4,
+        "suffix": 4
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 83,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 83,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 48,
+      "duplicateOf": 45,
+      "txHash": "0xe5ead60137cb50d9ba247c47683e108c390ee4ad6cd534a99bb53414e2ab705b",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16564320,
+      "attacker": "0xb1be92d9c8c626f63630e57b97484ad44594c1e9",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 319,
+      "baitToken": {
+        "transfers": 240,
+        "planted": 39
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 4,
+        "suffix": 4
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 83,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 83,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 49,
+      "duplicateOf": 45,
+      "txHash": "0xe5ead60137cb50d9ba247c47683e108c390ee4ad6cd534a99bb53414e2ab705b",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16564320,
+      "attacker": "0xb1be92d9c8c626f63630e57b97484ad44594c1e9",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 319,
+      "baitToken": {
+        "transfers": 240,
+        "planted": 39
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 4,
+        "suffix": 4
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 83,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 83,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 50,
+      "duplicateOf": 45,
+      "txHash": "0xe5ead60137cb50d9ba247c47683e108c390ee4ad6cd534a99bb53414e2ab705b",
+      "type": "dust",
+      "symbol": "USDT",
+      "block": 16564320,
+      "attacker": "0xb1be92d9c8c626f63630e57b97484ad44594c1e9",
+      "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "transfers": 319,
+      "baitToken": {
+        "transfers": 240,
+        "planted": 39
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 4,
+        "suffix": 4
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 83,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 83,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 51,
+      "txHash": "0x0012be7810f0d7905cb7302231ad2b0d1aed503bf7000bcb5b148f41571ba512",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16584807,
+      "attacker": "0xcd0bcb3a57938138e16ac13c65af012257be169d",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 9,
+      "baitToken": {
+        "transfers": 9,
+        "planted": 5
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 3,
+        "suffix": 5
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 52,
+      "txHash": "0x001f11ed8a57e6920da0dd4b1ac78df7cdc49af938de533addd36abb9e1dd586",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16542735,
+      "attacker": "0xbc40dacaae167565cfa886eddd352d33104ef293",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 32,
+      "baitToken": {
+        "transfers": 32,
+        "planted": 15
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 3,
+        "suffix": 5
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 53,
+      "txHash": "0x00c5ad45b5c89f345356f6fd0c37125489a9b34263e0c4ca6918658fa5fc3029",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16261541,
+      "attacker": "0x3a029ca575036794ff32571b27d3fc07ee01dbc3",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 9,
+      "baitToken": {
+        "transfers": 6,
+        "planted": 2
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 3,
+        "suffix": 5
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 54,
+      "txHash": "0x04246dc99d497d9dbfca4a3877ed4765d9f0202bba151a962bf6b0066cd62308",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16346019,
+      "attacker": "0xe9401912cd00c280216bb710fa0b0a5dde229d97",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 3,
+      "baitToken": {
+        "transfers": 3,
+        "planted": 1
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 4,
+        "suffix": 4
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 65,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 55,
+      "txHash": "0x05b81ce06c730bbf39531c0d6164cded3ac6a7b45702107d5a9b3b75304f3bb9",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16225605,
+      "attacker": "0x4dab7f1b9474a7d1e87b80c43b87fe89371e8b5e",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 3,
+      "baitToken": {
+        "transfers": 3,
+        "planted": 1
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 2,
+        "suffix": 6
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 56,
+      "txHash": "0x083e2199f23222a493e0b3d816869ca7beb4c975076576fe2280c2ff3c1440cf",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16881771,
+      "attacker": "0xb0f2fe8f4a3e8c789f6c67b33143c36f5fd79775",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 173,
+      "baitToken": {
+        "transfers": 88,
+        "planted": 15
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 4,
+        "suffix": 4
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 65,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 57,
+      "txHash": "0x0c582875966c8297d080a2a1e9bfc413c7ff0dbc9befe0308de66769e07c3d20",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16782875,
+      "attacker": "0x398159b4f342545e494ac005ef12f86878fb44fe",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 5,
+      "baitToken": {
+        "transfers": 4,
+        "planted": 1
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 4,
+        "suffix": 4
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 65,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 58,
+      "txHash": "0x0e9b8fea7704a9f2ca97bd7d101e60f28519d2a89925ddd6a318a6aac9485810",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16587484,
+      "attacker": "0xba0283cf1ba2408bd856fded1400f2891cdd2a9b",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 11,
+      "baitToken": {
+        "transfers": 11,
+        "planted": 3
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 3,
+        "suffix": 5
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 59,
+      "txHash": "0x111c6ae2df2a8ae50f24ec7da1ae9349f168e7774fd65278fdeeefa3a00e0ffd",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16388239,
+      "attacker": "0xe1c744469be535cb9a720e6f0d464167b9b3353b",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 3,
+      "baitToken": {
+        "transfers": 3,
+        "planted": 2
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 3,
+        "suffix": 5
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 60,
+      "txHash": "0x12f88a1d0835347c13d8d90d838d2e09e7d770b1b7a5222385d8f33b831fb5a6",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 17834455,
+      "attacker": "0x99f1431b72fc70f1df6aee62390ee086f14711b1",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 48,
+      "baitToken": {
+        "transfers": 32,
+        "planted": 15
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 3,
+        "suffix": 6
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 61,
+      "txHash": "0x1929614bbbf7c3621eccf9889efc267322c42dc6914926ca1cec9b16a1999496",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16343311,
+      "attacker": "0x49184c6a013fae7c310b193b73d7f2a87f73f011",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 5,
+      "baitToken": {
+        "transfers": 5,
+        "planted": 2
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 3,
+        "suffix": 5
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 62,
+      "txHash": "0x1a1b0841a2cf2e5ee8006b8ed5114111a58738b00a0cc8c0129e4bf725b7124c",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16612051,
+      "attacker": "0x1ccf2dc75a74a94da775b56fcfbbf63e05ba4635",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 8,
+      "baitToken": {
+        "transfers": 3,
+        "planted": 1
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 3,
+        "suffix": 5
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 63,
+      "txHash": "0x1b4f3fa8a8678fa7336027a6bb2609d242d203c235fbacbcb0a63c2a8f86458a",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16577713,
+      "attacker": "0xa9d5a9cd80cfe80a293a06a3134405001e7d3e43",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 8,
+      "baitToken": {
+        "transfers": 5,
+        "planted": 1
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 3,
+        "suffix": 5
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 64,
+      "txHash": "0x1c35ad3174472c0e0edd549ce20cf9cf7d7e7f9ba99595ee210e94f59a9229c0",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16574548,
+      "attacker": "0x229354bb7bfb59061413ee0b96b6a63d7ec26654",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 3,
+      "baitToken": {
+        "transfers": 3,
+        "planted": 2
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 4,
+        "suffix": 4
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 65,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 65,
+      "txHash": "0x1f536dbfab7f0f2a448cd633604f2f950ea2eca902c075004dc8b0ab6a753245",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16248525,
+      "attacker": "0x357bcf490ab5c8c3ecfcdc8011697091472989b5",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 18,
+      "baitToken": {
+        "transfers": 18,
+        "planted": 12
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 2,
+        "suffix": 5
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 66,
+      "txHash": "0x1fdb1d70f0dbb32cc34bbe0a712a1f8d4d68de4bfcc703e1bbca4d69cd295456",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16554769,
+      "attacker": "0xe946ea88876992eb3d0f250ed26a741627a747b6",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 2,
+      "baitToken": {
+        "transfers": 2,
+        "planted": 1
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 3,
+        "suffix": 5
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 67,
+      "txHash": "0x23807ef22ed4881fd998f24b3e79fce62e6c244b12357c1389af9009c75d2968",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16604584,
+      "attacker": "0x11f23ce155220b3d6a5fc9ffd88a48f1680df278",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 6,
+      "baitToken": {
+        "transfers": 6,
+        "planted": 3
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 3,
+        "suffix": 5
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 68,
+      "txHash": "0x24648f33d05ac053ebb252368c02d61b790e1f79051d5cc0f27080139f9c629a",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16575595,
+      "attacker": "0x0046980769d802e133d9c782cee4fd80d08cf434",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 9,
+      "baitToken": {
+        "transfers": 9,
+        "planted": 7
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 3,
+        "suffix": 4
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 69,
+      "txHash": "0x257f4617ebc27ab15fd53bc1da4e501dec6fea13a4e00012b4260517c7113a3b",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16736328,
+      "attacker": "0xdcf964ad801a1a50f1b7a76ca9c79d4af44a4dcb",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 5,
+      "baitToken": {
+        "transfers": 5,
+        "planted": 2
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 8,
+        "suffix": 6
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 77,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 70,
+      "txHash": "0x27d44bb06986513855b9eb77e2e2c50cf1798ea18eb20be15ab5bbe42872a326",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16687162,
+      "attacker": "0x5be636aa432ef0beb46441b7e7471436603ca62b",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 17,
+      "baitToken": {
+        "transfers": 17,
+        "planted": 12
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 7,
+        "suffix": 6
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 75,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 71,
+      "txHash": "0x28c126ec513c989eae041ed56efe0fa4235bfaad178aa14f52320b2c6cee11a8",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16557447,
+      "attacker": "0x181c589690d26f41631c7ebc247f2d7fdcdd1421",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 89,
+      "baitToken": {
+        "transfers": 42,
+        "planted": 15
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 3,
+        "suffix": 5
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 40,
+        "codes": [
+          "lookalike-of-known-payee"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 72,
+      "txHash": "0x2d7dc9930cecdd1b34bfb3592dad821124bc3f99195025c532d0adedb87f60d3",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16902722,
+      "attacker": "0xe78c1d055938c429d0e58106534978fb3a86992b",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 2,
+      "baitToken": {
+        "transfers": 2,
+        "planted": 1
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 3,
+        "suffix": 4
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 73,
+      "txHash": "0x31c8fe79c92b94f42ce69ca4bc30a985fa73590644c5be62af9f9958a4717de4",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16653487,
+      "attacker": "0xaee3889070ef4c39dcd9abb7e07c6c3b21a958bd",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 67,
+      "baitToken": {
+        "transfers": 67,
+        "planted": 65
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 7,
+        "suffix": 6
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 75,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 74,
+      "txHash": "0x31d3daf7e9a3cdcada34473f265b2013a9858cf6fe3b160ad1c60327dfff8174",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16597924,
+      "attacker": "0xce2ee5b2810e43b3c39ebf3777669c435adbb3e2",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 61,
+      "baitToken": {
+        "transfers": 48,
+        "planted": 33
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 7,
+        "suffix": 6
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 75,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 75,
+      "txHash": "0x32c77f7fcc995ed672901b9e512cc3ba41fa54c01258462d70bee0375c7957d9",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16809099,
+      "attacker": "0x6b80435c325adb57539896ee47d8f41be5d66cbf",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 224,
+      "baitToken": {
+        "transfers": 126,
+        "planted": 21
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 8,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 54,
+        "codes": [
+          "lookalike-of-known-payee"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 76,
+      "txHash": "0x3702a8d197d80a7b72d82ffe3fdc3dbcb8ed191b2d5b1ad8dcdab3014013cc81",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16582016,
+      "attacker": "0xaf6311ef93aa3ab60e1c60543e5d5431406e8100",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 53,
+      "baitToken": {
+        "transfers": 30,
+        "planted": 14
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 3,
+        "suffix": 5
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 40,
+        "codes": [
+          "lookalike-of-known-payee"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 77,
+      "txHash": "0x3bd9e363140d5cefef87ec43a0f0b8c64ec5ee683229ec7c528990586ad8a3d2",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16745766,
+      "attacker": "0xb9ee7ed34536a9f7125b16b0809a092c2cb5788b",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 9,
+      "baitToken": {
+        "transfers": 5,
+        "planted": 1
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 3,
+        "suffix": 4
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 78,
+      "txHash": "0x3c6ee874063a3045ba0d594264fc45dc9bde3d201ce85defe610b4196bc77bc0",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16580390,
+      "attacker": "0x4d4ffe25199362e0b3686e4089bbe094a668fa47",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 17,
+      "baitToken": {
+        "transfers": 9,
+        "planted": 4
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 3,
+        "suffix": 4
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 79,
+      "txHash": "0x3fcb6c684cb9c585dd9b67240348e6bb7ea06cf9666d3d49f077c2fb529443c5",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16577093,
+      "attacker": "0xdf9a3c357eb1747bf2b091647edf9a6514f7aeb6",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 15,
+      "baitToken": {
+        "transfers": 15,
+        "planted": 9
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 3,
+        "suffix": 5
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 40,
+        "codes": [
+          "lookalike-of-known-payee"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 80,
+      "txHash": "0x40c6ffb043e91c75bdef05963ef478026d611af27aa628f990b0eee2a06bfaf5",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16701640,
+      "attacker": "0x11f8f3aca960988aa1c6cca5d097040af41e5b67",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 89,
+      "baitToken": {
+        "transfers": 86,
+        "planted": 77
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 8,
+        "suffix": 6
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 77,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 81,
+      "txHash": "0x41c6fcab8300f33aac056609081fe9d6130969fd56d2d10d20cb9a6c6e9b0643",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16601936,
+      "attacker": "0xf2c5441f176ee54161b62c4b62deec11e575469d",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 7,
+      "baitToken": {
+        "transfers": 7,
+        "planted": 2
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 3,
+        "suffix": 5
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 82,
+      "txHash": "0x428d961747443b64dd6c98f8f60fe0df8ecda81d24720978fb22bf65cdf47dc8",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 17025878,
+      "attacker": "0x49ed3bb6c479dc1a961ebc4fce54ca641e2ba04a",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 7,
+      "baitToken": {
+        "transfers": 3,
+        "planted": 1
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 3,
+        "suffix": 6
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 83,
+      "txHash": "0x4320017446be8eb4fbe1538bae2c6866b0f5d64b83c2cf490500ecbade2a191f",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16849777,
+      "attacker": "0x5146b87e52ab5d504f3a8a55fb43a991098a7cca",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 6,
+      "baitToken": {
+        "transfers": 3,
+        "planted": 1
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 3,
+        "suffix": 4
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 84,
+      "txHash": "0x4382454d4b22f28d2085a3bde8949f179c3b3e665edfc746136b4edab858a3b5",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16554868,
+      "attacker": "0xfc84963450d3eb3dd7f9bc09daac89eb1c93a6bc",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 2,
+      "baitToken": {
+        "transfers": 2,
+        "planted": 1
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 3,
+        "suffix": 5
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 85,
+      "txHash": "0x49e022ec58eb0b2594ac28f4871cea6aeb525e1b707362361b16f32bab50a7e8",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16610475,
+      "attacker": "0x00fade0b47a4c01cf608c72ac95cf56c3589d3a5",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 26,
+      "baitToken": {
+        "transfers": 14,
+        "planted": 2
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 3,
+        "suffix": 5
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 86,
+      "txHash": "0x4ce94eda4102088d4ded79abf1cab75ee9948c3adebaf5b5532f2bea3187ee44",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16946596,
+      "attacker": "0xf48edcc00891d3d60ddb524e295b9fb3179eb31c",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 10,
+      "baitToken": {
+        "transfers": 7,
+        "planted": 3
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 9,
+        "suffix": 6
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 54,
+        "codes": [
+          "lookalike-of-known-payee"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 87,
+      "txHash": "0x5058b74a13cfa6bb397c7017eefd831eb6f4f6882e8ce125c46b250128ca3436",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16606657,
+      "attacker": "0x457a17f3f0681f5ea60585a4fd564a422b4ec875",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 55,
+      "baitToken": {
+        "transfers": 50,
+        "planted": 47
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 3,
+        "suffix": 6
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 88,
+      "txHash": "0x517e91998c74d5e38adba36bf56c56262d2ab62ddb6e96a280505a343a18a3a9",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16611253,
+      "attacker": "0x4f0c88427d53a594601c63b51b0d5a510236074e",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 69,
+      "baitToken": {
+        "transfers": 69,
+        "planted": 60
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 7,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 52,
+        "codes": [
+          "lookalike-of-known-payee"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 89,
+      "txHash": "0x523663110b7c39890b2aed36bf8a8a70eb48141d0bae4684b0ee098bf9cc8e62",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16158510,
+      "attacker": "0x81b6f9c6b089c56f9e75382080d5bbb2cba040dd",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 7,
+      "baitToken": {
+        "transfers": 7,
+        "planted": 2
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 2,
+        "suffix": 5
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 90,
+      "txHash": "0x56d8add08604133a453205e27725abd8cf39f3a81b07f5d4919e638964d38809",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16615040,
+      "attacker": "0x013a0267d85487bc54480da0540e44349a27d037",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 54,
+      "baitToken": {
+        "transfers": 54,
+        "planted": 28
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 7,
+        "suffix": 6
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 50,
+        "codes": [
+          "lookalike-of-known-payee"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 91,
+      "txHash": "0x58eeac78170745863e55e1a7e7d4a43a1187cb736fcde1def5d9f4b17c201d75",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16386817,
+      "attacker": "0x563737ecd2c20c75f6d8981a04552fc3946617f8",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 27,
+      "baitToken": {
+        "transfers": 7,
+        "planted": 2
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 3,
+        "suffix": 5
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 92,
+      "txHash": "0x5a4ccbac635bc75261ac06189a978fd9f5eb86f70de4c6587524db0b18ba1d40",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16681610,
+      "attacker": "0x617e95d3cc2acddf2964c4f062b0a907ff79fdfb",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 29,
+      "baitToken": {
+        "transfers": 29,
+        "planted": 27
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 8,
+        "suffix": 6
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 77,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 93,
+      "txHash": "0x5cc1bbb688ee82f342f4038122e010a1e5d1fc513be59b9cbc2fefc757acdfc4",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16704858,
+      "attacker": "0x3547ce035963a4264a9660436577f60d4e80b0d1",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 6,
+      "baitToken": {
+        "transfers": 6,
+        "planted": 2
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 4,
+        "suffix": 4
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 65,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 94,
+      "txHash": "0x5d46ee93daaeb828f20e10fff0087b2f14832dc97c2375c6d4cb7d8eaf192908",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16558054,
+      "attacker": "0xa767e292f4a17bb35d223600618eaeef28c742b8",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 5,
+      "baitToken": {
+        "transfers": 5,
+        "planted": 1
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 3,
+        "suffix": 5
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 95,
+      "txHash": "0x60b85e40f860d7edb9a9798ca3170d482903cd7485b21c837ed658df69478876",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16558961,
+      "attacker": "0x50f2c2e2f93afbfdf2af1170eb71916889a23e17",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 39,
+      "baitToken": {
+        "transfers": 39,
+        "planted": 14
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 3,
+        "suffix": 5
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 96,
+      "txHash": "0x6771d26ea7be8f40785dac41f0cd123e5d0133d81728e03840d4323193f40699",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16744391,
+      "attacker": "0x3e8d348da146229f52a8a4ff889052537f5fb837",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 4,
+      "baitToken": {
+        "transfers": 4,
+        "planted": 2
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 3,
+        "suffix": 4
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 97,
+      "txHash": "0x6844313e98ab3602eab6e935610ea54d79d47fb57fa197433f6877debee9a9f6",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16583212,
+      "attacker": "0x9188602a881ff409c99431158785b6587a3f1c23",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 12,
+      "baitToken": {
+        "transfers": 11,
+        "planted": 4
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 3,
+        "suffix": 5
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 98,
+      "txHash": "0x6f5a4f3f2788c292ce2b36c499199ce6fdc0c7d261d15934f01ad9aa095fa400",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16615213,
+      "attacker": "0x185bc23d433d867fa208ec7a28a43a931f5690b7",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 17,
+      "baitToken": {
+        "transfers": 9,
+        "planted": 6
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 8,
+        "suffix": 6
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 77,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 99,
+      "txHash": "0x72f8d6978393ecd3d5d3199c95e5b4168fa1297cece71817efcc283b5d6aa1d6",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16681483,
+      "attacker": "0xc3abfb48bb2f88db4f96c941954f70993fbb87b3",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 68,
+      "baitToken": {
+        "transfers": 68,
+        "planted": 67
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 8,
+        "suffix": 6
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 77,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 100,
+      "txHash": "0x73e26f53042bd1165821e49e0a74edcbd4d8ff6e0d71927c417f9b48c1797c89",
+      "type": "zero",
+      "symbol": "USDC",
+      "block": 16564879,
+      "attacker": "0xda57220cf508f7e7037095326ddbf14b6dacf1e0",
+      "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "transfers": 11,
+      "baitToken": {
+        "transfers": 11,
+        "planted": 5
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 3,
+        "suffix": 5
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      }
+    },
+    {
+      "row": 101,
+      "txHash": "0x71b0e7b6992cac2878fbadce241ce64f4c3844d316a88509c31aa6ed2d64e5fe",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 17886186,
+      "attacker": "0x5a19e85f874f35b4fc3605e1374bcbd9ea7c211a",
+      "token": "0x246e8a3027701795297bd337208459d23b20702b",
+      "transfers": 14,
+      "baitToken": {
+        "transfers": 2,
+        "planted": 2
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": false,
+      "affix": {
+        "prefix": 4,
+        "suffix": 5
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 67,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment"
+        ]
+      },
+      "control": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "never-paid-before"
+        ]
+      },
+      "genuinePaymentsInWindow": 3,
+      "controlExplained": {
+        "recordsNamingIt": 3,
+        "signedByVictim": 0,
+        "signersWhoPlantOtherBaitsHere": 1,
+        "signers": 3,
+        "realPayeeItImitates": {
+          "where": "the scanned week",
+          "signedPayments": 1
+        }
+      },
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 102,
+      "txHash": "0x71b0e7b6992cac2878fbadce241ce64f4c3844d316a88509c31aa6ed2d64e5fe",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 17886186,
+      "attacker": "0xb91c0070cf15f125d2084a4cd9a2eaf44daaf211",
+      "token": "0x246e8a3027701795297bd337208459d23b20702b",
+      "transfers": 9,
+      "baitToken": {
+        "transfers": 2,
+        "planted": 2
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": false,
+      "affix": {
+        "prefix": 5,
+        "suffix": 4
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 67,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment"
+        ]
+      },
+      "control": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "never-paid-before"
+        ]
+      },
+      "genuinePaymentsInWindow": 3,
+      "controlExplained": {
+        "recordsNamingIt": 3,
+        "signedByVictim": 0,
+        "signersWhoPlantOtherBaitsHere": 1,
+        "signers": 2,
+        "realPayeeItImitates": {
+          "where": "the scanned week",
+          "signedPayments": 1
+        }
+      },
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 103,
+      "txHash": "0x7949b22654020f8aac53b7f3143c172788e574d30a9b0857c03a2167d8f783e9",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 17687904,
+      "attacker": "0x61358716f4f731f7d086d29b3aac179defcf5a44",
+      "token": "0xda35659b559034c55f555d6ca4ecfa0b72d855e3",
+      "transfers": 6,
+      "baitToken": {
+        "transfers": 1,
+        "planted": 1
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": false,
+      "affix": {
+        "prefix": 3,
+        "suffix": 5
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 4,
+        "codes": [
+          "no-history-at-all"
+        ]
+      },
+      "genuinePaymentsInWindow": 0,
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 104,
+      "txHash": "0xaf66d2ab54e54c1abaa25a72548ad0ee4deba41581584bef9bbc78f84a0e5063",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 16911616,
+      "attacker": "0xfbc22f94586af63aecb96aaf06317fe24a220262",
+      "token": "0x385f555fab6c60cdae3e42ce594bcae0fe6924f0",
+      "transfers": 10,
+      "baitToken": {
+        "transfers": 1,
+        "planted": 1
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 8,
+        "suffix": 6
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 77,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 105,
+      "txHash": "0xaf66d2ab54e54c1abaa25a72548ad0ee4deba41581584bef9bbc78f84a0e5063",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 16911616,
+      "attacker": "0xf7d440adc69a835aa534849fe25883c99164fddf",
+      "token": "0x385f555fab6c60cdae3e42ce594bcae0fe6924f0",
+      "transfers": 6,
+      "baitToken": {
+        "transfers": 1,
+        "planted": 1
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 4,
+        "suffix": 4
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 65,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 106,
+      "txHash": "0xaf66d2ab54e54c1abaa25a72548ad0ee4deba41581584bef9bbc78f84a0e5063",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 16911616,
+      "attacker": "0xbef13b2ea1a8f72c4d17ba4be2d7f340284c1a28",
+      "token": "0x385f555fab6c60cdae3e42ce594bcae0fe6924f0",
+      "transfers": 4,
+      "baitToken": {
+        "transfers": 1,
+        "planted": 1
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 8,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 79,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 107,
+      "txHash": "0x25dbbc98c93142bd3fac1f5b03488bf7932cd8421aa88f3a70fbdb1caf7c79b7",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 17933421,
+      "attacker": "0xa093fa4ea47de72ae0590a16ef449daf63b0057e",
+      "token": "0x2a5a85f07d16a534abe0e1587cfbe2eded305f40",
+      "transfers": 13,
+      "baitToken": {
+        "transfers": 4,
+        "planted": 4
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": false,
+      "affix": {
+        "prefix": 3,
+        "suffix": 5
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 4,
+        "codes": [
+          "no-history-at-all"
+        ]
+      },
+      "genuinePaymentsInWindow": 0,
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 108,
+      "txHash": "0xd9e70e1a697f0bc00cd5157a1a9d6abadc046af1d1a1e55f52c8fef416436196",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 16911627,
+      "attacker": "0x41d3d3315d13f58b4cb29afad2658ffd3df587b3",
+      "token": "0x385f555fab6c60cdae3e42ce594bcae0fe6924f0",
+      "transfers": 6,
+      "baitToken": {
+        "transfers": 2,
+        "planted": 2
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 9,
+        "suffix": 6
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 79,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 109,
+      "txHash": "0xd9e70e1a697f0bc00cd5157a1a9d6abadc046af1d1a1e55f52c8fef416436196",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 16911627,
+      "attacker": "0xc83f03a8b1583e2e42e5c414048dce7d7e04defc",
+      "token": "0x385f555fab6c60cdae3e42ce594bcae0fe6924f0",
+      "transfers": 13,
+      "baitToken": {
+        "transfers": 2,
+        "planted": 2
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 3,
+        "suffix": 4
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 110,
+      "txHash": "0xd9e70e1a697f0bc00cd5157a1a9d6abadc046af1d1a1e55f52c8fef416436196",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 16911627,
+      "attacker": "0x770a2d3d781008511333ab0a4aef63e77a917acc",
+      "token": "0x385f555fab6c60cdae3e42ce594bcae0fe6924f0",
+      "transfers": 262,
+      "baitToken": {
+        "transfers": 1,
+        "planted": 1
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 8,
+        "suffix": 6
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 52,
+        "codes": [
+          "lookalike-of-known-payee"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 111,
+      "txHash": "0xaf66d2ab54e54c1abaa25a72548ad0ee4deba41581584bef9bbc78f84a0e5063",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 16911616,
+      "attacker": "0x53bb609848079b3db1e3f81f2e951b45ec3ff13a",
+      "token": "0x385f555fab6c60cdae3e42ce594bcae0fe6924f0",
+      "transfers": 5,
+      "baitToken": {
+        "transfers": 1,
+        "planted": 1
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 3,
+        "suffix": 4
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 112,
+      "txHash": "0xd9e70e1a697f0bc00cd5157a1a9d6abadc046af1d1a1e55f52c8fef416436196",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 16911627,
+      "attacker": "0xafa49b2d1cffd1603a025fa5f02694e3171aaf8c",
+      "token": "0x385f555fab6c60cdae3e42ce594bcae0fe6924f0",
+      "transfers": 16,
+      "baitToken": {
+        "transfers": 2,
+        "planted": 2
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 3,
+        "suffix": 4
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 113,
+      "txHash": "0xf49af1a8defd4d34bee2f06e5ed2c8cf6be7ef42d192c4eb1946a5706f677db4",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 17872946,
+      "attacker": "0x3128112b46f104072036a43f02a2ace6b2b49fea",
+      "token": "0xda35659b559034c55f555d6ca4ecfa0b72d855e3",
+      "transfers": 1005,
+      "baitToken": {
+        "transfers": 18,
+        "planted": 18
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": false,
+      "affix": {
+        "prefix": 3,
+        "suffix": 4
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "never-paid-before"
+        ]
+      },
+      "genuinePaymentsInWindow": 2,
+      "controlExplained": {
+        "recordsNamingIt": 2,
+        "signedByVictim": 0,
+        "signersWhoPlantOtherBaitsHere": 0,
+        "signers": 1,
+        "realPayeeItImitates": {
+          "where": "the scanned week",
+          "signedPayments": 9
+        }
+      },
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 114,
+      "txHash": "0xaf66d2ab54e54c1abaa25a72548ad0ee4deba41581584bef9bbc78f84a0e5063",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 16911616,
+      "attacker": "0x70e2a20cdd77c405b1c851bc8cdc05db5fe9324b",
+      "token": "0x385f555fab6c60cdae3e42ce594bcae0fe6924f0",
+      "transfers": 24,
+      "baitToken": {
+        "transfers": 2,
+        "planted": 2
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 8,
+        "suffix": 6
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 77,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 115,
+      "txHash": "0xd9e70e1a697f0bc00cd5157a1a9d6abadc046af1d1a1e55f52c8fef416436196",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 16911627,
+      "attacker": "0x9a674670eea4488374f4d2047c460393075d058f",
+      "token": "0x385f555fab6c60cdae3e42ce594bcae0fe6924f0",
+      "transfers": 4,
+      "baitToken": {
+        "transfers": 2,
+        "planted": 2
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 4,
+        "suffix": 4
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 65,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 116,
+      "txHash": "0xaf66d2ab54e54c1abaa25a72548ad0ee4deba41581584bef9bbc78f84a0e5063",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 16911616,
+      "attacker": "0x201d9eed4679d47315e2805cfafab4510e3db08d",
+      "token": "0x385f555fab6c60cdae3e42ce594bcae0fe6924f0",
+      "transfers": 20,
+      "baitToken": {
+        "transfers": 1,
+        "planted": 1
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 9,
+        "suffix": 6
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 54,
+        "codes": [
+          "lookalike-of-known-payee"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 117,
+      "txHash": "0xd9e70e1a697f0bc00cd5157a1a9d6abadc046af1d1a1e55f52c8fef416436196",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 16911627,
+      "attacker": "0x1a5c363763bbf6baab85a8f577e0abd730d0655a",
+      "token": "0x385f555fab6c60cdae3e42ce594bcae0fe6924f0",
+      "transfers": 8,
+      "baitToken": {
+        "transfers": 2,
+        "planted": 2
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 8,
+        "suffix": 6
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 77,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 118,
+      "txHash": "0xd9e70e1a697f0bc00cd5157a1a9d6abadc046af1d1a1e55f52c8fef416436196",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 16911627,
+      "attacker": "0x059d21ebe73e974aa4c2a4cd67aeceb9f6473ef0",
+      "token": "0x385f555fab6c60cdae3e42ce594bcae0fe6924f0",
+      "transfers": 6,
+      "baitToken": {
+        "transfers": 2,
+        "planted": 2
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 4,
+        "suffix": 4
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 65,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 119,
+      "txHash": "0xdbba0f138fef90bcc3ab1b468418ee6f84372f8f5e127e2cec3433c88d15a7cc",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 17008153,
+      "attacker": "0x01a886bfc247d6e5a2d9b962e2b5daa1dcaedb8a",
+      "token": "0xb7646b5c99f9949788249f4ef5caef3e830359ec",
+      "transfers": 12,
+      "baitToken": {
+        "transfers": 1,
+        "planted": 1
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": false,
+      "affix": {
+        "prefix": 3,
+        "suffix": 5
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 4,
+        "codes": [
+          "no-history-at-all"
+        ]
+      },
+      "genuinePaymentsInWindow": 0,
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 120,
+      "txHash": "0x8d5995c83cc3aa8dfb80a46c9c62a22b69bcacb00a6dc4e367b771e75925aa8d",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 17942054,
+      "attacker": "0xf429f9024e62e9b202b31c684e9ce8d17e892008",
+      "token": "0x2a5a85f07d16a534abe0e1587cfbe2eded305f40",
+      "transfers": 725,
+      "baitToken": {
+        "transfers": 31,
+        "planted": 31
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": false,
+      "affix": {
+        "prefix": 3,
+        "suffix": 4
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "never-paid-before"
+        ]
+      },
+      "genuinePaymentsInWindow": 4,
+      "controlExplained": {
+        "recordsNamingIt": 4,
+        "signedByVictim": 0,
+        "signersWhoPlantOtherBaitsHere": 0,
+        "signers": 2,
+        "realPayeeItImitates": {
+          "where": "the scanned week",
+          "signedPayments": 2
+        }
+      },
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 121,
+      "txHash": "0xd9e70e1a697f0bc00cd5157a1a9d6abadc046af1d1a1e55f52c8fef416436196",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 16911627,
+      "attacker": "0x4c881672f3a8448f02cb455b6fb27eaec00e968d",
+      "token": "0x385f555fab6c60cdae3e42ce594bcae0fe6924f0",
+      "transfers": 6,
+      "baitToken": {
+        "transfers": 2,
+        "planted": 2
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 4,
+        "suffix": 4
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 65,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 122,
+      "txHash": "0xaf66d2ab54e54c1abaa25a72548ad0ee4deba41581584bef9bbc78f84a0e5063",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 16911616,
+      "attacker": "0x470cbf31b0804ffa16cdb48f13f95a811005bbd1",
+      "token": "0x385f555fab6c60cdae3e42ce594bcae0fe6924f0",
+      "transfers": 2128,
+      "baitToken": {
+        "transfers": 4,
+        "planted": 4
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 3,
+        "suffix": 4
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 123,
+      "txHash": "0xd9e70e1a697f0bc00cd5157a1a9d6abadc046af1d1a1e55f52c8fef416436196",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 16911627,
+      "attacker": "0x93a3cf38efa548b0d0127d3f9057f685821695c7",
+      "token": "0x385f555fab6c60cdae3e42ce594bcae0fe6924f0",
+      "transfers": 6,
+      "baitToken": {
+        "transfers": 2,
+        "planted": 2
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 4,
+        "suffix": 4
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 65,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 124,
+      "txHash": "0xdd61da53b8f4ca01a4eeb8579cd48560b6e52ff8d5fe362b968b0c7d7f7ceb1f",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 17587599,
+      "attacker": "0xc617ec915a976eedf270b846d51e1ef6cd9178b4",
+      "token": "0xda35659b559034c55f555d6ca4ecfa0b72d855e3",
+      "transfers": 110,
+      "baitToken": {
+        "transfers": 19,
+        "planted": 19
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": false,
+      "affix": {
+        "prefix": 3,
+        "suffix": 5
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 67,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment"
+        ]
+      },
+      "control": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "genuinePaymentsInWindow": 2,
+      "controlExplained": {
+        "recordsNamingIt": 2,
+        "signedByVictim": 0,
+        "signersWhoPlantOtherBaitsHere": 0,
+        "signers": 1,
+        "realPayeeItImitates": {
+          "where": "not found in seven weeks"
+        }
+      },
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 125,
+      "txHash": "0x1d0d32928a857642eaeeead74e1bec4512ca444e4e2a59b2daca37e34498503c",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 17936798,
+      "attacker": "0x7025a1db5e3ddb76ebac0f791d256a45d24f7621",
+      "token": "0x2a5a85f07d16a534abe0e1587cfbe2eded305f40",
+      "transfers": 5442,
+      "baitToken": {
+        "transfers": 3,
+        "planted": 3
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": false,
+      "affix": {
+        "prefix": 3,
+        "suffix": 4
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "never-paid-before"
+        ]
+      },
+      "genuinePaymentsInWindow": 8,
+      "controlExplained": {
+        "recordsNamingIt": 8,
+        "signedByVictim": 0,
+        "signersWhoPlantOtherBaitsHere": 0,
+        "signers": 4,
+        "realPayeeItImitates": {
+          "where": "the scanned week",
+          "signedPayments": 7
+        }
+      },
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 126,
+      "txHash": "0x1d0d32928a857642eaeeead74e1bec4512ca444e4e2a59b2daca37e34498503c",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 17936798,
+      "attacker": "0x91ed2fb0961ae807454bd28834561d9840faa125",
+      "token": "0x2a5a85f07d16a534abe0e1587cfbe2eded305f40",
+      "transfers": 28,
+      "baitToken": {
+        "transfers": 1,
+        "planted": 1
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": false,
+      "affix": {
+        "prefix": 4,
+        "suffix": 4
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 65,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment"
+        ]
+      },
+      "control": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "never-paid-before"
+        ]
+      },
+      "genuinePaymentsInWindow": 2,
+      "controlExplained": {
+        "recordsNamingIt": 2,
+        "signedByVictim": 0,
+        "signersWhoPlantOtherBaitsHere": 0,
+        "signers": 1,
+        "realPayeeItImitates": {
+          "where": "the scanned week",
+          "signedPayments": 1
+        }
+      },
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 127,
+      "txHash": "0xd9e70e1a697f0bc00cd5157a1a9d6abadc046af1d1a1e55f52c8fef416436196",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 16911627,
+      "attacker": "0x61ab3d363dc642e6cac4c993241e50d4b67bd18c",
+      "token": "0x385f555fab6c60cdae3e42ce594bcae0fe6924f0",
+      "transfers": 9,
+      "baitToken": {
+        "transfers": 2,
+        "planted": 2
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 9,
+        "suffix": 6
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 79,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 128,
+      "txHash": "0xd9e70e1a697f0bc00cd5157a1a9d6abadc046af1d1a1e55f52c8fef416436196",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 16911627,
+      "attacker": "0x9fa8fe94e645f502378367d276b7ef5834eca9a8",
+      "token": "0x385f555fab6c60cdae3e42ce594bcae0fe6924f0",
+      "transfers": 52,
+      "baitToken": {
+        "transfers": 2,
+        "planted": 2
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 8,
+        "suffix": 6
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 77,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 129,
+      "txHash": "0xaf66d2ab54e54c1abaa25a72548ad0ee4deba41581584bef9bbc78f84a0e5063",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 16911616,
+      "attacker": "0xea97c8d47e46612d357182a05e8aad7e7ae92610",
+      "token": "0x385f555fab6c60cdae3e42ce594bcae0fe6924f0",
+      "transfers": 12,
+      "baitToken": {
+        "transfers": 1,
+        "planted": 1
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 8,
+        "suffix": 7
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 79,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 130,
+      "txHash": "0xaf66d2ab54e54c1abaa25a72548ad0ee4deba41581584bef9bbc78f84a0e5063",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 16911616,
+      "attacker": "0x3b427454a7fd2b2141a8911d313c2af76cfce077",
+      "token": "0x385f555fab6c60cdae3e42ce594bcae0fe6924f0",
+      "transfers": 7,
+      "baitToken": {
+        "transfers": 1,
+        "planted": 1
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 8,
+        "suffix": 6
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 77,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 131,
+      "txHash": "0x2c90d330cba9991084b6ba2c887f045513ca13841fd5d63b3346f7a0216d4d37",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 17049325,
+      "attacker": "0x880b4a222cc25724e24934356946f6b77961951b",
+      "token": "0xb7646b5c99f9949788249f4ef5caef3e830359ec",
+      "transfers": 8,
+      "baitToken": {
+        "transfers": 2,
+        "planted": 2
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": false,
+      "affix": {
+        "prefix": 4,
+        "suffix": 5
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 4,
+        "codes": [
+          "no-history-at-all"
+        ]
+      },
+      "genuinePaymentsInWindow": 0,
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 132,
+      "txHash": "0xa4911b731d4c7570526bece645e9c3d955096f36d0ec554160c87b77550e811c",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 17270257,
+      "attacker": "0x64dd97b446f97ef02ae164f1dd95283576e8fa2b",
+      "token": "0x6485a70d87994e57548dfb8f8bf382e8f505f0ef",
+      "transfers": 74,
+      "baitToken": {
+        "transfers": 2,
+        "planted": 2
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": false,
+      "affix": {
+        "prefix": 3,
+        "suffix": 5
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 4,
+        "codes": [
+          "no-history-at-all"
+        ]
+      },
+      "genuinePaymentsInWindow": 0,
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 133,
+      "txHash": "0x11c10e3191038ce71d39fa419ca9c4628c4e6b74528b74554f44c2751b8194fe",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 17839387,
+      "attacker": "0x1eaddb8191525d58739c7f151585fad011d89c79",
+      "token": "0xda35659b559034c55f555d6ca4ecfa0b72d855e3",
+      "transfers": 2,
+      "baitToken": {
+        "transfers": 1,
+        "planted": 1
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": false,
+      "affix": {
+        "prefix": 3,
+        "suffix": 5
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 4,
+        "codes": [
+          "no-history-at-all"
+        ]
+      },
+      "genuinePaymentsInWindow": 0,
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 134,
+      "txHash": "0xab30fc41ae8ae13e8b055f655fc743c9a3625e54c6b5385a3bae2b5990ad751a",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 17005618,
+      "attacker": "0x603e93c306d2adf5b9f969a1b10d9fa5b4db36d0",
+      "token": "0xb7646b5c99f9949788249f4ef5caef3e830359ec",
+      "transfers": 5,
+      "baitToken": {
+        "transfers": 1,
+        "planted": 1
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 4,
+        "suffix": 5
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 67,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 135,
+      "txHash": "0xdd61da53b8f4ca01a4eeb8579cd48560b6e52ff8d5fe362b968b0c7d7f7ceb1f",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 17587599,
+      "attacker": "0xc65cb9663caaaf0342bcf22993c97ddd41bf0d6b",
+      "token": "0xda35659b559034c55f555d6ca4ecfa0b72d855e3",
+      "transfers": 110,
+      "baitToken": {
+        "transfers": 19,
+        "planted": 19
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": false,
+      "affix": {
+        "prefix": 3,
+        "suffix": 5
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "genuinePaymentsInWindow": 2,
+      "controlExplained": {
+        "recordsNamingIt": 2,
+        "signedByVictim": 0,
+        "signersWhoPlantOtherBaitsHere": 0,
+        "signers": 1,
+        "realPayeeItImitates": {
+          "where": "not found in seven weeks"
+        }
+      },
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 136,
+      "txHash": "0xe52dbafc30213edc9e1259d7aae301bed55331eaea43e023e47f024cc02860b7",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 17965129,
+      "attacker": "0x87f36e526fcf1b2178d7997b20c7b6ad04f70b01",
+      "token": "0x2a5a85f07d16a534abe0e1587cfbe2eded305f40",
+      "transfers": 2,
+      "baitToken": {
+        "transfers": 1,
+        "planted": 1
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": false,
+      "affix": {
+        "prefix": 3,
+        "suffix": 5
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 4,
+        "codes": [
+          "no-history-at-all"
+        ]
+      },
+      "genuinePaymentsInWindow": 0,
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 137,
+      "txHash": "0xba72f2b0e2e42e7b2835b2575c2665b71a67973f6e510df9a52f3f0733f79789",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 17839786,
+      "attacker": "0xa093fa4ea47de72ae0590a16ef449daf63b0057e",
+      "token": "0xda35659b559034c55f555d6ca4ecfa0b72d855e3",
+      "transfers": 96,
+      "baitToken": {
+        "transfers": 31,
+        "planted": 31
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": false,
+      "affix": {
+        "prefix": 3,
+        "suffix": 5
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 4,
+        "codes": [
+          "no-history-at-all"
+        ]
+      },
+      "genuinePaymentsInWindow": 0,
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 138,
+      "txHash": "0xaf66d2ab54e54c1abaa25a72548ad0ee4deba41581584bef9bbc78f84a0e5063",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 16911616,
+      "attacker": "0xc5de18f648bea82821205ab736725ebf037489e7",
+      "token": "0x385f555fab6c60cdae3e42ce594bcae0fe6924f0",
+      "transfers": 21,
+      "baitToken": {
+        "transfers": 1,
+        "planted": 1
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 3,
+        "suffix": 4
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 139,
+      "txHash": "0x2db99d236ed43566696bd15c875fd2d2c17cb7cfc1389c096cd2a8ed53f1a560",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 17725737,
+      "attacker": "0x9d58c30b231889cf1289f51bc8950b9cf33f3416",
+      "token": "0xda35659b559034c55f555d6ca4ecfa0b72d855e3",
+      "transfers": 12,
+      "baitToken": {
+        "transfers": 4,
+        "planted": 4
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 3,
+        "suffix": 5
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 140,
+      "txHash": "0x7a71c2cc33d47c57baf2a9fb8033f5612463d402ac1948c10ee306472aa1c3a8",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 17566742,
+      "attacker": "0xa09581815f6921ed429260252898b952b6a0057e",
+      "token": "0xda35659b559034c55f555d6ca4ecfa0b72d855e3",
+      "transfers": 147,
+      "baitToken": {
+        "transfers": 48,
+        "planted": 48
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": false,
+      "affix": {
+        "prefix": 3,
+        "suffix": 5
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 42,
+        "codes": [
+          "lookalike-of-known-payee"
+        ]
+      },
+      "control": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "genuinePaymentsInWindow": 2,
+      "controlExplained": {
+        "recordsNamingIt": 2,
+        "signedByVictim": 0,
+        "signersWhoPlantOtherBaitsHere": 0,
+        "signers": 1,
+        "realPayeeItImitates": {
+          "where": "not found in seven weeks"
+        }
+      },
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 141,
+      "txHash": "0xaf66d2ab54e54c1abaa25a72548ad0ee4deba41581584bef9bbc78f84a0e5063",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 16911616,
+      "attacker": "0x4945ce2d6a26511fa0d2eb232fd5b8105dab982b",
+      "token": "0x385f555fab6c60cdae3e42ce594bcae0fe6924f0",
+      "transfers": 5,
+      "baitToken": {
+        "transfers": 1,
+        "planted": 1
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 8,
+        "suffix": 6
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 77,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 142,
+      "txHash": "0xb24ac67329a90cfd8e4922d4f461eeb14cf95bd74b2190650d6cbb4a9cb84fa7",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 17933119,
+      "attacker": "0x68dfea8ed962f00c819f32be1aae6fefaf9f8e80",
+      "token": "0x2a5a85f07d16a534abe0e1587cfbe2eded305f40",
+      "transfers": 8,
+      "baitToken": {
+        "transfers": 1,
+        "planted": 1
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": false,
+      "affix": {
+        "prefix": 4,
+        "suffix": 4
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 65,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment"
+        ]
+      },
+      "control": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "genuinePaymentsInWindow": 1,
+      "controlExplained": {
+        "recordsNamingIt": 1,
+        "signedByVictim": 0,
+        "signersWhoPlantOtherBaitsHere": 1,
+        "signers": 1,
+        "realPayeeItImitates": {
+          "where": "the scanned week",
+          "signedPayments": 3
+        }
+      },
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 143,
+      "txHash": "0xd16b8fa8d4b0cfca71a9ccff6a376a94de5225ab93432a4adc44ffd00b43e666",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 17956025,
+      "attacker": "0x41d32cc345c6f91738586f1902e987709d5b87b3",
+      "token": "0x2a5a85f07d16a534abe0e1587cfbe2eded305f40",
+      "transfers": 17,
+      "baitToken": {
+        "transfers": 3,
+        "planted": 3
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": false,
+      "affix": {
+        "prefix": 4,
+        "suffix": 4
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 65,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment"
+        ]
+      },
+      "control": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "never-paid-before"
+        ]
+      },
+      "genuinePaymentsInWindow": 2,
+      "controlExplained": {
+        "recordsNamingIt": 2,
+        "signedByVictim": 0,
+        "signersWhoPlantOtherBaitsHere": 0,
+        "signers": 1,
+        "realPayeeItImitates": {
+          "where": "the scanned week",
+          "signedPayments": 1
+        }
+      },
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 144,
+      "txHash": "0xd9e70e1a697f0bc00cd5157a1a9d6abadc046af1d1a1e55f52c8fef416436196",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 16911627,
+      "attacker": "0x3b427454a7fd2b2141a8911d313c2af76cfce077",
+      "token": "0x385f555fab6c60cdae3e42ce594bcae0fe6924f0",
+      "transfers": 8,
+      "baitToken": {
+        "transfers": 2,
+        "planted": 2
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 8,
+        "suffix": 6
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 77,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 145,
+      "txHash": "0x3c22d04ee8aea62a8663f611050c9c6e38f43a1971dad6605350af12e765f0cc",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 17864548,
+      "attacker": "0x43ca84762d90f9018f0610f57e44c9eacb561f15",
+      "token": "0xda35659b559034c55f555d6ca4ecfa0b72d855e3",
+      "transfers": 91,
+      "baitToken": {
+        "transfers": 19,
+        "planted": 19
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": false,
+      "affix": {
+        "prefix": 4,
+        "suffix": 4
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 65,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment"
+        ]
+      },
+      "control": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "genuinePaymentsInWindow": 2,
+      "controlExplained": {
+        "recordsNamingIt": 2,
+        "signedByVictim": 0,
+        "signersWhoPlantOtherBaitsHere": 1,
+        "signers": 1,
+        "realPayeeItImitates": {
+          "where": "not found in seven weeks"
+        }
+      },
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 146,
+      "txHash": "0xaf66d2ab54e54c1abaa25a72548ad0ee4deba41581584bef9bbc78f84a0e5063",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 16911616,
+      "attacker": "0xf1e229c4d3ba29ac48f80b955dd4f0b1a441e3f9",
+      "token": "0x385f555fab6c60cdae3e42ce594bcae0fe6924f0",
+      "transfers": 15,
+      "baitToken": {
+        "transfers": 2,
+        "planted": 2
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 8,
+        "suffix": 6
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "dust-inbound",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 52,
+        "codes": [
+          "lookalike-of-known-payee"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 147,
+      "txHash": "0x7e0229b50ec09ff607ddbfd9616a76ec40c1c9ce844b33f1410fad27b623de06",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 17505934,
+      "attacker": "0xa095b50ea48383ea867f0abbcea68fad88f0057e",
+      "token": "0xda35659b559034c55f555d6ca4ecfa0b72d855e3",
+      "transfers": 175,
+      "baitToken": {
+        "transfers": 57,
+        "planted": 57
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": false,
+      "affix": {
+        "prefix": 3,
+        "suffix": 5
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "caution",
+        "score": 42,
+        "codes": [
+          "lookalike-of-known-payee"
+        ]
+      },
+      "control": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "genuinePaymentsInWindow": 2,
+      "controlExplained": {
+        "recordsNamingIt": 2,
+        "signedByVictim": 0,
+        "signersWhoPlantOtherBaitsHere": 0,
+        "signers": 1,
+        "realPayeeItImitates": {
+          "where": "not found in seven weeks"
+        }
+      },
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 148,
+      "txHash": "0x8b4136d5f6c396a7a9b8077b42426a3d42d6ddeb3e1da5e80f8adc7daf6a5e16",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 17030113,
+      "attacker": "0x01a6e11077a39da7f8a8b2304e23d1f5d76edb8a",
+      "token": "0xb7646b5c99f9949788249f4ef5caef3e830359ec",
+      "transfers": 24,
+      "baitToken": {
+        "transfers": 3,
+        "planted": 3
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": false,
+      "affix": {
+        "prefix": 3,
+        "suffix": 5
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 4,
+        "codes": [
+          "no-history-at-all"
+        ]
+      },
+      "genuinePaymentsInWindow": 0,
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 149,
+      "txHash": "0xd9e70e1a697f0bc00cd5157a1a9d6abadc046af1d1a1e55f52c8fef416436196",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 16911627,
+      "attacker": "0x53bb609848079b3db1e3f81f2e951b45ec3ff13a",
+      "token": "0x385f555fab6c60cdae3e42ce594bcae0fe6924f0",
+      "transfers": 6,
+      "baitToken": {
+        "transfers": 2,
+        "planted": 2
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 3,
+        "suffix": 4
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 71,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    },
+    {
+      "row": 150,
+      "txHash": "0xaf66d2ab54e54c1abaa25a72548ad0ee4deba41581584bef9bbc78f84a0e5063",
+      "type": "fake",
+      "symbol": "USDC",
+      "block": 16911616,
+      "attacker": "0x7d5721f5d5e5ec1c9491a151a335b6f987e58a51",
+      "token": "0x385f555fab6c60cdae3e42ce594bcae0fe6924f0",
+      "transfers": 4,
+      "baitToken": {
+        "transfers": 1,
+        "planted": 1
+      },
+      "baitInScan": true,
+      "imitatedWasPaid": true,
+      "affix": {
+        "prefix": 8,
+        "suffix": 8
+      },
+      "signerAware": {
+        "level": "danger",
+        "score": 100,
+        "codes": [
+          "spoofed-outgoing-transfer",
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment",
+          "never-paid-before"
+        ]
+      },
+      "naive": {
+        "level": "danger",
+        "score": 81,
+        "codes": [
+          "lookalike-of-known-payee",
+          "appeared-right-after-payment"
+        ]
+      },
+      "control": {
+        "level": "safe",
+        "score": 0,
+        "codes": []
+      },
+      "tokenCheck": {
+        "symbol": "USDC",
+        "verdict": "counterfeit",
+        "issues": [
+          "known-symbol-wrong-contract"
+        ]
+      }
+    }
+  ]
+}

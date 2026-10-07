@@ -48,6 +48,8 @@ apps/extension/.output/
 apps/extension/dev/harness.js
 
 # ---- python / analysis ----
+# Raw chain reads cached so an interrupted replay resumes; the committed results are in analysis/data.
+analysis/.cache/
 __pycache__/
 *.py[cod]
 .venv/

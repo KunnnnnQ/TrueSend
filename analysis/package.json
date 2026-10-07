@@ -11,7 +11,8 @@
     "evaluate": "node src/evaluate-engine.mjs",
     "test": "node src/evaluate-engine.mjs --check",
     "typecheck": "node --check src/rpc.mjs && node --check src/verify-wbtc-case.mjs",
-    "false-positives": "node src/false-positives.mjs"
+    "false-positives": "node src/false-positives.mjs",
+    "poison-hunter": "node src/poison-hunter.mjs"
   },
   "dependencies": {
     "@truesend/chain": "workspace:*",
