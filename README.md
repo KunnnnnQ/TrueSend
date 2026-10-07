@@ -9,6 +9,9 @@ from your browser, nothing to install or connect; *Load the 1155 WBTC loss* repl
 May 2024 case. Send, Pending and Report talk to the contracts [deployed on Sepolia](#deployed-on-sepolia):
 choose Sepolia and they read real on-chain state; sending or reporting needs a wallet with Sepolia ETH.
 
+**[Demo video](#what-it-looks-like)** — 87 seconds, captioned, no sound: the May 2024 case, the
+warning that follows you to Send, the EIP-7702 hold live on Sepolia, and the community registry.
+
 **[Browser extension](https://github.com/KunnnnnQ/TrueSend/releases/latest)** — download the zip
 from the latest release, unzip it, and in `chrome://extensions` turn on Developer mode and choose
 *Load unpacked*. Built and tested by CI from the release's tag; not on the Chrome Web Store.
@@ -65,15 +68,17 @@ Same first six and last four characters. Same row in your wallet. Different ever
 
 ## What it looks like
 
+https://github.com/user-attachments/assets/f29f1c79-20e6-4129-ae1d-ae74faa6a8bd
+
 | Every verdict says why | The scan follows you to Send |
 | --- | --- |
 | ![An expanded row: nine payments to this address that the account never signed, and a note that it has only ever received from it](docs/images/row-findings.png) | ![Send with the attacker's address and the counterfeit token pasted in: the recipient is "Do not send", and the token is named as one the last scan flagged](docs/images/send-warning.png) |
 | **The EIP-7702 account, read from Sepolia** | **The community registry, live on Sepolia** |
 | ![The policy of the delegated account 0x816C…63C0 on Sepolia: a 5-minute hold, new contacts active after 5 minutes, no guardian](docs/images/sepolia-policy.png) | ![The Report screen on Sepolia: the registry's resolver and schema, confirmed on chain before anything is attested](docs/images/report-sepolia.png) |
 
-All five are the live demo, captured in one browser session against real mainnet history and the
-Sepolia deployment. [`docs/demo-script.md`](docs/demo-script.md) lists the addresses used and why,
-and holds the script that records the captioned demo video.
+The video and the pictures are all the live demo, recorded in a browser against real mainnet
+history and the Sepolia deployment. [`docs/demo-script.md`](docs/demo-script.md) has the script
+that recorded the video, the addresses it used, and why those ones.
 
 ## Two modes
 

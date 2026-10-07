@@ -4,8 +4,10 @@ A silent, captioned walkthrough of the live site, recorded in one browser sessio
 overlays injected into the page rather than a voice track, so the recording needs no microphone and
 no editing pass — what the script does is what the video is.
 
-**The video:** 1 minute 26.6 seconds, 1440×900, VP8/WebM at 25 fps, 6.66 MB (6,979,475 bytes). It
-is deliberately kept out of the repository.
+**The video:** <https://github.com/user-attachments/assets/f29f1c79-20e6-4129-ae1d-ae74faa6a8bd> —
+1 minute 26.6 seconds, 1440×900, VP8/WebM at 25 fps, 6.66 MB (6,979,475 bytes). It is kept out of
+the repository: GitHub hosts it as an attachment to [issue #1](https://github.com/KunnnnnQ/TrueSend/issues/1),
+which is why that issue must not be deleted.
 
 **The live site:** <https://kunnnnnq.github.io/TrueSend/>
 
@@ -344,6 +346,6 @@ the timed holds. The two things that matter:
 
 | What | Where |
 | --- | --- |
-| Video | Kept out of the repository |
+| Video | An attachment to [issue #1](https://github.com/KunnnnnQ/TrueSend/issues/1), not in the repository |
 | Screenshots | `docs/images/scan-wbtc.png`, `row-findings.png`, `send-warning.png`, `sepolia-policy.png`, `report-sepolia.png` |
 | This script | `docs/demo-script.md` |
