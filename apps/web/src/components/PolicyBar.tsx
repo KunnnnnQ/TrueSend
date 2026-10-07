@@ -32,7 +32,8 @@ export function PolicyBar({
   return (
     <section className="rise rounded-lg border border-line bg-surface p-4 [--i:1]">
       <div className="flex flex-wrap items-end gap-3">
-        <label className="min-w-72 flex-1">
+        {/* At least 18rem beside the network picker, but never wider than a phone's screen. */}
+        <label className="min-w-[min(18rem,100%)] flex-1">
           <span className="mb-1.5 block text-xs uppercase tracking-wide text-faint">
             Protected account
           </span>

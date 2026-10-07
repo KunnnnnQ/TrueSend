@@ -412,9 +412,12 @@ for (const row of [...results, ...failures]) delete row.index;
  */
 const CANONICAL = KNOWN.map((t) => ({symbol: t.symbol, address: t.address}));
 const fakeTokens = [...new Set(results.filter((r) => r.type === "fake").map((r) => r.token))];
-const identities = new Map(
-  (await readTokenIdentities(client, fakeTokens)).map((identity) => [identity.address.toLowerCase(), identity]),
-);
+const read = await readTokenIdentities(client, fakeTokens);
+// A name the endpoint refused to read would be scored as one the token would not say. Stop instead:
+// every scan is cached, so running it again costs only the names.
+const refused = read.filter((identity) => identity.unanswered).length;
+if (refused > 0) throw new Error(`${refused} token names could not be read; run it again`);
+const identities = new Map(read.map((identity) => [identity.address.toLowerCase(), identity]));
 for (const r of results.filter((row) => row.type === "fake")) {
   const identity = identities.get(r.token) ?? {address: r.token, symbol: null, name: null};
   // The engine's own check, given only this token's records: whether the account ever held a

@@ -186,8 +186,8 @@ export default function ScanPage() {
 
     const endpoint = HISTORY_RPC[scanChain];
     if (!endpoint || result.tokensSeen.length === 0) {
-      setTokenCheck({status: "done", checked: 0, unreadable: 0, counterfeit: [], unusual: []});
-      attachTokenCheck(result.owner, {checked: 0, unreadable: 0, counterfeit: [], unusual: []});
+      setTokenCheck({status: "done", checked: 0, unreadable: 0, unanswered: 0, counterfeit: [], unusual: []});
+      attachTokenCheck(result.owner, {checked: 0, unreadable: 0, unanswered: 0, counterfeit: [], unusual: []});
       return;
     }
 
@@ -237,7 +237,8 @@ export default function ScanPage() {
 
       <section className="rise rounded-lg border border-line bg-surface p-4" style={{"--i": 1} as CSSProperties}>
         <div className="flex flex-wrap items-end gap-3">
-          <label className="min-w-64 flex-1">
+          {/* At least 16rem beside the block range, but never wider than a phone's screen. */}
+          <label className="min-w-[min(16rem,100%)] flex-1">
             <span className="mb-1.5 block text-xs uppercase tracking-wide text-faint">Address</span>
             <input
               value={subject}
@@ -411,10 +412,11 @@ function Row({
         type="button"
         onClick={onToggle}
         aria-expanded={open}
-        className="flex w-full items-center gap-4 p-4 text-left"
+        className="flex w-full flex-wrap items-center gap-x-4 gap-y-3 p-4 text-left"
       >
         <AddressCard address={assessment.address} delay={Math.min(index, 16) * 45 + 150} />
-        <div className="ml-auto flex items-center gap-3">
+        {/* On a phone the verdict wraps under the address rather than off the edge of the card. */}
+        <div className="ml-auto flex shrink-0 items-center gap-3">
           {report ? <ReportChip report={report} /> : null}
           <RiskChip level={assessment.level} score={assessment.score} />
           <span aria-hidden className="text-faint">

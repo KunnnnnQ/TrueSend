@@ -8,7 +8,7 @@ import {
 } from "@truesend/engine";
 
 import {accountKind, type AccountKind} from "./account.js";
-import {splitOnRefusal, type BlockRange} from "./client.js";
+import {RETRY_DELAYS_MS, pause, splitOnRefusal, type BlockRange} from "./client.js";
 
 const TRANSFER_EVENT = parseAbiItem(
   "event Transfer(address indexed from, address indexed to, uint256 value)",
@@ -16,16 +16,6 @@ const TRANSFER_EVENT = parseAbiItem(
 
 /** Wide enough to be few requests, narrow enough that most endpoints accept it. */
 const CHUNK_BLOCKS = 9_000n;
-
-/**
- * How long to wait before each pass back over the lookups an endpoint refused: a second, then
- * three more.
- *
- * A refusal is nearly always a rate limit, so those passes ask one lookup at a time after a pause.
- * Four seconds is as long as a screen can sit on "checking" before it looks broken, and whatever
- * is still missing after that is reported rather than waited for.
- */
-const RETRY_DELAYS_MS: readonly number[] = [1_000, 3_000];
 
 export interface ScanProgress {
   /** 0..1, for a progress bar. */
@@ -88,6 +78,12 @@ export interface ScanOptions {
    * zeros.
    */
   retryDelaysMs?: readonly number[];
+  /**
+   * Resolve the signer of every transaction, not only of those naming the owner as the sender. The
+   * product never needs it; `analysis/src/false-positives.mjs` does, to measure a rule that asks
+   * who signed a transfer the owner received.
+   */
+  everySigner?: boolean;
 }
 
 /**
@@ -117,7 +113,13 @@ export async function scanHistory(
   range: BlockRange,
   options: ScanOptions = {},
 ): Promise<ScanResult> {
-  const {knownTokens = [], onProgress, concurrency = 8, retryDelaysMs = RETRY_DELAYS_MS} = options;
+  const {
+    knownTokens = [],
+    onProgress,
+    concurrency = 8,
+    retryDelaysMs = RETRY_DELAYS_MS,
+    everySigner = false,
+  } = options;
 
   // Started here and awaited at the end: one request, and no reason to make the scan wait on it.
   const kind = accountKind(client, owner);
@@ -186,10 +188,17 @@ export async function scanHistory(
 
   const logs = [...raw.values()];
 
+  // Only a log naming the owner as the sender needs its signer: that is the one claim a signature
+  // makes true or false. A transfer the owner merely received reads the same whoever sent it, so a
+  // transaction the owner only received in is not asked about. Across the histories of the 143
+  // victims in `analysis/`'s Poison-Hunter replay, that was 32% of all transactions.
+  const me = owner.toLowerCase();
+  const needsSigner = (log: RawLog) => everySigner || log.from.toLowerCase() === me;
+
   // Signers and block times are per-transaction and per-block, so deduplicate before fetching;
   // an address with fifty transfers usually has far fewer of each. A block whose time arrived on
   // one of its logs is not asked about at all: fewer requests, and fewer for an endpoint to refuse.
-  const txHashes = [...new Set(logs.map((log) => log.transactionHash))];
+  const txHashes = [...new Set(logs.filter(needsSigner).map((log) => log.transactionHash))];
   const timesOnLogs = new Map<bigint, number>();
   for (const log of logs) {
     if (log.blockTimestamp !== undefined) timesOnLogs.set(log.blockNumber, log.blockTimestamp);
@@ -236,7 +245,7 @@ export async function scanHistory(
     const from = log.from.toLowerCase() as Address;
     const to = log.to.toLowerCase() as Address;
 
-    if (signer === undefined || at === undefined) {
+    if ((needsSigner(log) && signer === undefined) || at === undefined) {
       unchecked.push({token: log.token, from, to, value: log.value, txHash: log.transactionHash});
       continue;
     }
@@ -253,7 +262,7 @@ export async function scanHistory(
       to,
       value: log.value,
       at,
-      signer,
+      ...(signer === undefined ? {} : {signer}),
       dust: log.value > 0n && log.value < dustLimit,
       txHash: log.transactionHash,
     });
@@ -326,14 +335,4 @@ async function resolveAll<K, V>(
   }
 
   return out;
-}
-
-/**
- * The one timer this package needs. Declared rather than typed in from DOM or Node, since this
- * runs in both and each has it.
- */
-declare const setTimeout: (callback: () => void, ms: number) => unknown;
-
-function pause(ms: number): Promise<void> {
-  return ms > 0 ? new Promise((done) => setTimeout(() => done(), ms)) : Promise.resolve();
 }

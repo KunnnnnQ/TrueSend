@@ -1,5 +1,7 @@
 import {hexToString, parseAbi, type Address, type Hex, type PublicClient} from "viem";
 
+import {RETRY_DELAYS_MS, askPatiently} from "./client.js";
+
 /**
  * What a token contract says about itself.
  *
@@ -12,6 +14,12 @@ export interface TokenIdentity {
   address: Address;
   symbol: string | null;
   name: string | null;
+  /**
+   * The endpoint refused to ask the contract, every time it was asked to. The symbol and name are
+   * `null` then too, but not because the contract would not say: nobody asked it. Kept apart so a
+   * screen does not blame the token for the endpoint.
+   */
+  unanswered?: true;
 }
 
 /**
@@ -43,15 +51,23 @@ type Answer = {status: "success"; result: unknown} | {status: "failure"; error: 
  * type, and may return a string that is hostile to whatever displays it — each of those yields
  * `null` or an ordinary string, never an exception, so one broken token cannot cost the user the
  * check on the other two hundred.
+ *
+ * Nor does it take a refusal for an answer. A batch the endpoint refuses is asked again, after a
+ * pause; one it refuses every time comes back `unanswered`. An earlier version gave up on the
+ * first refusal and left those tokens `null`, which the screen then reported as tokens that "would
+ * not say what they are called" — the endpoint's refusal, told as a fact about the contracts.
  */
 export async function readTokenIdentities(
   client: Pick<PublicClient, "multicall">,
   tokens: readonly Address[],
+  options: {retryDelaysMs?: readonly number[]} = {},
 ): Promise<TokenIdentity[]> {
+  const {retryDelaysMs = RETRY_DELAYS_MS} = options;
   const unique = [...new Set(tokens.map((token) => token.toLowerCase() as Address))];
   const identities = new Map<Address, TokenIdentity>(
     unique.map((address) => [address, {address, symbol: null, name: null}]),
   );
+  const unanswered = new Set<Address>();
 
   // First the standard shape, then the legacy one for whatever refused it.
   const read = async (abi: Call["abi"], kind: "string" | "bytes32", addresses: Address[]) => {
@@ -62,15 +78,13 @@ export async function readTokenIdentities(
         {address, abi, functionName: "name" as const},
       ]);
 
-      let answers: Answer[];
-      try {
-        answers = (await client.multicall({
-          contracts: calls,
-          allowFailure: true,
-          multicallAddress: MULTICALL3,
-        })) as Answer[];
-      } catch {
-        // The endpoint refused the whole batch. Those tokens stay unread rather than failing the scan.
+      const answers = (await askPatiently(
+        () => client.multicall({contracts: calls, allowFailure: true, multicallAddress: MULTICALL3}),
+        retryDelaysMs,
+      )) as Answer[] | undefined;
+      if (answers === undefined) {
+        // Refused every time. Those tokens stay unread, and say why, rather than failing the scan.
+        for (const address of slice) unanswered.add(address);
         continue;
       }
 
@@ -85,13 +99,16 @@ export async function readTokenIdentities(
   };
 
   await read(AS_STRING, "string", unique);
+  // Only what answered and still gave no string: a token nobody could ask has nothing to retry yet.
   await read(
     AS_BYTES32,
     "bytes32",
-    unique.filter((address) => identities.get(address)!.symbol === null),
+    unique.filter((address) => identities.get(address)!.symbol === null && !unanswered.has(address)),
   );
 
-  return [...identities.values()];
+  return [...identities.values()].map((identity) =>
+    unanswered.has(identity.address) ? {...identity, unanswered: true as const} : identity,
+  );
 }
 
 /**

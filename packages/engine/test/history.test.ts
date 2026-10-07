@@ -528,6 +528,21 @@ describe("records the scan could not check", () => {
     expect(verdict.findings[0]?.message).toMatch(/^1 more transfer/);
   });
 
+  it("does not need the signer of a transfer the owner received", () => {
+    const received: TransferRecord = {token: USDT, from: EXCHANGE_PAYER, to: ME, value: 1_000_000n, at: 100};
+    const [entry] = foldHistory(ME, [received]);
+
+    expect(entry).toMatchObject({address: EXCHANGE_PAYER, incomingCount: 1, outgoingCount: 0});
+  });
+
+  /** Fail-safe, and loud: whoever omits it on a sent record gets a fabrication, never a payment. */
+  it("never takes a record naming the owner as sender for a payment when its signer is missing", () => {
+    const unsigned: TransferRecord = {token: USDT, from: ME, to: ATTACKER, value: 0n, at: 100};
+    const [entry] = foldHistory(ME, [unsigned]);
+
+    expect(entry).toMatchObject({outgoingCount: 0, spoofedOutgoingCount: 1});
+  });
+
   it("does not soften what the checked records already show", () => {
     const history = foldHistory(
       ME,

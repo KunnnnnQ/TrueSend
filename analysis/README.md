@@ -278,6 +278,12 @@ address is scored the way Send would score it when the victim pasted it.
   which both the dataset's attacker and its "genuine" address imitate; the label there is a second
   lookalike. The other five fit the same pattern, but no payee they imitate turned up in seven weeks
   of history, so they are left open rather than counted either way.
+- **A third of the scan's lookups were not needed.** Across the 143 victims' cached histories,
+  4,460 of 13,795 transactions (32%; 25% for the median victim) were ones the victim only received
+  in. Who signed those changes nothing — only a record naming the account as sender needs its
+  signer — so the scan no longer asks. The May 2024 preset, where 110 of 111 transactions name the
+  victim as a sender, is the exception rather than the rule. `false-positives.mjs` measures a rule
+  that does read received signers, and asks for every signer (`everySigner`).
 
 ### 6. Lookalikes that only copy the end were invisible
 

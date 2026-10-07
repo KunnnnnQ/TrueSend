@@ -201,6 +201,9 @@ for (const account of targeted) {
 
     // Every token, as the Scan screen judges it: the same engine call, not a copy of it.
     const identities = await readTokenIdentities(client, scan.tokensSeen);
+    // A name the endpoint would not read is a hole in the measurement, the same as an unchecked transfer.
+    const unanswered = identities.filter((identity) => identity.unanswered).length;
+    if (unanswered > 0) throw new Error(`${unanswered} token names could not be read`);
     const check = checkTokens(owner, scan.transfers, identities, {canonical: CANONICAL, listed: LISTED});
     // What the listed tier said on its own: a listed name at another contract, nothing stronger.
     const byListedName = (t) =>

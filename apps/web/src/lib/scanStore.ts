@@ -16,6 +16,8 @@ const KEY = "truesend.last-scan";
 export interface StoredTokenCheck {
   checked: number;
   unreadable: number;
+  /** Tokens the endpoint never let the scan read. Absent in a scan stored before it existed. */
+  unanswered?: number;
   counterfeit: FlaggedToken[];
   unusual: FlaggedToken[];
 }

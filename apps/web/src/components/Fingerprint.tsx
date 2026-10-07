@@ -75,7 +75,7 @@ export function AddressCard({
   const print = fingerprint(address);
 
   return (
-    <div className="flex items-start gap-3">
+    <div className="flex min-w-0 items-start gap-3">
       <Identicon fp={print} size={emphasis === "strong" ? 44 : 36} />
       <div className="min-w-0">
         {label ? <div className="text-sm font-medium text-text">{label}</div> : null}
@@ -87,7 +87,8 @@ export function AddressCard({
         >
           {print.short}
         </div>
-        <div className="tabular mt-0.5 text-sm">
+        {/* Wraps between words on a narrow screen; the words sit flush, so nothing else would. */}
+        <div className="tabular mt-0.5 flex flex-wrap text-sm">
           {/* The true phrase for assistive technology; the resolving letters are only for the eye. */}
           <span className="sr-only">{print.phrase}</span>
           {print.words.map((word, i) => (

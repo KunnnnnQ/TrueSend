@@ -50,12 +50,15 @@ const identities = await readTokenIdentities(client, scan.tokensSeen);
 const seconds = ((Date.now() - started) / 1000).toFixed(1);
 
 // The web app's own check, from the engine — not a copy of it.
-const {counterfeit, unusual, unreadable} = checkTokens(scan.owner, scan.transfers, identities, {
+const {counterfeit, unusual, unreadable, unanswered} = checkTokens(scan.owner, scan.transfers, identities, {
   canonical: CANONICAL,
   listed: LISTED,
 });
 
-console.log(`read ${identities.length - unreadable} of ${identities.length} token identities in ${seconds}s (${unreadable} would not say)`);
+console.log(
+  `read ${identities.length - unreadable - unanswered} of ${identities.length} token identities in ${seconds}s ` +
+    `(${unreadable} would not say${unanswered ? `, ${unanswered} the endpoint would not ask` : ""})`,
+);
 console.log(`counterfeit ${counterfeit.length}, unusual-but-not-planted ${unusual.length}
 `);
 

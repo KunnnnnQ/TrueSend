@@ -66,17 +66,37 @@ describe("readTokenIdentities", () => {
     expect(result.map((r) => r.symbol)).toEqual(["DAI", null, "WETH"]);
   });
 
-  it("does not throw when the endpoint refuses a whole batch", async () => {
-    const client = {
-      multicall: async () => {
-        throw new Error("request entity too large");
-      },
-    } as unknown as Pick<PublicClient, "multicall">;
+  /**
+   * Refused every time, the tokens come back unread and say why. An earlier version returned them
+   * as plain `null`s after the first refusal, and the screen called them tokens that "would not say
+   * what they are called".
+   */
+  it("does not throw when the endpoint refuses a whole batch, and says it was the endpoint", async () => {
+    const multicall = vi.fn(async () => {
+      throw new Error("HTTP request failed. Status: 429");
+    });
+    const client = {multicall} as unknown as Pick<PublicClient, "multicall">;
 
-    await expect(readTokenIdentities(client, [at(8), at(9)])).resolves.toEqual([
-      {address: at(8), symbol: null, name: null},
-      {address: at(9), symbol: null, name: null},
+    await expect(readTokenIdentities(client, [at(8), at(9)], {retryDelaysMs: [0, 0]})).resolves.toEqual([
+      {address: at(8), symbol: null, name: null, unanswered: true},
+      {address: at(9), symbol: null, name: null, unanswered: true},
     ]);
+    // Asked three times in all, and never in the legacy shape: there was no answer to fall back from.
+    expect(multicall).toHaveBeenCalledTimes(3);
+  });
+
+  it("asks again when the endpoint refuses, and reads the batch once it answers", async () => {
+    const {client, multicall} = node({[at(11)]: {string: ["USDC", "USD Coin"]}});
+    const answer = multicall.getMockImplementation()!;
+    multicall.mockImplementationOnce(async () => {
+      throw new Error("HTTP request failed. Status: 429");
+    });
+    multicall.mockImplementation(answer);
+
+    const result = await readTokenIdentities(client, [at(11)], {retryDelaysMs: [0, 0]});
+
+    expect(result).toEqual([{address: at(11), symbol: "USDC", name: "USD Coin"}]);
+    expect(multicall).toHaveBeenCalledTimes(2);
   });
 
   it("asks once per token however many times a history mentions it, whatever its case", async () => {

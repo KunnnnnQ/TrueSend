@@ -341,6 +341,34 @@ describe("checkTokens: a contract that forges its own transfers", () => {
     const check = checkTokens(OWNER, [], [{address: NAMELESS, symbol: null, name: null}]);
     expect(check).toMatchObject({checked: 1, unreadable: 1, counterfeit: [], unusual: []});
   });
+
+  /** "Would not say" is a fact about the contract; a refused request is not, and is kept apart. */
+  it("counts a token the endpoint never answered for apart from one that would not say", () => {
+    const check = checkTokens(OWNER, [], [
+      {address: NAMELESS, symbol: null, name: null, unanswered: true},
+      {address: FAKE_CBBTC, symbol: null, name: null},
+    ]);
+    expect(check).toMatchObject({checked: 2, unreadable: 1, unanswered: 1, counterfeit: [], unusual: []});
+  });
+
+  it("still convicts a token nobody could ask, on its own records", () => {
+    const check = checkTokens(OWNER, [forgery(NAMELESS)], [
+      {address: NAMELESS, symbol: null, name: null, unanswered: true},
+    ]);
+    expect(check.counterfeit.map((t) => t.address)).toEqual([NAMELESS]);
+    expect(check.unanswered).toBe(0);
+  });
+
+  /** A received transfer may come without its signer; only a record naming the owner as sender needs one. */
+  it("reads a received transfer with no signer, and a sent one with none as not the owner's", () => {
+    const received: TransferRecord = {token: NAMELESS, from: PLANTER, to: OWNER, value: 0n, at: 1};
+    const unsignedSend: TransferRecord = {token: NAMELESS, from: OWNER, to: LOOKALIKE, value: 0n, at: 2};
+    const check = checkTokens(OWNER, [received, unsignedSend], [{address: NAMELESS, symbol: "USDT", name: "Tether"}], {
+      canonical: CANONICAL,
+    });
+
+    expect(check.counterfeit.map((t) => t.planted)).toEqual([2]);
+  });
 });
 
 /**

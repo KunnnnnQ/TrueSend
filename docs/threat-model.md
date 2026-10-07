@@ -186,6 +186,9 @@ It is now wired into the Scan screen, and the limits of where it is wired are th
   one.
 - **A token that would not say what it is called is counted, not passed.** `symbol()` can revert or
   return something that is not text; those are reported as unread. That is not the same as clean.
+  A name the endpoint refused to read, even when asked again, is reported apart, as the endpoint's
+  doing: until 2026-10-07 one refused request was enough to report a whole batch of tokens as
+  contracts that "would not say what they are called".
 - **Being spelled strangely is not being counterfeit, and this was measured rather than assumed.**
   Run over CoinGecko's list of about six thousand Ethereum tokens the rules flag eight, and most are
   meme tokens whose only fault is how they are spelled — a Chinese ticker, an emoji, lookalike

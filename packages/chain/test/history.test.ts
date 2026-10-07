@@ -55,9 +55,33 @@ describe("scanHistory", () => {
 
     expect(result.transfers).toHaveLength(3);
     expect(result.unchecked).toEqual([]);
-    expect(result.signersResolved).toBe(3);
+    // Two of the three: the payment back is one the owner only received.
+    expect(result.signersResolved).toBe(2);
     expect(result.history.find((e) => e.address === PAYEE)).toMatchObject({outgoingCount: 1, incomingCount: 1});
     expect(result.history.find((e) => e.address === PLANTED)).toMatchObject({outgoingCount: 0, spoofedOutgoingCount: 1});
+  });
+
+  /**
+   * Who signed a transfer the owner received changes nothing about it, so its transaction is not
+   * looked up. Across 143 real victims' histories that was a third of all transactions.
+   */
+  it("does not ask who signed a transaction the owner only received in", async () => {
+    const {client, asked} = replay(recording());
+    const result = await scanHistory(client, OWNER, RANGE, NO_WAIT);
+    const received = result.transfers.find((t) => t.txHash === RECEIVED);
+
+    expect(asked.transactions).toBe(2);
+    expect(received).toMatchObject({from: PAYEE, to: OWNER, value: 50n});
+    expect(received?.signer).toBeUndefined();
+    expect(result.history.find((e) => e.address === PAYEE)?.incomingCount).toBe(1);
+  });
+
+  it("asks about every transaction when told to, for a measurement that reads received signers", async () => {
+    const {client, asked} = replay(recording());
+    const result = await scanHistory(client, OWNER, RANGE, {...NO_WAIT, everySigner: true});
+
+    expect(asked.transactions).toBe(3);
+    expect(result.transfers.find((t) => t.txHash === RECEIVED)?.signer).toBe(PAYEE);
   });
 
   it("takes a block's time from its logs when the endpoint puts it there, and asks only when it does not", async () => {
@@ -125,7 +149,8 @@ describe("scanHistory, when the endpoint refuses", () => {
 
     expect(result.unchecked).toEqual([]);
     expect(result.history.find((e) => e.address === PLANTED)?.spoofedOutgoingCount).toBe(1);
-    expect(asked.transactions).toBe(5);
+    // The payment and the fabrication once each, then the fabrication twice more.
+    expect(asked.transactions).toBe(4);
   });
 
   it("returns what it still could not check, instead of dropping it", async () => {
@@ -192,7 +217,8 @@ describe("scanHistory, when the endpoint refuses", () => {
     const result = await scanHistory(client, OWNER, RANGE, NO_WAIT);
 
     expect(result.unchecked).toEqual([]);
-    // The first pass all at once, every one refused; then the pass back, strictly one by one.
-    expect(atEachCall).toEqual([1, 2, 3, 1, 1, 1]);
+    // The first pass all at once, every one refused; then the pass back, strictly one by one. The
+    // payment back is never asked about at all.
+    expect(atEachCall).toEqual([1, 2, 1, 1]);
   });
 });

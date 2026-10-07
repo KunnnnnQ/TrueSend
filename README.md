@@ -234,19 +234,23 @@ only the bait's lookup turned the attacker from "Do not send 65" into "Looks fin
 screen reported "110 signers resolved" as though nothing were missing. The Poison-Hunter replay had
 already been guarding against exactly this — for the measurement, not for users. Refused lookups
 are now asked again, one at a time, and whatever still does not come back makes the scan say it is
-incomplete, on Scan and on Send, and makes every address it touches at least "worth a look". Where
-the endpoint puts each block's time on the log, as the default one does, blocks are no longer asked
-about at all: 111 lookups instead of 188 for the preset. And the preset itself is now replayed on
-every push from a recording of what mainnet said about it, with the bait's lookup refused as well
-as answered, so a regression like the last one fails CI instead of waiting to be found by hand.
+incomplete, on Scan and on Send, and makes every address it touches at least "worth a look". A
+token name the endpoint will not read is said to be unread by the endpoint, not a token that "would
+not say". Fewer lookups also means fewer to refuse. Where the endpoint puts each block's time on the
+log, as the default one does, blocks are no longer asked about at all. And only a transfer naming
+the account as its sender needs its signer, so a transaction the account only received in is not
+asked about — across the 143 victims' histories in the Poison-Hunter replay, a third of all
+transactions. The preset now takes 110 lookups instead of 188, and it is replayed on every push from
+a recording of what mainnet said about it, with the bait's lookup refused as well as answered, so a
+regression like the last one fails CI instead of waiting to be found by hand.
 
 ## Status
 
 | Component | State |
 | --- | --- |
 | `contracts/` — policy, 7702 delegate, vault, factory, community registry | Built and [deployed on Sepolia](#deployed-on-sepolia). 94 tests: unit, fuzz, invariant. 100% branch coverage |
-| `packages/engine/` — fingerprints, heuristics, scoring | Built. 188 tests including property tests |
-| `packages/chain/` — history with signer resolution, token identities, policy reads | Built. 47 tests, among them the live demo's May 2024 preset replayed from recorded mainnet answers. Shared by the app and the indexer |
+| `packages/engine/` — fingerprints, heuristics, scoring | Built. 193 tests including property tests |
+| `packages/chain/` — history with signer resolution, token identities, policy reads | Built. 50 tests, among them the live demo's May 2024 preset replayed from recorded mainnet answers. Shared by the app and the indexer |
 | `apps/web/` — Scan, Send, Pending | Built. Scan reads mainnet directly, resolves signers and reads what every token in the history calls itself; that scan follows the user to Send, which also recognises a token address Scan already flagged; Send and Pending drive a deployed policy |
 | `apps/indexer/` — hold watcher, alerts, risk API | Built. 17 tests on alert idempotency and resume |
 | `apps/extension/` — copy and paste guard, in-page collision scan | Built and [released](https://github.com/KunnnnnQ/TrueSend/releases/latest). 41 tests, 13 of them against markup copied from real Etherscan and Blockscout pages |

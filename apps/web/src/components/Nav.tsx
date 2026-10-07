@@ -29,7 +29,7 @@ export function Nav() {
 
   return (
     <header className="sticky top-0 z-20 border-b border-line bg-ink/70 backdrop-blur-md">
-      <div className="mx-auto flex max-w-5xl items-center gap-6 px-5 py-3.5">
+      <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-6 gap-y-2 px-5 py-3.5">
         <Link href="/" className="flex items-center gap-2 text-sm font-semibold tracking-tight">
           {/* A filled square beside an outlined one: the address you meant, and the one beside it. */}
           <span aria-hidden className="flex gap-0.5">
@@ -39,7 +39,10 @@ export function Nav() {
           TrueSend
         </Link>
 
-        <nav className="flex gap-1">
+        {/* On a phone the tabs take a row of their own, under the name and the wallet button: in
+            one row the four of them pushed the page wider than the screen. Last in the header
+            either way, so the active tab's underline still lands on its bottom edge. */}
+        <nav className="order-last flex w-full gap-1 sm:order-none sm:w-auto">
           {TABS.map((tab) => {
             const active = pathname === tab.href;
             return (

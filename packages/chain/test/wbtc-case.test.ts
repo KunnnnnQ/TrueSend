@@ -75,7 +75,8 @@ describe("the May 2024 WBTC case, replayed from mainnet's answers", () => {
 
     expect(result.transfers).toHaveLength(231);
     expect(result.unchecked).toEqual([]);
-    expect(result.signersResolved).toBe(111);
+    // 110 of the 111 transactions name the victim as a sender; the other one only paid them.
+    expect(result.signersResolved).toBe(110);
     expect(verdicts).toHaveLength(15);
     expect(verdicts.filter((v) => v.level === "danger")).toHaveLength(14);
 

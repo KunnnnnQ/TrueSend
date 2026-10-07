@@ -141,7 +141,9 @@ even when asked again one at a time, is returned as `unchecked` and folded in as
 neither a payment nor a fabrication, but enough to make its address a caution and the whole scan
 "incomplete". Dropping it instead, as this layer once did, let one refused lookup turn the May 2024
 attacker into "Looks fine". Where an endpoint puts each block's time on its logs, the scan does not
-ask for blocks at all.
+ask for blocks at all, and it asks who signed a transaction only when one of its logs names the
+user as the sender: a transfer the user merely received reads the same whoever sent it. In the
+143 victims' histories `analysis/` holds, that skips a third of all transactions.
 
 The alerting path is what turns a cooldown from a delay into a defence. A queued transfer is only
 useful if someone learns about it while it is still queued, and the person may not be at their

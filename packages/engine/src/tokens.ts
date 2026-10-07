@@ -1,5 +1,5 @@
 import {addressesEqual, normalizeAddress, type Address} from "./address.js";
-import {forgedTransfersByToken, type TransferRecord} from "./history.js";
+import {forgedTransfersByToken, signedBy, type TransferRecord} from "./history.js";
 
 /**
  * Fake-token detection.
@@ -558,6 +558,12 @@ export interface TokenIdentityInput {
   address: string;
   symbol: string | null;
   name: string | null;
+  /**
+   * The endpoint never answered for this token, even when asked again, so nobody asked the
+   * contract anything. Not the same as `symbol: null`, which is the contract declining to say:
+   * calling this one "would not say" would blame the token for the endpoint's refusal.
+   */
+  unanswered?: boolean;
 }
 
 export interface TokenCheckResult extends FlaggedTokens {
@@ -566,6 +572,8 @@ export interface TokenCheckResult extends FlaggedTokens {
   checked: number;
   /** Would not say what they are called, and nothing in the history convicted them either. */
   unreadable: number;
+  /** Never asked, because the endpoint refused; nothing in the history convicted them either. */
+  unanswered: number;
 }
 
 /**
@@ -576,7 +584,8 @@ export interface TokenCheckResult extends FlaggedTokens {
  * call this.
  *
  * A token that would not say what it is called cannot be judged by its name, and is counted rather
- * than passed — unless its own records already convict it, which needs no name at all.
+ * than passed — unless its own records already convict it, which needs no name at all. One the
+ * endpoint would not let anyone ask is counted apart (`unanswered`), for the same reason.
  *
  * A contract on either list is exempt from that conviction. A real token cannot forge a transfer,
  * so its "forged" records can only be the one known blind spot of `forgedTransfersByToken`: a
@@ -596,6 +605,7 @@ export function checkTokens(
   const counterfeit: FlaggedToken[] = [];
   const unusual: FlaggedToken[] = [];
   let unreadable = 0;
+  let unanswered = 0;
 
   for (const identity of identities) {
     const address = normalizeAddress(identity.address);
@@ -605,13 +615,14 @@ export function checkTokens(
     // to hold — which is what tells a counterfeit from a strange spelling.
     const planted = own.filter(
       (t) =>
-        (normalizeAddress(t.from) === me && normalizeAddress(t.signer) !== me) ||
+        (normalizeAddress(t.from) === me && !signedBy(t, me)) ||
         (normalizeAddress(t.to) === me && t.value === 0n),
     ).length;
     const forged = known.has(address) ? 0 : (forgedBy.get(address) ?? 0);
 
     if (identity.symbol === null && forged === 0) {
-      unreadable++;
+      if (identity.unanswered) unanswered++;
+      else unreadable++;
       continue;
     }
 
@@ -641,7 +652,7 @@ export function checkTokens(
   counterfeit.sort(byUse);
   unusual.sort(byUse);
 
-  return {checked: identities.length, unreadable, counterfeit, unusual};
+  return {checked: identities.length, unreadable, unanswered, counterfeit, unusual};
 }
 
 /**

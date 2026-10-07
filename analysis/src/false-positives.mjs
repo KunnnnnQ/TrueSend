@@ -204,7 +204,9 @@ for (const [index, owner] of chosen.entries()) {
 
   let scan;
   try {
-    scan = await scanHistory(viemClient, owner, {fromBlock: historyFrom, toBlock: historyTo});
+    // Every signer, received transfers included: `attestedTokens` below asks who signed those, which
+    // the product never needs and so no longer looks up by default.
+    scan = await scanHistory(viemClient, owner, {fromBlock: historyFrom, toBlock: historyTo}, {everySigner: true});
     // A measurement cannot use a scan with holes in it; until 2026-10-07 it could not even see them.
     if (scan.unchecked.length > 0) throw new Error(`${scan.unchecked.length} transfers could not be checked`);
   } catch (error) {

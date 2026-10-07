@@ -22,6 +22,46 @@ export function createChainClient(url: string): PublicClient {
 }
 
 /**
+ * How long to wait before each pass back over what an endpoint refused: a second, then three more.
+ *
+ * A refusal is nearly always a rate limit, so the passes back are slow on purpose. Four seconds is
+ * as long as a screen can sit on "checking" before it looks broken, and whatever is still missing
+ * after that is reported rather than waited for.
+ */
+export const RETRY_DELAYS_MS: readonly number[] = [1_000, 3_000];
+
+/**
+ * Ask, and ask again after each pause; `undefined` when every answer was a refusal.
+ *
+ * Returns rather than throws, because every caller has something better to do with a refusal
+ * than fail: report the token it could not read, or the transfer it could not check.
+ */
+export async function askPatiently<T>(
+  ask: () => Promise<T>,
+  delaysMs: readonly number[] = RETRY_DELAYS_MS,
+): Promise<T | undefined> {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await ask();
+    } catch {
+      const delay = delaysMs[attempt];
+      if (delay === undefined) return undefined;
+      await pause(delay);
+    }
+  }
+}
+
+/**
+ * The one timer this package needs. Declared rather than typed in from DOM or Node, since this
+ * runs in both and each has it.
+ */
+declare const setTimeout: (callback: () => void, ms: number) => unknown;
+
+export function pause(ms: number): Promise<void> {
+  return ms > 0 ? new Promise((done) => setTimeout(() => done(), ms)) : Promise.resolve();
+}
+
+/**
  * Halve a range and retry when an endpoint refuses it as too wide.
  *
  * Takes the fetch as a callback rather than the request as an object so viem keeps inferring the

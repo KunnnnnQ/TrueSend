@@ -18,8 +18,17 @@ export interface TransferRecord {
   value: bigint;
   /** Unix seconds. */
   at: number;
-  /** `tx.from` — the address that actually signed the transaction carrying this log. */
-  signer: Address;
+  /**
+   * `tx.from` — the address that actually signed the transaction carrying this log.
+   *
+   * Only ever read for a log that names the owner as the sender: that is the one claim a signature
+   * makes true or false. A transfer the owner merely received reads the same whoever sent it, so a
+   * scan may leave this out there, and `scanHistory` does — across the histories of the 143
+   * victims in `analysis/`'s Poison-Hunter replay, 32% of transactions were received-only.
+   * Missing on a log that does name the owner as sender, it counts as not signed by the owner:
+   * a record nobody has seen the owner's signature on is never taken for their payment.
+   */
+  signer?: Address;
   /**
    * Whether an inbound transfer is small enough to be unsolicited dust.
    *
@@ -45,6 +54,11 @@ export interface UncheckedTransfer {
   to: Address;
   value: bigint;
   txHash?: string;
+}
+
+/** Whether `address` signed the transaction carrying this transfer, as far as anyone checked. */
+export function signedBy(transfer: Pick<TransferRecord, "signer">, address: Address): boolean {
+  return transfer.signer !== undefined && normalizeAddress(transfer.signer) === address;
 }
 
 /** Mints and burns name this address; it is not an account anyone can be paid at. */
@@ -127,7 +141,7 @@ export function foldHistory(
 
     if (from === me) {
       const entry = entryFor(to, transfer.at);
-      const theySignedIt = normalizeAddress(transfer.signer) === me;
+      const theySignedIt = signedBy(transfer, me);
       const valueMoved = couldHaveMoved(transfer, held);
 
       // `theySignedIt` needs no account-kind check to be safe: it is structurally false for a
@@ -246,7 +260,7 @@ function tokensTheOwnerHasHeld(
   for (const transfer of transfers) {
     const token = normalizeAddress(transfer.token);
     if (normalizeAddress(transfer.to) === owner && transfer.value > 0n) held.add(token);
-    if (normalizeAddress(transfer.from) === owner && normalizeAddress(transfer.signer) === owner) {
+    if (normalizeAddress(transfer.from) === owner && signedBy(transfer, owner)) {
       held.add(token);
     }
   }
@@ -282,7 +296,7 @@ export function forgedTransfersByToken(
 
   for (const transfer of transfers) {
     if (normalizeAddress(transfer.from) !== me) continue;
-    if (normalizeAddress(transfer.signer) === me || transfer.value === 0n) continue;
+    if (signedBy(transfer, me) || transfer.value === 0n) continue;
     const token = normalizeAddress(transfer.token);
     if (held.has(token)) continue;
     forged.set(token, (forged.get(token) ?? 0) + 1);

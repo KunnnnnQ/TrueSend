@@ -11,6 +11,7 @@ export type TokenCheck =
       status: "done";
       checked: number;
       unreadable: number;
+      unanswered: number;
       counterfeit: FlaggedToken[];
       unusual: FlaggedToken[];
     }
@@ -58,7 +59,9 @@ export function CounterfeitTokens({check}: {check: TokenCheck}) {
     );
   }
 
-  const {counterfeit, unusual, checked, unreadable} = check;
+  const {counterfeit, unusual, checked, unreadable, unanswered} = check;
+  // Only the ones somebody could ask. "Checked" must not count tokens the endpoint never read.
+  const asked = checked - unanswered;
 
   return (
     <div className="space-y-3">
@@ -102,9 +105,9 @@ export function CounterfeitTokens({check}: {check: TokenCheck}) {
         </section>
       ) : null}
 
-      {counterfeit.length === 0 && unusual.length === 0 ? (
+      {counterfeit.length === 0 && unusual.length === 0 && asked > 0 ? (
         <p className="text-xs text-muted">
-          <span className="tabular text-text">{checked}</span> token {plural(checked, "contract")}{" "}
+          <span className="tabular text-text">{asked}</span> token {plural(asked, "contract")}{" "}
           checked — none pose as another asset.
           {unreadable > 0 ? (
             <>
@@ -121,6 +124,15 @@ export function CounterfeitTokens({check}: {check: TokenCheck}) {
           as being fine.
         </p>
       ) : null}
+
+      {/* Apart from "would not say": these were never asked, and blaming them would be wrong. */}
+      {unanswered > 0 ? (
+        <p className="text-xs text-caution">
+          <span className="tabular">{unanswered}</span> {plural(unanswered, "token")} could not be
+          read: the endpoint would not answer, even when asked again. {unanswered === 1 ? "It" : "They"}{" "}
+          {unanswered === 1 ? "is" : "are"} not judged here — scan again in a minute.
+        </p>
+      ) : null}
     </div>
   );
 }
@@ -131,7 +143,9 @@ function TokenRow({token}: {token: FlaggedToken}) {
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
         {/* Code points, not the string: two of the characters in these are invisible, and a symbol
             can carry a right-to-left override that reorders the text around it. */}
-        <code className="tabular text-sm text-text">{token.symbol === "" ? "(no name)" : revealSymbol(token.symbol)}</code>
+        <code className="tabular break-all text-sm text-text">
+          {token.symbol === "" ? "(no name)" : revealSymbol(token.symbol)}
+        </code>
         <span className="tabular text-xs text-faint">
           {token.transfers} {plural(token.transfers, "transfer")}
         </span>
