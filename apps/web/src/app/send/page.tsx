@@ -94,8 +94,9 @@ export default function SendPage() {
    * Re-implementing that here to display it separately would be a second implementation of the
    * rule that keeps a permissionless registry from condemning an address by itself.
    *
-   * `registryFor` is undefined on every public chain today, so in practice this contributes
-   * nothing and the screen behaves exactly as it did before the registry existed.
+   * `registryFor` is undefined on a chain with no registry — mainnet, today — and there this
+   * contributes nothing: the screen behaves exactly as it did before the registry existed. On
+   * Sepolia it reads the registry deployed on 2026-10-06.
    */
   const registry = registryFor(chainId);
   const {reports} = useReports(registry, recipient ? [recipient] : [], chainId);

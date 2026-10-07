@@ -3,7 +3,9 @@
 `forge script script/Deploy.s.sol --broadcast` writes `<chainid>.json` here, and the web app reads
 it rather than carrying hand-copied addresses.
 
-Nothing is deployed yet. A chain with no file here is not deployed, and the app says so instead of
+Sepolia is deployed: `11155111.json` and `registry-11155111.json` are the records of the
+2026-10-06 deployment, and `node tools/deployment-env.mjs` turns them into the variables the live
+demo is built with. A chain with no file here is not deployed, and the app says so instead of
 pointing at a placeholder.
 
 To run the whole thing locally:

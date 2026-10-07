@@ -140,8 +140,9 @@ export default function ScanPage() {
    * `docs/registry.md` is explicit that reports alone are capped below `danger` for exactly the
    * reason that they cannot be trusted, only weighted.
    *
-   * `registryFor` returns undefined on every public chain today, and the hook then does nothing at
-   * all rather than failing: reports are corroboration, never the reason a warning fires.
+   * `registryFor` returns undefined on a chain with no registry — mainnet, today; Sepolia has one
+   * since 2026-10-06 — and the hook then does nothing at all rather than failing: reports are
+   * corroboration, never the reason a warning fires.
    */
   const counterparties = useMemo(
     () => assessments.map((a) => a.address),
