@@ -22,6 +22,15 @@ export interface AddressSighting {
   outgoingCount: number;
   /** Unix seconds of the most recent payment the user made to it, if any. */
   lastOutgoingAt?: number;
+  /**
+   * Unix seconds of the first payment the user made to it, and of the first fabricated record
+   * naming it. Which came first is the whole difference between a fake copy of a real payment —
+   * the payment, then the copy — and a bait the user then fell for: the fake, then the payment.
+   * Optional because a history folded before these existed has neither, and reads as "unknown",
+   * which never earns the copy's exemption.
+   */
+  firstOutgoingAt?: number;
+  firstSpoofedAt?: number;
   /** Transfers this address sent to the user. */
   incomingCount: number;
   /**

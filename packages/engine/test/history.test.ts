@@ -386,3 +386,35 @@ describe("the exact hole this used to have", () => {
     expect(verdict.score).toBeGreaterThan(0);
   });
 });
+
+/**
+ * Which came first decides whether an unsigned record next to a real payment is a copy or a bait.
+ *
+ * The first version of the copied-payment exemption asked only whether the owner had ever paid
+ * the address, and on the app's own May 2024 preset — which scans past the loss — it called the
+ * attacker "Looks fine", because the 1155 WBTC was a payment the victim signed. These replay that
+ * case's two records in its own order, and then the other way round.
+ */
+describe("a fabricated record next to a real payment", () => {
+  const WBTC = "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599" as Address;
+  const bait = (at: number) => transfer({from: ME, to: ATTACKER, signer: BOT, token: BAIT, value: 50_000n, at});
+  const payment = (at: number) =>
+    transfer({from: ME, to: ATTACKER, signer: ME, token: WBTC, value: 115_528_800_000n, at});
+
+  it("is the bait when it came first, and the payment after it is the loss", () => {
+    const history = foldHistory(ME, [bait(100), payment(200)]);
+    const verdict = assessAddress({to: ATTACKER, history, now: 300});
+
+    expect(history[0]?.firstSpoofedAt).toBe(100);
+    expect(history[0]?.firstOutgoingAt).toBe(200);
+    expect(verdict.level).toBe("danger");
+    expect(verdict.findings[0]?.code).toBe("spoofed-outgoing-transfer");
+  });
+
+  it("is a copy when the payment came first", () => {
+    const verdict = assessAddress({to: ATTACKER, history: foldHistory(ME, [payment(100), bait(200)]), now: 300});
+
+    expect(verdict.level).toBe("safe");
+    expect(verdict.findings.map((f) => f.code)).toEqual(["spoofed-copy-of-payment"]);
+  });
+});

@@ -120,10 +120,12 @@ export function foldHistory(
       if (theySignedIt) {
         entry.outgoingCount++;
         entry.lastOutgoingAt = Math.max(entry.lastOutgoingAt ?? 0, transfer.at);
+        entry.firstOutgoingAt = Math.min(entry.firstOutgoingAt ?? Infinity, transfer.at);
       } else if (valueMoved) {
         entry.authorisedOutgoingCount = (entry.authorisedOutgoingCount ?? 0) + 1;
       } else {
         entry.spoofedOutgoingCount++;
+        entry.firstSpoofedAt = Math.min(entry.firstSpoofedAt ?? Infinity, transfer.at);
       }
       continue;
     }

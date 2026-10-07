@@ -362,29 +362,68 @@ describe("fabricated outgoing records", () => {
    * a counterfeit token — same amount, same real recipient, minutes later — and the recipient, a
    * contact the user had paid with their own signature, used to read "Do not send".
    */
-  it("does not hold a copied payment against an address the user really paid", () => {
-    const contact = sighting({address: BOB, outgoingCount: 2, lastOutgoingAt: NOW - HOUR, spoofedOutgoingCount: 1});
+  it("does not hold a copied payment against an address the user had already paid", () => {
+    const contact = sighting({
+      address: BOB,
+      outgoingCount: 2,
+      firstOutgoingAt: NOW - 3 * HOUR,
+      lastOutgoingAt: NOW - HOUR,
+      spoofedOutgoingCount: 1,
+      // The copy, a few minutes after the payment it copies.
+      firstSpoofedAt: NOW - 3 * HOUR + 480,
+    });
     const result = assessAddress({to: BOB, history: [contact], now: NOW});
 
     expect(result.level).toBe("safe");
     expect(result.findings.map((f) => f.code)).toEqual(["spoofed-copy-of-payment"]);
     expect(result.findings[0]?.weight).toBe(0);
-    expect(result.findings[0]?.message).toContain("you have paid it yourself");
+    expect(result.findings[0]?.message).toContain("after you had already paid it yourself");
   });
 
-  /** The one case the exemption weakens: the user already paid the attacker once, by mistake. */
+  /**
+   * The first version of the exemption asked only whether the user had ever paid the address, and
+   * called the May 2024 attacker "Looks fine" on the app's own preset: the bait at block 19788642,
+   * then the 1155 WBTC the victim signed at 19789009, both inside the scanned range.
+   */
+  it("still condemns a fake that came first, when the user then paid it", () => {
+    const attacker = sighting({
+      address: BOB,
+      spoofedOutgoingCount: 1,
+      firstSpoofedAt: NOW - 4400,
+      outgoingCount: 1,
+      firstOutgoingAt: NOW,
+      lastOutgoingAt: NOW,
+    });
+    const result = assessAddress({to: BOB, history: [attacker], now: NOW});
+
+    expect(result.level).toBe("danger");
+    expect(result.findings[0]?.code).toBe("spoofed-outgoing-transfer");
+    expect(result.findings[0]?.message).toContain("after the fake record appeared");
+  });
+
+  /** A history folded before the timestamps existed cannot show the order, so it earns nothing. */
+  it("gives no exemption when the order is unknown", () => {
+    const unknown = sighting({address: BOB, outgoingCount: 1, lastOutgoingAt: NOW, spoofedOutgoingCount: 1});
+    expect(assessAddress({to: BOB, history: [unknown], now: NOW}).level).toBe("danger");
+  });
+
+  /** A lookalike the user paid by mistake, bait first: both signals, not just one. */
   it("still names the contact being imitated when the user paid a lookalike by mistake", () => {
     const paidByMistake = sighting({
       address: POISONED,
       outgoingCount: 1,
       spoofedOutgoingCount: 1,
+      firstSpoofedAt: NOW - 2 * HOUR + 600,
+      firstOutgoingAt: NOW - HOUR,
       lastOutgoingAt: NOW - HOUR,
       firstSeenAt: NOW - 2 * HOUR + 600,
     });
-    const result = assessAddress({to: POISONED, history: [alicePaid, paidByMistake], now: NOW});
+    const codes = assessAddress({to: POISONED, history: [alicePaid, paidByMistake], now: NOW}).findings.map(
+      (f) => f.code,
+    );
 
-    expect(result.findings.map((f) => f.code)).toContain("lookalike-of-known-payee");
-    expect(result.level).toBe("danger");
+    expect(codes).toContain("spoofed-outgoing-transfer");
+    expect(codes).toContain("lookalike-of-known-payee");
   });
 });
 
