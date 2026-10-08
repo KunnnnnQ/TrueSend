@@ -13,6 +13,9 @@ coverage/
 .output/
 # The static export pages.yml publishes, when built locally to check it first.
 apps/web/out/
+# What the browser tests leave behind: traces and reports of the last run.
+apps/web/test-results/
+apps/web/playwright-report/
 
 # ---- foundry ----
 contracts/out/

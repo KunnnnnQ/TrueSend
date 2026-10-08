@@ -145,3 +145,49 @@ jobs:
       - name: Mainnet replay
         run: node src/evaluate-engine.mjs --check
         working-directory: analysis
+
+  # The live demo in a real browser: the static export Pages publishes, served the way Pages serves
+  # it, with mainnet replaced by the recording packages/chain/test reads, at phone and laptop
+  # widths. Until 2026-10-07 the site was wider than any phone and cut the verdicts off, and no
+  # test could have seen it — the engine and the chain package were tested, the page was not.
+  # Pages only deploys after CI passes, so this now stands between a broken page and the live demo.
+  web:
+    name: web
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Enable pnpm
+        run: corepack enable
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+        env:
+          NODE_ENV: development
+
+      # The same build pages.yml runs, under the same base path, so the page tested is the one
+      # that ships.
+      - name: Build the static site, as Pages builds it
+        run: pnpm --filter @truesend/web build
+        env:
+          PAGES_BASE_PATH: /TrueSend
+          NEXT_TELEMETRY_DISABLED: "1"
+
+      - name: Install Chromium
+        run: pnpm --filter @truesend/web exec playwright install --with-deps chromium
+
+      - name: Browser tests
+        run: pnpm --filter @truesend/web e2e
+
+      # A trace of every failing test, to open with `npx playwright show-trace`.
+      - name: Traces of what failed
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: apps/web/test-results/
+          retention-days: 7
