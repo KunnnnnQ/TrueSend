@@ -216,3 +216,28 @@ The precedent for reading a clean report carefully is already in this repository
 coverage was 64.6% and read as a pass until a report named the eighteen untaken branches, and every
 one turned out to be an error path — the guards that matter most in a contract whose job is refusing
 things. A green number is a prompt to look, not a finding.
+
+## Dependencies (`pnpm audit --prod`)
+
+Run on 2026-10-08, it reported eleven advisories against the production dependencies, five of them
+high. None reached the live demo, which is a static export: each was in build tooling, in a server
+feature a static site does not have, or in a wallet library the app never bundles — the shipped
+JavaScript was searched for each one. They were cleared anyway, because a report that always shows
+eleven is a report nobody reads on the day it shows twelve.
+
+| Advisory | Where it was | What was done |
+| --- | --- | --- |
+| postcss, three (two high); source-map-js (high) | Next's CSS build, run on this repository's own CSS | Next's `postcss` raised to ^8.5.23 and `source-map-js` to ^1.2.2 (`pnpm.overrides`) |
+| sharp (high) | Next's image optimiser, which a static export never runs; nothing here uses `next/image` | Not installed (`pnpm.ignoredOptionalDependencies`) |
+| ws, two (one high) | A copy of viem inside WalletConnect | Raised to ^8.21.0 |
+| uuid | The MetaMask SDK | Raised to ^11.1.1 |
+| decode-uri-component | `query-string`, inside WalletConnect | **Accepted** (`pnpm.auditConfig.ignoreGhsas`) |
+
+The accepted one has two reasons, and both have to stay true. WalletConnect is never bundled: the
+app finds wallets through EIP-6963 and does not import `wagmi/connectors` (see `providers.tsx`). And
+the fixed release is ES-module-only, which `query-string` 7 cannot load, since it `require`s it — so
+forcing it would break the one code path that uses it, should that path ever ship.
+
+Next itself went from 15.5.25 to 15.5.27. Next 16 carries the fixed postcss itself, but it is a major
+version and was not taken for this. After the change: every unit test, both builds, and the browser
+tests on the Pages export passed, and `pnpm audit --prod` reports only the accepted advisory.
